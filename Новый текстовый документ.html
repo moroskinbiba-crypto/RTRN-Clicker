@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📡 RTRS Clicker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--white:#FDFDFD;--red:#EA212E;--lblue:#77C7E6;
+--dblue:#104586;--mblue:#3388BB;
+--bg:#060d18;--bg2:#0a1628;--bg3:#0d1f3a;--bg4:#102240;--bg5:#162d52;
+--border:#1a3555;
+}
+body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden;min-height:100vh}
+
+.header{background:linear-gradient(180deg,var(--dblue) 0%,var(--bg) 100%);
+border-bottom:2px solid var(--mblue);padding:10px 16px;
+display:flex;align-items:center;justify-content:space-between;
+position:sticky;top:0;z-index:100}
+.header-title{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:900;
+color:var(--white);text-shadow:0 0 20px rgba(119,199,230,.3);letter-spacing:1px}
+.header-stats{display:flex;gap:14px;align-items:center}
+.h-stat{text-align:right}
+.h-label{font-size:.58rem;color:var(--mblue);text-transform:uppercase;letter-spacing:1px}
+.h-val{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--white);font-weight:700}
+.h-val.blue{color:var(--lblue)}
+
+.game{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 52px)}
+.click-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;
+padding:30px 20px;position:relative;overflow:hidden;
+background:radial-gradient(ellipse at center,var(--bg3) 0%,var(--bg) 70%)}
+.click-panel::before{content:'';position:absolute;inset:0;
+background:radial-gradient(2px 2px at 15% 25%,rgba(234,33,46,.25),transparent),
+radial-gradient(2px 2px at 85% 15%,rgba(119,199,230,.25),transparent),
+radial-gradient(2px 2px at 50% 80%,rgba(119,199,230,.15),transparent),
+radial-gradient(2px 2px at 75% 65%,rgba(234,33,46,.15),transparent);
+animation:twinkle 4s ease-in-out infinite alternate;pointer-events:none}
+@keyframes twinkle{0%{opacity:.4}100%{opacity:1}}
+
+.sig-display{text-align:center;margin-bottom:20px;z-index:1;position:relative}
+.sig-count{font-family:'Orbitron',sans-serif;font-size:2.4rem;font-weight:900;
+color:var(--white);line-height:1.1;text-shadow:0 0 20px rgba(119,199,230,.3);transition:transform .1s ease}
+.sig-count.pop{transform:scale(1.05)}
+.sig-label{font-size:.85rem;color:var(--lblue);margin-top:2px;font-weight:300}
+.sps-txt{font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--mblue);margin-top:4px}
+
+.tower-area{position:relative;z-index:1;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;width:220px;height:300px}
+.tower-overlay{position:absolute;inset:0;z-index:2;border-radius:12px}
+.tower-svg{transition:transform .1s cubic-bezier(.2,.8,.2,1);transform-origin:bottom center;width:100%;height:100%}
+.tower-area:active .tower-svg{transform:scale(.96) translateY(2px)}
+
+.stage-badge{margin-top:16px;z-index:1;font-size:.6rem;color:var(--mblue);
+font-family:'Orbitron',sans-serif;text-transform:uppercase;letter-spacing:2px;
+padding:4px 14px;border:1px solid var(--mblue);border-radius:20px;
+background:rgba(16,69,134,.3);text-align:center}
+.click-info{margin-top:14px;z-index:1;font-size:.75rem;color:var(--mblue)}
+.click-info span{color:var(--lblue);font-family:'Orbitron',sans-serif;font-weight:700}
+
+.ch-bar{z-index:1;margin-bottom:8px;min-height:0}
+.ch-tag{display:inline-block;margin:2px;padding:3px 8px;background:rgba(234,33,46,.15);
+border:1px solid rgba(234,33,46,.4);border-radius:4px;font-size:.55rem;
+font-family:'Orbitron',sans-serif;color:var(--red)}
+
+.fnum{position:absolute;font-family:'Orbitron',sans-serif;font-weight:700;
+color:var(--red);pointer-events:none;white-space:nowrap;
+text-shadow:0 0 10px rgba(234,33,46,.8),0 2px 4px rgba(0,0,0,.7);
+animation:fUp .8s cubic-bezier(.2,.8,.2,1) forwards;z-index:50}
+@keyframes fUp{0%{transform:translateY(0) scale(.6);opacity:0}
+20%{transform:translateY(-8px) scale(1.2);opacity:1}
+80%{transform:translateY(-50px) scale(1);opacity:.9}
+100%{transform:translateY(-70px) scale(.85);opacity:0}}
+.shock{position:absolute;border-radius:50%;pointer-events:none;
+border:2px solid rgba(234,33,46,.5);animation:sEx .45s cubic-bezier(.1,.8,.2,1) forwards;z-index:50}
+@keyframes sEx{0%{width:10px;height:10px;opacity:.8;transform:translate(-50%,-50%)}
+100%{width:140px;height:140px;opacity:0;transform:translate(-50%,-50%)}}
+.burst{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;
+box-shadow:0 0 6px currentColor;animation:bFl .5s cubic-bezier(.15,.8,.3,1) forwards;z-index:50}
+@keyframes bFl{0%{transform:translate(0,0) scale(1.2);opacity:1}
+100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.glow{position:absolute;border-radius:50%;pointer-events:none;
+background:radial-gradient(circle,rgba(234,33,46,.35) 0%,transparent 70%);
+animation:gF .25s ease-out forwards;z-index:50}
+@keyframes gF{0%{width:20px;height:20px;opacity:.8;transform:translate(-50%,-50%)}
+100%{width:80px;height:80px;opacity:0;transform:translate(-50%,-50%)}}
+
+.shop{background:var(--bg2);border-left:2px solid var(--dblue);overflow-y:auto;
+max-height:calc(100vh - 52px);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.shop-tabs{display:flex;border-bottom:2px solid var(--dblue);position:sticky;
+top:0;background:var(--bg2);z-index:10;flex-wrap:wrap}
+.stab{flex:1;min-width:55px;padding:9px 4px;text-align:center;cursor:pointer;
+font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:700;
+text-transform:uppercase;letter-spacing:.5px;color:var(--mblue);
+border-bottom:2px solid transparent;transition:all .2s;
+background:none;border-top:none;border-left:none;border-right:none}
+.stab:hover{color:var(--white)}
+.stab.active{color:var(--lblue);border-bottom-color:var(--lblue)}
+.tcont{display:none;padding:12px}
+.tcont.active{display:block}
+.brow{display:flex;gap:4px;margin-bottom:8px;justify-content:center;flex-wrap:wrap}
+.bbtn{font-family:'Orbitron',sans-serif;font-size:.65rem;padding:4px 10px;
+border:1px solid var(--border);background:var(--bg4);color:var(--mblue);
+border-radius:5px;cursor:pointer;transition:all .2s}
+.bbtn.active{border-color:var(--lblue);color:var(--lblue);background:rgba(119,199,230,.08)}
+
+.card{background:var(--bg4);border:1px solid var(--border);border-radius:8px;
+padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;
+cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.card:hover{background:var(--bg5);border-color:var(--mblue);transform:translateX(2px)}
+.card.aff{border-color:rgba(119,199,230,.3)}
+.card.aff:hover{border-color:var(--lblue);box-shadow:0 0 12px rgba(119,199,230,.08)}
+.card.lock{opacity:.3;pointer-events:none}
+.cicon{width:36px;height:36px;background:linear-gradient(135deg,var(--dblue),var(--bg));
+border-radius:7px;display:flex;align-items:center;justify-content:center;
+font-size:1.15rem;flex-shrink:0;border:1px solid var(--border)}
+.cinfo{flex:1;min-width:0}
+.cname{font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;color:var(--white);margin-bottom:1px}
+.cdesc{font-size:.6rem;color:var(--mblue);margin-bottom:2px}
+.csub{font-size:.6rem;color:var(--lblue)}
+.cright{text-align:right;flex-shrink:0}
+.ccost{font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;color:var(--white)}
+.ccost.no{color:var(--red)}
+.ccount{font-size:.58rem;color:var(--mblue);margin-top:1px}
+
+.ucard.aff{border-color:rgba(234,33,46,.4)}
+.ucard.aff:hover{border-color:var(--red);box-shadow:0 0 12px rgba(234,33,46,.1)}
+.ucard.done{opacity:.35;pointer-events:none;border-color:var(--lblue)}
+.ucost{font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;color:var(--white)}
+.ucost.no{color:var(--red)}
+
+.achcard.unl{border-color:rgba(234,33,46,.35);background:rgba(234,33,46,.03)}
+.achcard.lock{opacity:.25}
+.achicon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;
+justify-content:center;font-size:1rem;flex-shrink:0;
+background:linear-gradient(135deg,#1a0a10,#0a0508);border:1px solid var(--border)}
+.achcard.unl .achicon{background:linear-gradient(135deg,#2a1015,#1a0810);border-color:rgba(234,33,46,.3)}
+.achname{font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;color:var(--red);margin-bottom:1px}
+.achdesc{font-size:.56rem;color:var(--mblue)}
+
+.seclbl{font-family:'Orbitron',sans-serif;font-size:.56rem;color:var(--mblue);
+text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;padding-bottom:3px;
+border-bottom:1px solid var(--border)}
+
+/* Progress bar for challenges */
+.pbar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px}
+.pfill{height:100%;background:var(--red);border-radius:3px;transition:width .3s ease}
+.pfill.done{background:var(--lblue)}
+.ptxt{font-size:.55rem;color:var(--mblue);margin-top:3px;font-family:'Orbitron',sans-serif}
+
+.psec{text-align:center;padding:18px 12px;margin-bottom:12px;
+background:var(--bg4);border:1px solid var(--border);border-radius:8px}
+.psec h3{font-family:'Orbitron',sans-serif;font-size:.9rem;margin-bottom:6px;color:var(--white)}
+.psec .rd{color:var(--red)}
+.psec .bl{color:var(--lblue)}
+.psec p{font-size:.68rem;color:var(--mblue);margin-bottom:10px;line-height:1.4}
+.pgain{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;margin:8px 0;color:var(--white)}
+.pbtn{font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;padding:9px 20px;
+border:2px solid;border-radius:7px;cursor:pointer;transition:all .3s;
+text-transform:uppercase;letter-spacing:1px;margin:4px;background:transparent}
+.pbtn.red{border-color:var(--red);color:var(--red)}
+.pbtn.red:hover{background:rgba(234,33,46,.2);box-shadow:0 0 15px rgba(234,33,46,.12);transform:scale(1.02)}
+.pbtn.blue{border-color:var(--lblue);color:var(--lblue)}
+.pbtn.blue:hover{background:rgba(119,199,230,.15);box-shadow:0 0 15px rgba(119,199,230,.1);transform:scale(1.02)}
+.pbtn:disabled{opacity:.25;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+.chcard{background:var(--bg4);border:1px solid var(--border);border-radius:8px;
+padding:10px;margin-bottom:6px;cursor:pointer;transition:all .2s}
+.chcard:hover{border-color:var(--mblue);transform:translateX(2px)}
+.chcard.active{border-color:var(--red);background:rgba(234,33,46,.06)}
+.chcard.done{border-color:var(--lblue);opacity:.55;pointer-events:none}
+.chnm{font-family:'Orbitron',sans-serif;font-size:.7rem;font-weight:700;color:var(--white);margin-bottom:3px}
+.chdesc{font-size:.6rem;color:var(--mblue);margin-bottom:3px}
+.chreward{font-size:.58rem;color:var(--lblue)}
+
+.autorow{display:flex;align-items:center;justify-content:space-between;padding:10px;margin-bottom:6px;
+background:var(--bg4);border:1px solid var(--border);border-radius:8px}
+.autolbl{font-family:'Orbitron',sans-serif;font-size:.66rem;color:var(--white)}
+.autodsc{font-size:.58rem;color:var(--mblue);margin-top:2px}
+.tgl{width:42px;height:22px;border-radius:11px;background:var(--border);cursor:pointer;
+position:relative;transition:background .2s;flex-shrink:0}
+.tgl.on{background:var(--lblue)}
+.tgl::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;
+background:var(--white);top:2px;left:2px;transition:transform .2s}
+.tgl.on::after{transform:translateX(20px)}
+
+.srow{display:flex;justify-content:space-between;padding:6px 0;
+border-bottom:1px solid rgba(255,255,255,.04);font-size:.7rem}
+.slbl{color:var(--mblue)}
+.sval{font-family:'Orbitron',sans-serif;font-size:.62rem;color:var(--lblue);font-weight:700}
+
+.golden{position:absolute;font-size:1.5rem;cursor:pointer;z-index:200;
+animation:gFl 6s ease-in-out forwards;filter:drop-shadow(0 0 12px rgba(234,33,46,.6));transition:transform .15s}
+.golden:hover{transform:scale(1.2)}
+@keyframes gFl{0%{opacity:0;transform:scale(.5)}10%{opacity:1;transform:scale(1)}
+90%{opacity:1}100%{opacity:0;transform:scale(.5)}}
+
+.notif{position:fixed;top:65px;right:14px;background:var(--bg4);border:1px solid var(--lblue);
+border-radius:8px;padding:9px 14px;z-index:1000;max-width:280px;
+box-shadow:0 8px 25px rgba(0,0,0,.5);animation:nIn .4s ease-out,nOut .5s ease-in 2.5s forwards}
+@keyframes nIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes nOut{to{opacity:0;transform:translateY(-15px)}}
+.ntitle{font-family:'Orbitron',sans-serif;font-size:.66rem;color:var(--lblue);margin-bottom:2px}
+.ntext{font-size:.62rem;color:var(--mblue)}
+
+@media(max-width:850px){
+.game{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+.click-panel{min-height:40vh;padding:20px 12px}
+.shop{max-height:none;border-left:none;border-top:2px solid var(--dblue)}
+.sig-count{font-size:1.6rem}
+.header{padding:8px 12px;flex-wrap:wrap;gap:6px}
+.header-title{font-size:1.1rem;width:100%;text-align:center}
+.header-stats{width:100%;justify-content:center}
+.h-val{font-size:.8rem}
+.tower-area{width:180px;height:250px}
+.stab{font-size:.5rem;padding:7px 2px}
+.card{padding:8px;margin-bottom:5px}
+.cicon{width:32px;height:32px;font-size:1rem}
+.cname{font-size:.62rem}
+}
+@media(max-width:480px){
+.click-panel{min-height:35vh;padding:15px 8px}
+.sig-count{font-size:1.3rem}
+.tower-area{width:150px;height:210px}
+.header-title{font-size:.95rem}
+.h-val{font-size:.7rem}
+.stab{font-size:.45rem;padding:6px 1px}
+.card{padding:6px;gap:6px}
+.cicon{width:28px;height:28px;font-size:.85rem}
+.cname{font-size:.58rem}
+.cdesc,.csub{font-size:.52rem}
+.ccost,.ucost{font-size:.6rem}
+.achname{font-size:.55rem}
+.psec{padding:12px 8px}
+.pbtn{padding:7px 14px;font-size:.6rem}
+.pgain{font-size:.9rem}
+.srow{font-size:.62rem}
+.sval{font-size:.55rem}
+.autorow{padding:8px}
+.autolbl{font-size:.6rem}
+.bbtn{padding:3px 8px;font-size:.58rem}
+}
+@media(max-width:360px){
+.click-panel{min-height:30vh}
+.tower-area{width:130px;height:180px}
+.header-stats{gap:8px}
+.h-label{font-size:.5rem}
+.stab{font-size:.4rem;min-width:42px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="header-title">📡 RTRS CLICKER</div>
+<div class="header-stats">
+<div class="h-stat"><div class="h-label">Сигналы</div><div class="h-val" id="hSig">0</div></div>
+<div class="h-stat"><div class="h-label">В сек</div><div class="h-val blue" id="hSps">0</div></div>
+<div class="h-stat" id="fBox" style="display:none"><div class="h-label">Частота</div><div class="h-val" style="color:var(--red)" id="hFreq">0</div></div>
+<div class="h-stat" id="haBox" style="display:none"><div class="h-label">Гармоники</div><div class="h-val blue" id="hHarm">0</div></div>
+</div>
+</div>
+
+<div class="game">
+<div class="click-panel" id="panel">
+<div class="sig-display">
+<div class="sig-count" id="sCount">0</div>
+<div class="sig-label">📡 сигналов</div>
+<div class="sps-txt" id="spsTxt">0 сигналов/сек</div>
+</div>
+<div class="ch-bar" id="chBar"></div>
+<div class="tower-area" id="towerArea">
+<div class="tower-overlay" id="clickOverlay"></div>
+<div id="towerSVG"></div>
+</div>
+<div class="stage-badge" id="stageBadge">Стадия: Антенна</div>
+<div class="click-info">Клик: <span id="cpVal">2</span> сигнала</div>
+</div>
+
+<div class="shop">
+<div class="shop-tabs">
+<button class="stab active" onclick="openTab('b')">🏗️ Здания</button>
+<button class="stab" onclick="openTab('u')">⚡ Улучшения</button>
+<button class="stab" onclick="openTab('c')">🔥 Челленджи</button>
+<button class="stab" onclick="openTab('a')">🏆 Достижения</button>
+<button class="stab" onclick="openTab('p')">🌌 Престиж</button>
+<button class="stab" onclick="openTab('m')">🔧 Авто</button>
+<button class="stab" onclick="openTab('s')">📊 Статы</button>
+</div>
+<div class="tcont active" id="tb"><div class="brow" id="buyRow"></div><div id="bList"></div></div>
+<div class="tcont" id="tu"><div id="uList"></div></div>
+<div class="tcont" id="tc"><div id="cList"></div></div>
+<div class="tcont" id="ta"><div id="aList"></div></div>
+<div class="tcont" id="tp"><div id="pList"></div></div>
+<div class="tcont" id="tm"><div id="mList"></div></div>
+<div class="tcont" id="ts"><div id="stList"></div></div>
+</div>
+</div>
+
+<script>
+let G={sig:0,tot:0,totAll:0,clicks:0,freq:0,harm:0,buy:1,
+bld:{},upg:{},ach:{},ch:{},chDone:{},chStart:{},
+autoB:false,autoU:false,
+start:Date.now(),last:Date.now()};
+
+const BLD=[
+{id:'ant',name:'Антенна',ic:'📻',desc:'Базовая FM-антенна',cost:15,sps:1,cm:1.15},
+{id:'twr',name:'Радиовышка',ic:'🗼',desc:'Стальная вышка',cost:100,sps:5,cm:1.15},
+{id:'mast',name:'Радиомачта',ic:'📡',desc:'Направленные антенны',cost:500,sps:25,cm:1.15},
+{id:'rep',name:'Ретранслятор',ic:'🔁',desc:'Повторяет сигнал',cost:3e3,sps:120,cm:1.15},
+{id:'sta',name:'Радиостанция',ic:'🎙️',desc:'Передатчик 50 кВт',cost:18e3,sps:650,cm:1.15},
+{id:'tv',name:'Телевышка',ic:'📺',desc:'HD покрытие',cost:120e3,sps:3500,cm:1.15},
+{id:'sat',name:'Спутниковая',ic:'🛰️',desc:'Орбитальная связь',cost:900e3,sps:18e3,cm:1.15},
+{id:'obs',name:'Обсерватория',ic:'🔭',desc:'Космические волны',cost:12e6,sps:95e3,cm:1.15},
+{id:'pha',name:'Фаз. решётка',ic:'📶',desc:'Управление лучом',cost:150e6,sps:520e3,cm:1.15},
+{id:'qnt',name:'Квантовый',ic:'⚛️',desc:'Запутанность',cost:2e9,sps:3.2e6,cm:1.15}
+];
+
+const UPG=[
+{id:'c1',nm:'Кабель',ic:'🔌',desc:'Клик ×2',cost:200,tp:'clk',m:2,req:()=>G.tot>=100},
+{id:'c2',nm:'Усилитель',ic:'📈',desc:'Клик ×2',cost:1500,tp:'clk',m:2,req:()=>G.tot>=800},
+{id:'c3',nm:'Процессор',ic:'💻',desc:'Клик ×3',cost:15e3,tp:'clk',m:3,req:()=>G.tot>=10e3},
+{id:'c4',nm:'Нейросеть',ic:'🧠',desc:'Клик ×5',cost:150e3,tp:'clk',m:5,req:()=>G.tot>=100e3},
+{id:'c5',nm:'Квант. клик',ic:'⚛️',desc:'Клик ×10',cost:3e6,tp:'clk',m:10,req:()=>G.tot>=2e6},
+{id:'a1',nm:'УНЧ',ic:'📻',desc:'Антенны ×2',cost:300,tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=5},
+{id:'a2',nm:'Тюнер',ic:'📻',desc:'Антенны ×2',cost:5e3,tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=25},
+{id:'t1',nm:'Решётка',ic:'🗼',desc:'Вышки ×2',cost:2e3,tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=5},
+{id:'t2',nm:'Антилёд',ic:'🗼',desc:'Вышки ×2',cost:20e3,tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=25},
+{id:'m1',nm:'Элементы',ic:'📡',desc:'Мачты ×2',cost:10e3,tp:'bld',b:'mast',m:2,req:()=>bc('mast')>=5},
+{id:'r1',nm:'Релейная',ic:'🔁',desc:'Ретрансляторы ×2',cost:60e3,tp:'bld',b:'rep',m:2,req:()=>bc('rep')>=5},
+{id:'s1',nm:'100кВт',ic:'🎙️',desc:'Станции ×2',cost:300e3,tp:'bld',b:'sta',m:2,req:()=>bc('sta')>=5},
+{id:'g1',nm:'Усилитель',ic:'📶',desc:'Всё ×2',cost:100e3,tp:'glb',m:2,req:()=>G.tot>=50e3},
+{id:'g2',nm:'Модуляция',ic:'📶',desc:'Всё ×2',cost:1.5e6,tp:'glb',m:2,req:()=>G.tot>=500e3},
+{id:'g3',nm:'Оптоволокно',ic:'📶',desc:'Всё ×3',cost:80e6,tp:'glb',m:3,req:()=>G.tot>=30e6},
+{id:'g4',nm:'Спутники',ic:'📶',desc:'Всё ×5',cost:8e9,tp:'glb',m:5,req:()=>G.tot>=2e9}
+];
+
+const ACH=[
+{id:'ac1',nm:'Первый сигнал',ic:'👆',desc:'Кликните 1 раз',ck:()=>G.clicks>=1},
+{id:'ac100',nm:'Оператор',ic:'👆',desc:'100 кликов',ck:()=>G.clicks>=100},
+{id:'ac1k',nm:'Мастер клика',ic:'👆',desc:'1000 кликов',ck:()=>G.clicks>=1000},
+{id:'as100',nm:'100',ic:'📊',desc:'100 сигналов',ck:()=>G.tot>=100},
+{id:'as10k',nm:'10К',ic:'📊',desc:'10 000 сигналов',ck:()=>G.tot>=10e3},
+{id:'as1m',nm:'Миллион',ic:'📊',desc:'1 000 000',ck:()=>G.tot>=1e6},
+{id:'as1b',nm:'Миллиард',ic:'📊',desc:'1 000 000 000',ck:()=>G.tot>=1e9},
+{id:'ab10',nm:'Строитель',ic:'🏗️',desc:'10 зданий',ck:()=>tB()>=10},
+{id:'ab50',nm:'Застройщик',ic:'🏗️',desc:'50 зданий',ck:()=>tB()>=50},
+{id:'ab100',nm:'Архитектор',ic:'🏗️',desc:'100 зданий',ck:()=>tB()>=100},
+{id:'ap100',nm:'100/с',ic:'⚡',desc:'100/сек',ck:()=>G.sps>=100},
+{id:'ap10k',nm:'10К/с',ic:'⚡',desc:'10 000/сек',ck:()=>G.sps>=10e3},
+{id:'af1',nm:'Резонанс',ic:'🌌',desc:'Первый престиж',ck:()=>G.freq>=1},
+{id:'ah1',nm:'Гармония',ic:'🎵',desc:'Мега-престиж',ck:()=>G.harm>=1},
+{id:'aq',nm:'Квант. эпоха',ic:'⚛️',desc:'Купите квантовый',ck:()=>bc('qnt')>=1}
+];
+
+const CH=[
+{id:'cc1',nm:'Только клики',desc:'SPS=0, клик ×10',mod:{spsM:0,clkM:10},
+rw:'pc1',rwD:'+5% к клику навсегда',req:()=>G.tot>=100e3,dur:60},
+{id:'cc2',nm:'Сложный эфир',desc:'Производство -50%',mod:{prodM:.5},
+rw:'pc2',rwD:'+10% к производству навсегда',req:()=>G.tot>=1e6,dur:60},
+{id:'cc3',nm:'Золотой эфир',desc:'Здания ×3 дороже, кристаллов ×2',mod:{costM:3,freqM:2},
+rw:'pc3',rwD:'Здания -10% навсегда',req:()=>G.tot>=10e6,dur:60}
+];
+
+const SNAMES=['Антенна','Радиовышка','Телебашня','Спутниковая','Квантовая'];
+function gStage(){if(G.totAll>=1e12)return 4;if(G.totAll>=1e9)return 3;if(G.totAll>=1e6)return 2;if(G.totAll>=1e4)return 1;return 0}
+
+function bc(id){return G.bld[id]||0}
+function tB(){let t=0;for(let k in G.bld)t+=G.bld[k];return t}
+function bC(b,n){return Math.ceil(b.cost*Math.pow(b.cm,n))}
+function bBC(b,n,a){let t=0;for(let i=0;i<a;i++)t+=bC(b,n+i);return t}
+function bBA(b,n){let a=0,t=0;while(t+bC(b,n+a)<=G.sig&&a<G.buy){t+=bC(b,n+a);a++}return a}
+
+function cMod(){
+let m={spsM:1,clkM:1,prodM:1,costM:1,freqM:1};
+for(let c of CH)if(G.chStart[c.id]){
+if(c.mod.spsM!==undefined)m.spsM*=c.mod.spsM;
+if(c.mod.clkM!==undefined)m.clkM*=c.mod.clkM;
+if(c.mod.prodM!==undefined)m.prodM*=c.mod.prodM;
+if(c.mod.costM!==undefined)m.costM*=c.mod.costM;
+if(c.mod.freqM!==undefined)m.freqM*=c.mod.freqM;
+}return m;
+}
+
+function bMult(id){
+let m=1;
+for(let u of UPG)if(G.upg[u.id]&&u.tp==='bld'&&u.b===id)m*=u.m;
+for(let u of UPG)if(G.upg[u.id]&&u.tp==='glb')m*=u.m;
+m*=(1+G.freq*.05)*(1+G.harm*.1);
+m*=cMod().prodM;
+return m;
+}
+function bSps(id){let b=BLD.find(x=>x.id===id);return b?b.sps*bMult(id)*bc(id):0}
+function tSps(){return BLD.reduce((s,b)=>s+bSps(b.id),0)*cMod().spsM}
+function cPow(){
+let p=2;
+for(let u of UPG)if(G.upg[u.id]&&u.tp==='clk')p*=u.m;
+p*=cMod().clkM;
+p*=(1+G.freq*.05)*(1+G.harm*.1);
+if(G.chDone.pc1)p*=1.05;
+return p;
+}
+function pGain(){return G.totAll<1e6?0:Math.floor(Math.pow(G.totAll/1e6,.5))}
+function hGain(){return G.freq<1e3?0:Math.floor(Math.pow(G.freq/1e3,.5))}
+
+// Формат: целые числа до 10 000, потом K, M, B...
+function fmt(n){
+if(n==null||isNaN(n))return'0';if(n<0)n=0;
+if(n<1)return n.toFixed(1);
+if(n<1e4)return Math.floor(n).toLocaleString('ru');
+if(n<1e6)return(n/1e3).toFixed(1)+'K';
+if(n<1e9)return(n/1e6).toFixed(2)+'M';
+if(n<1e12)return(n/1e9).toFixed(2)+'B';
+if(n<1e15)return(n/1e12).toFixed(2)+'T';
+return n.toExponential(2);
+}
+function fmtT(ms){
+let s=Math.floor(ms/1e3),m=Math.floor(s/60);s%=60;
+let h=Math.floor(m/60);m%=60;let d=Math.floor(h/24);h%=24;
+if(d>0)return d+'д '+h+'ч';if(h>0)return h+'ч '+m+'м';if(m>0)return m+'м '+s+'с';return s+'с';
+}
+
+// === TOWER SVG ===
+function tSVG(stage){
+const red='#EA212E',blue='#77C7E6',dk='#104586',mt='#3388BB';
+if(stage===0)return `<svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+<ellipse cx="100" cy="250" rx="60" ry="10" fill="rgba(119,199,230,.12)"/>
+<ellipse cx="100" cy="48" rx="20" ry="6" fill="none" stroke="rgba(119,199,230,.3)" stroke-width="1.5">
+<animate attributeName="rx" values="20;42;20" dur="3s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".5;0;.5" dur="3s" repeatCount="indefinite"/></ellipse>
+<rect x="55" y="240" width="90" height="8" rx="3" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<line x1="75" y1="240" x2="85" y2="75" stroke="${dk}" stroke-width="3"/>
+<line x1="125" y1="240" x2="115" y2="75" stroke="${dk}" stroke-width="3"/>
+<rect x="78" y="71" width="44" height="5" rx="2" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="97" y="18" width="6" height="53" fill="${mt}" rx="1"/>
+<ellipse cx="100" cy="48" rx="18" ry="8" fill="#0a1a30" stroke="${mt}" stroke-width="1.5"/>
+<circle cx="100" cy="20" r="3" fill="${red}"><animate attributeName="opacity" values="1;.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
+<line x1="5" y1="265" x2="195" y2="265" stroke="#0a1520" stroke-width="1"/></svg>`;
+if(stage===1)return `<svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+<ellipse cx="100" cy="250" rx="65" ry="12" fill="rgba(119,199,230,.12)"/>
+<g opacity=".5"><ellipse cx="100" cy="48" rx="20" ry="6" fill="none" stroke="rgba(119,199,230,.3)" stroke-width="1.5">
+<animate attributeName="rx" values="20;45;20" dur="3s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".4;0;.4" dur="3s" repeatCount="indefinite"/></ellipse></g>
+<rect x="50" y="240" width="100" height="10" rx="3" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="62" y="232" width="76" height="8" rx="2" fill="#0d1a30" stroke="${mt}" stroke-width="1"/>
+<line x1="75" y1="232" x2="85" y2="70" stroke="${dk}" stroke-width="3"/>
+<line x1="125" y1="232" x2="115" y2="70" stroke="${dk}" stroke-width="3"/>
+<line x1="75" y1="232" x2="125" y2="212" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="125" y1="232" x2="75" y2="212" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="77" y1="212" x2="123" y2="192" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="123" y1="212" x2="77" y2="192" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="79" y1="192" x2="121" y2="172" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="121" y1="192" x2="79" y2="172" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="81" y1="172" x2="119" y2="152" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="119" y1="172" x2="81" y2="152" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="83" y1="152" x2="117" y2="132" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="117" y1="152" x2="83" y2="132" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="84" y1="132" x2="116" y2="112" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="116" y1="132" x2="84" y2="112" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="85" y1="112" x2="115" y2="95" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="115" y1="112" x2="85" y2="95" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="85" y1="95" x2="115" y2="80" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="115" y1="95" x2="85" y2="80" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="85" y1="80" x2="115" y2="70" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<line x1="115" y1="80" x2="85" y2="70" stroke="rgba(51,136,187,.4)" stroke-width="1.5"/>
+<rect x="78" y="66" width="44" height="5" rx="2" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="97" y="18" width="6" height="48" fill="${mt}" rx="1"/>
+<ellipse cx="100" cy="48" rx="18" ry="8" fill="#0a1a30" stroke="${mt}" stroke-width="1.5"/>
+<circle cx="100" cy="20" r="3" fill="${red}"><animate attributeName="opacity" values="1;.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
+<line x1="78" y1="66" x2="62" y2="56" stroke="${dk}" stroke-width="2"/>
+<circle cx="60" cy="54" r="2.2" fill="${mt}"/>
+<line x1="122" y1="66" x2="138" y2="56" stroke="${dk}" stroke-width="2"/>
+<circle cx="140" cy="54" r="2.2" fill="${mt}"/>
+<line x1="5" y1="265" x2="195" y2="265" stroke="#0a1520" stroke-width="1"/></svg>`;
+if(stage===2)return `<svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+<ellipse cx="100" cy="250" rx="70" ry="14" fill="rgba(234,33,46,.1)"/>
+<g opacity=".5"><ellipse cx="100" cy="45" rx="22" ry="7" fill="none" stroke="rgba(234,33,46,.3)" stroke-width="1.5">
+<animate attributeName="rx" values="22;48;22" dur="2.5s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".4;0;.4" dur="2.5s" repeatCount="indefinite"/></ellipse>
+<ellipse cx="100" cy="45" rx="36" ry="11" fill="none" stroke="rgba(119,199,230,.2)" stroke-width="1">
+<animate attributeName="rx" values="36;62;36" dur="2.5s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".3;0;.3" dur="2.5s" repeatCount="indefinite"/></ellipse></g>
+<rect x="45" y="240" width="110" height="12" rx="3" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="55" y="230" width="90" height="10" rx="2" fill="#0d1a30" stroke="${mt}" stroke-width="1"/>
+<line x1="72" y1="230" x2="84" y2="65" stroke="${dk}" stroke-width="4"/>
+<line x1="128" y1="230" x2="116" y2="65" stroke="${dk}" stroke-width="4"/>
+<line x1="72" y1="230" x2="128" y2="208" stroke="rgba(234,33,46,.2)" stroke-width="1.5"/>
+<line x1="128" y1="230" x2="72" y2="208" stroke="rgba(234,33,46,.2)" stroke-width="1.5"/>
+<line x1="74" y1="208" x2="126" y2="186" stroke="rgba(234,33,46,.15)" stroke-width="1.5"/>
+<line x1="126" y1="208" x2="74" y2="186" stroke="rgba(234,33,46,.15)" stroke-width="1.5"/>
+<line x1="76" y1="186" x2="124" y2="164" stroke="rgba(119,199,230,.15)" stroke-width="1.5"/>
+<line x1="124" y1="186" x2="76" y2="164" stroke="rgba(119,199,230,.15)" stroke-width="1.5"/>
+<line x1="78" y1="164" x2="122" y2="142" stroke="rgba(234,33,46,.12)" stroke-width="1.5"/>
+<line x1="122" y1="164" x2="78" y2="142" stroke="rgba(234,33,46,.12)" stroke-width="1.5"/>
+<line x1="80" y1="142" x2="120" y2="120" stroke="rgba(119,199,230,.12)" stroke-width="1.5"/>
+<line x1="120" y1="142" x2="80" y2="120" stroke="rgba(119,199,230,.12)" stroke-width="1.5"/>
+<line x1="81" y1="120" x2="119" y2="100" stroke="rgba(234,33,46,.1)" stroke-width="1.5"/>
+<line x1="119" y1="120" x2="81" y2="100" stroke="rgba(234,33,46,.1)" stroke-width="1.5"/>
+<line x1="82" y1="100" x2="118" y2="82" stroke="rgba(119,199,230,.1)" stroke-width="1.5"/>
+<line x1="118" y1="100" x2="82" y2="82" stroke="rgba(119,199,230,.1)" stroke-width="1.5"/>
+<line x1="83" y1="82" x2="117" y2="72" stroke="rgba(234,33,46,.1)" stroke-width="1.5"/>
+<line x1="117" y1="82" x2="83" y2="72" stroke="rgba(234,33,46,.1)" stroke-width="1.5"/>
+<rect x="70" y="60" width="60" height="6" rx="3" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="96" y="14" width="8" height="46" fill="${mt}" rx="1"/>
+<ellipse cx="85" cy="42" rx="14" ry="7" fill="#0a1a30" stroke="${red}" stroke-width="1.5"/>
+<ellipse cx="115" cy="42" rx="14" ry="7" fill="#0a1a30" stroke="${red}" stroke-width="1.5"/>
+<circle cx="100" cy="16" r="4" fill="${red}"><animate attributeName="opacity" values="1;.3;1" dur="1.2s" repeatCount="indefinite"/>
+<animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/></circle>
+<line x1="70" y1="60" x2="52" y2="48" stroke="${dk}" stroke-width="2.5"/>
+<circle cx="50" cy="46" r="3" fill="${mt}"/>
+<line x1="130" y1="60" x2="148" y2="48" stroke="${dk}" stroke-width="2.5"/>
+<circle cx="150" cy="46" r="3" fill="${mt}"/>
+<line x1="70" y1="60" x2="55" y2="25" stroke="rgba(51,136,187,.5)" stroke-width="1.5"/>
+<circle cx="53" cy="23" r="2.5" fill="rgba(119,199,230,.5)"/>
+<line x1="130" y1="60" x2="145" y2="25" stroke="rgba(51,136,187,.5)" stroke-width="1.5"/>
+<circle cx="147" cy="23" r="2.5" fill="rgba(119,199,230,.5)"/>
+<line x1="4" y1="268" x2="196" y2="268" stroke="#0a1520" stroke-width="1"/></svg>`;
+if(stage===3)return `<svg viewBox="0 0 220 290" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+<ellipse cx="110" cy="260" rx="80" ry="16" fill="rgba(234,33,46,.12)"/>
+<g opacity=".6"><ellipse cx="110" cy="40" rx="18" ry="6" fill="none" stroke="rgba(234,33,46,.4)" stroke-width="1.5">
+<animate attributeName="rx" values="18;50;18" dur="2s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".5;0;.5" dur="2s" repeatCount="indefinite"/></ellipse>
+<ellipse cx="110" cy="40" rx="32" ry="10" fill="none" stroke="rgba(119,199,230,.3)" stroke-width="1">
+<animate attributeName="rx" values="32;62;32" dur="2s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".3;0;.3" dur="2s" repeatCount="indefinite"/></ellipse></g>
+<rect x="40" y="250" width="140" height="14" rx="4" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="55" y="240" width="110" height="11" rx="3" fill="#0d1a30" stroke="${mt}" stroke-width="1"/>
+<line x1="70" y1="240" x2="85" y2="60" stroke="${dk}" stroke-width="5"/>
+<line x1="150" y1="240" x2="135" y2="60" stroke="${dk}" stroke-width="5"/>
+<line x1="70" y1="240" x2="150" y2="216" stroke="rgba(234,33,46,.2)" stroke-width="2"/>
+<line x1="150" y1="240" x2="70" y2="216" stroke="rgba(234,33,46,.2)" stroke-width="2"/>
+<line x1="74" y1="216" x2="146" y2="192" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
+<line x1="146" y1="216" x2="74" y2="192" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
+<line x1="77" y1="192" x2="143" y2="168" stroke="rgba(119,199,230,.15)" stroke-width="2"/>
+<line x1="143" y1="192" x2="77" y2="168" stroke="rgba(119,199,230,.15)" stroke-width="2"/>
+<line x1="80" y1="168" x2="140" y2="144" stroke="rgba(234,33,46,.12)" stroke-width="2"/>
+<line x1="140" y1="168" x2="80" y2="144" stroke="rgba(234,33,46,.12)" stroke-width="2"/>
+<line x1="82" y1="144" x2="138" y2="120" stroke="rgba(119,199,230,.12)" stroke-width="2"/>
+<line x1="138" y1="144" x2="82" y2="120" stroke="rgba(119,199,230,.12)" stroke-width="2"/>
+<line x1="84" y1="120" x2="136" y2="96" stroke="rgba(234,33,46,.1)" stroke-width="2"/>
+<line x1="136" y1="120" x2="84" y2="96" stroke="rgba(234,33,46,.1)" stroke-width="2"/>
+<line x1="85" y1="96" x2="135" y2="78" stroke="rgba(119,199,230,.1)" stroke-width="2"/>
+<line x1="135" y1="96" x2="85" y2="78" stroke="rgba(119,199,230,.1)" stroke-width="2"/>
+<rect x="65" y="55" width="90" height="6" rx="3" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<ellipse cx="90" cy="40" rx="14" ry="7" fill="#0a1a30" stroke="${red}" stroke-width="1.5"/>
+<ellipse cx="130" cy="40" rx="14" ry="7" fill="#0a1a30" stroke="${red}" stroke-width="1.5"/>
+<rect x="106" y="14" width="8" height="42" fill="${mt}" rx="1"/>
+<circle cx="110" cy="16" r="4" fill="${red}"><animate attributeName="r" values="3;6;3" dur="1s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values="1;.4;1" dur="1s" repeatCount="indefinite"/></circle>
+<line x1="65" y1="55" x2="40" y2="35" stroke="${dk}" stroke-width="2.5"/>
+<circle cx="37" cy="33" r="4" fill="rgba(234,33,46,.4)"><animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/></circle>
+<line x1="155" y1="55" x2="180" y2="35" stroke="${dk}" stroke-width="2.5"/>
+<circle cx="183" cy="33" r="4" fill="rgba(234,33,46,.4)"><animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/></circle>
+<line x1="65" y1="55" x2="45" y2="10" stroke="rgba(119,199,230,.4)" stroke-width="1.5"/>
+<circle cx="43" cy="8" r="3" fill="rgba(119,199,230,.4)"/>
+<line x1="155" y1="55" x2="175" y2="10" stroke="rgba(119,199,230,.4)" stroke-width="1.5"/>
+<circle cx="177" cy="8" r="3" fill="rgba(119,199,230,.4)"/>
+<line x1="2" y1="278" x2="218" y2="278" stroke="#0a1520" stroke-width="1"/></svg>`;
+return `<svg viewBox="0 0 220 290" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+<ellipse cx="110" cy="260" rx="85" ry="18" fill="rgba(234,33,46,.12)"/>
+<g opacity=".7"><ellipse cx="110" cy="38" rx="16" ry="5" fill="none" stroke="rgba(234,33,46,.5)" stroke-width="1.5">
+<animate attributeName="rx" values="16;50;16" dur="1.5s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".6;0;.6" dur="1.5s" repeatCount="indefinite"/></ellipse>
+<ellipse cx="110" cy="38" rx="32" ry="9" fill="none" stroke="rgba(119,199,230,.35)" stroke-width="1">
+<animate attributeName="rx" values="32;65;32" dur="1.5s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".4;0;.4" dur="1.5s" repeatCount="indefinite"/></ellipse>
+<ellipse cx="110" cy="38" rx="50" ry="13" fill="none" stroke="rgba(234,33,46,.2)" stroke-width="1">
+<animate attributeName="rx" values="50;80;50" dur="2s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".3;0;.3" dur="2s" repeatCount="indefinite"/></ellipse></g>
+<rect x="35" y="250" width="150" height="16" rx="5" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<rect x="50" y="238" width="120" height="12" rx="3" fill="#0d1a30" stroke="${mt}" stroke-width="1"/>
+<line x1="68" y1="238" x2="85" y2="55" stroke="${dk}" stroke-width="6"/>
+<line x1="152" y1="238" x2="135" y2="55" stroke="${dk}" stroke-width="6"/>
+<line x1="68" y1="238" x2="152" y2="214" stroke="rgba(234,33,46,.2)" stroke-width="2"/>
+<line x1="152" y1="238" x2="68" y2="214" stroke="rgba(234,33,46,.2)" stroke-width="2"/>
+<line x1="72" y1="214" x2="148" y2="190" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
+<line x1="148" y1="214" x2="72" y2="190" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
+<line x1="75" y1="190" x2="145" y2="166" stroke="rgba(119,199,230,.15)" stroke-width="2"/>
+<line x1="145" y1="190" x2="75" y2="166" stroke="rgba(119,199,230,.15)" stroke-width="2"/>
+<line x1="78" y1="166" x2="142" y2="142" stroke="rgba(234,33,46,.12)" stroke-width="2"/>
+<line x1="142" y1="166" x2="78" y2="142" stroke="rgba(234,33,46,.12)" stroke-width="2"/>
+<line x1="80" y1="142" x2="140" y2="118" stroke="rgba(119,199,230,.12)" stroke-width="2"/>
+<line x1="140" y1="142" x2="80" y2="118" stroke="rgba(119,199,230,.12)" stroke-width="2"/>
+<line x1="82" y1="118" x2="138" y2="94" stroke="rgba(234,33,46,.1)" stroke-width="2"/>
+<line x1="138" y1="118" x2="82" y2="94" stroke="rgba(234,33,46,.1)" stroke-width="2"/>
+<line x1="84" y1="94" x2="136" y2="74" stroke="rgba(119,199,230,.1)" stroke-width="2"/>
+<line x1="136" y1="94" x2="84" y2="74" stroke="rgba(119,199,230,.1)" stroke-width="2"/>
+<rect x="62" y="50" width="96" height="7" rx="3" fill="${dk}" stroke="${mt}" stroke-width="1"/>
+<circle cx="110" cy="38" r="16" fill="none" stroke="${red}" stroke-width="2" opacity=".8">
+<animate attributeName="r" values="14;18;14" dur="2s" repeatCount="indefinite"/>
+<animate attributeName="opacity" values=".8;.3;.8" dur="2s" repeatCount="indefinite"/></circle>
+<circle cx="110" cy="38" r="8" fill="${red}" opacity=".6">
+<animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite"/></circle>
+<circle cx="110" cy="38" r="3" fill="#FDFDFD">
+<animate attributeName="opacity" values="1;.4;1" dur=".8s" repeatCount="indefinite"/></circle>
+<line x1="62" y1="50" x2="35" y2="30" stroke="${red}" stroke-width="2" opacity=".5"/>
+<circle cx="32" cy="28" r="4" fill="rgba(234,33,46,.4)"><animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/></circle>
+<line x1="158" y1="50" x2="185" y2="30" stroke="${red}" stroke-width="2" opacity=".5"/>
+<circle cx="188" cy="28" r="4" fill="rgba(234,33,46,.4)"><animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/></circle>
+<line x1="62" y1="50" x2="40" y2="8" stroke="rgba(119,199,230,.4)" stroke-width="1.5"/>
+<circle cx="38" cy="6" r="3" fill="rgba(119,199,230,.4)"/>
+<line x1="158" y1="50" x2="180" y2="8" stroke="rgba(119,199,230,.4)" stroke-width="1.5"/>
+<circle cx="182" cy="6" r="3" fill="rgba(119,199,230,.4)"/>
+<line x1="2" y1="280" x2="218" y2="280" stroke="#0a1520" stroke-width="1"/></svg>`;
+}
+
+// === UI ===
+function openTab(t){
+document.querySelectorAll('.stab').forEach(e=>e.classList.remove('active'));
+document.querySelectorAll('.tcont').forEach(e=>e.classList.remove('active'));
+event.target.classList.add('active');
+document.getElementById('t'+t).classList.add('active');
+}
+function rBuyRow(){
+let h='';
+for(let x of[1,10,100])h+='<button class="bbtn'+(G.buy===x?' active':'')+'" onclick="setBuy('+x+')">x'+x+'</button>';
+document.getElementById('buyRow').innerHTML=h;
+}
+function setBuy(n){G.buy=n;rBuyRow();rBld()}
+
+function rBld(){
+let c=document.getElementById('bList'),h='';
+let cm=cMod();
+for(let b of BLD){
+let cnt=bc(b.id),cost=bBC(b,cnt,G.buy);
+let aff=G.sig>=cost,amt=bBA(b,cnt);
+if(amt>0)cost=bBC(b,cnt,amt);
+let dc=Math.ceil(cost*(cm.costM||1));
+let sps=b.sps*bMult(b.id),tot=bSps(b.id);
+let locked=cnt===0&&G.tot<b.cost*.4;
+h+='<div class="card'+(aff?' aff':'')+(locked?' lock':'')+'" onclick="buyB(\''+b.id+'\')">';
+h+='<div class="cicon">'+b.ic+'</div><div class="cinfo">';
+h+='<div class="cname">'+b.name+'</div><div class="cdesc">'+b.desc+'</div>';
+h+='<div class="csub">+'+fmt(sps)+'/с | '+fmt(tot)+'</div></div>';
+h+='<div class="cright"><div class="ccost'+(aff?'':' no')+'">'+fmt(dc)+'</div>';
+h+='<div class="ccount">'+cnt+(amt>1&&G.buy>1?' (×'+amt+')':'')+'</div></div></div>';
+}
+c.innerHTML=h;
+}
+
+function rUpg(){
+let c=document.getElementById('uList'),h='',av=0;
+for(let u of UPG){
+if(G.upg[u.id]){h+='<div class="card ucard done"><div class="cicon">'+u.ic+'</div><div class="cinfo"><div class="cname">'+u.nm+' ✓</div><div class="cdesc">'+u.desc+'</div></div></div>';continue}
+if(!u.req())continue;av++;
+let aff=G.sig>=u.cost;
+h+='<div class="card ucard'+(aff?' aff':'')+'" onclick="buyU(\''+u.id+'\')">';
+h+='<div class="cicon">'+u.ic+'</div><div class="cinfo"><div class="cname">'+u.nm+'</div><div class="cdesc">'+u.desc+'</div><div class="ucost'+(aff?'':' no')+'">'+fmt(u.cost)+'</div></div></div>';
+}
+if(!av)h='<div style="text-align:center;color:var(--mblue);padding:25px;font-size:.7rem">Нет улучшений</div>';
+c.innerHTML=h;
+}
+
+function rAch(){
+let c=document.getElementById('aList'),un=0;
+let h='<div class="seclbl">Разблокировано: 0/'+ACH.length+'</div>';
+for(let a of ACH){
+let u=G.ach[a.id];if(u)un++;
+h+='<div class="card achcard'+(u?' unl':' lock')+'">';
+h+='<div class="achicon">'+(u?a.ic:'❓')+'</div><div class="cinfo">';
+h+='<div class="achname">'+(u?a.nm:'???')+'</div><div class="cdesc">'+a.desc+'</div></div></div>';
+}
+h=h.replace('0/',un+'/');c.innerHTML=h;
+}
+
+function rPre(){
+let c=document.getElementById('pList'),h='';
+let fg=pGain(),hg=hGain();
+h+='<div class="psec"><h3>🔴 <span class="rd">Резонанс Частоты</span></h3>';
+h+='<p>Сброс: сигналы + здания → кристаллы частоты (+5% каждый)</p>';
+h+='<div style="font-size:.6rem;color:var(--mblue);margin-bottom:3px">Кристаллов: +'+fmt(fg)+'</div>';
+h+='<div style="font-size:.58rem;color:var(--mblue);margin-bottom:6px">Частота: '+G.freq+' (+'+G.freq*5+'%)</div>';
+h+='<button class="pbtn red" onclick="doPre()" '+(fg<=0?'disabled':'')+'>Резонанс</button></div>';
+h+='<div class="psec"><h3>🔵 <span class="bl">Гармоники</span></h3>';
+h+='<p>Сброс: частота + сигналы + здания → гармоники (+10% ко ВСЕМУ каждая)</p>';
+h+='<div style="font-size:.6rem;color:var(--mblue);margin-bottom:3px">Гармоник: +'+fmt(hg)+'</div>';
+h+='<div style="font-size:.58rem;color:var(--mblue);margin-bottom:6px">Гармоники: '+G.harm+' (+'+G.harm*10+'%)</div>';
+h+='<button class="pbtn blue" onclick="doHarm()" '+(hg<=0?'disabled':'')+'>Гармоники</button>';
+h+='<div style="margin-top:6px;font-size:.55rem;color:var(--mblue)">Нужно 1000 кристаллов</div></div>';
+c.innerHTML=h;
+}
+
+function rChal(){
+let c=document.getElementById('cList'),h='<div class="seclbl">Активные</div>';
+let has=false;
+let now=Date.now();
+for(let ch of CH){
+let ts=G.chStart[ch.id];
+if(ts!==undefined){
+has=true;
+let elapsed=(now-ts)/1000;
+let pct=Math.min((elapsed/ch.dur)*100,100);
+let done=pct>=100;
+let timeLeft=Math.max(ch.dur-elapsed,0);
+h+='<div class="chcard active">';
+h+='<div class="chnm">🔥 '+ch.nm+'</div>';
+h+='<div class="chdesc">'+ch.desc+'</div>';
+h+='<div class="pbar"><div class="pfill'+(done?' done':'')+'" style="width:'+pct+'%"></div></div>';
+h+='<div class="ptxt">'+(done?'✓ Завершается...':Math.ceil(timeLeft)+'с осталось')+' ('+Math.floor(pct)+'%)</div>';
+h+='</div>';
+}
+}
+if(!has)h+='<div style="font-size:.6rem;color:var(--mblue);padding:6px">Нет активных челленджей</div>';
+
+h+='<div class="seclbl" style="margin-top:10px">Доступные челленджи</div>';
+for(let ch of CH){
+let active=G.chStart[ch.id]!==undefined;
+let done=G.chDone[ch.rw];
+let can=!active&&!done&&ch.req();
+h+='<div class="chcard'+(done?' done':'')+
+'"'+(can?' onclick="startCh(\''+ch.id+'\')"':'')+'> ';
+h+='<div class="chnm">'+ch.nm+(active?' 🔥':'')+(done?' ✓':'')+'</div>';
+h+='<div class="chdesc">'+ch.desc+'</div>';
+if(done)h+='<div class="chreward">🎁 '+ch.rwD+' (получено)</div>';
+else h+='<div class="chreward">Награда: '+ch.rwD+'</div>';
+if(!done&&!active)h+='<div style="font-size:.52rem;color:var(--mblue);margin-top:2px">Требование: '+fmt(ch.req.val||0)+' сигналов</div>';
+h+='</div>';
+}
+c.innerHTML=h;
+}
+
+function rAuto(){
+let c=document.getElementById('mList'),h='<div class="seclbl">Автоматизация</div>';
+h+='<div class="autorow"><div><div class="autolbl">🏗️ Авто-здания</div><div class="autodsc">Покупает лучшее по SPS/стоимость</div></div><div class="tgl'+(G.autoB?' on':'')+'" onclick="togA(\'b\')"></div></div>';
+h+='<div class="autorow"><div><div class="autolbl">⚡ Авто-улучшения</div><div class="autodsc">Покупает доступные улучшения</div></div><div class="tgl'+(G.autoU?' on':'')+'" onclick="togA(\'u\')"></div></div>';
+if(G.autoB||G.autoU)h+='<div style="margin-top:8px;font-size:.58rem;color:var(--mblue);padding:6px;background:var(--bg4);border-radius:5px;border:1px solid var(--border)">Работает каждую секунду</div>';
+c.innerHTML=h;
+}
+function togA(t){if(t==='b')G.autoB=!G.autoB;else G.autoU=!G.autoU;rAuto()}
+
+function rStats(){
+document.getElementById('stList').innerHTML=
+'<div class="srow"><span class="slbl">Сигналы</span><span class="sval">'+fmt(G.sig)+'</span></div>'+
+'<div class="srow"><span class="slbl">За всё время</span><span class="sval">'+fmt(G.totAll)+'</span></div>'+
+'<div class="srow"><span class="slbl">В секунду</span><span class="sval">'+fmt(G.sps)+'</span></div>'+
+'<div class="srow"><span class="slbl">Клик</span><span class="sval">'+fmt(cPow())+'</span></div>'+
+'<div class="srow"><span class="slbl">Клики</span><span class="sval">'+G.clicks.toLocaleString('ru')+'</span></div>'+
+'<div class="srow"><span class="slbl">Здания</span><span class="sval">'+tB()+'</span></div>'+
+'<div class="srow"><span class="slbl">Частота</span><span class="sval">'+G.freq+' (+'+G.freq*5+'%)</span></div>'+
+'<div class="srow"><span class="slbl">Гармоники</span><span class="sval">'+G.harm+' (+'+G.harm*10+'%)</span></div>'+
+'<div class="srow"><span class="slbl">Улучшения</span><span class="sval">'+Object.keys(G.upg).length+'/'+UPG.length+'</span></div>'+
+'<div class="srow"><span class="slbl">Достижения</span><span class="sval">'+Object.keys(G.ach).length+'/'+ACH.length+'</span></div>'+
+'<div class="srow"><span class="slbl">Челленджи пройдены</span><span class="sval">'+Object.keys(G.chDone).length+'/'+CH.length+'</span></div>'+
+'<div class="srow"><span class="slbl">Время</span><span class="sval">'+fmtT(Date.now()-G.start)+'</span></div>';
+}
+
+function render(){
+let tab=document.querySelector('.stab.active');if(!tab)return;
+let t=tab.textContent.trim();
+if(t.includes('Здания'))rBld();
+else if(t.includes('Улучшения'))rUpg();
+else if(t.includes('Челлендж'))rChal();
+else if(t.includes('Достижения'))rAch();
+else if(t.includes('Престиж'))rPre();
+else if(t.includes('Авто'))rAuto();
+else if(t.includes('Статы'))rStats();
+}
+
+function upd(){
+document.getElementById('sCount').textContent=fmt(G.sig);
+document.getElementById('hSig').textContent=fmt(G.sig);
+document.getElementById('hSps').textContent=fmt(G.sps);
+document.getElementById('spsTxt').textContent=fmt(G.sps)+' с/сек';
+document.getElementById('cpVal').textContent=fmt(cPow());
+document.getElementById('fBox').style.display=G.freq>0?'block':'none';
+document.getElementById('hFreq').textContent=fmt(G.freq);
+document.getElementById('haBox').style.display=G.harm>0?'block':'none';
+document.getElementById('hHarm').textContent=fmt(G.harm);
+let st=gStage();
+document.getElementById('towerSVG').innerHTML=tSVG(st);
+document.getElementById('stageBadge').textContent='Стадия: '+SNAMES[st];
+let bar=document.getElementById('chBar');
+let act=[];
+for(let ch of CH){if(G.chStart[ch.id]!==undefined)act.push(ch.nm)}
+bar.innerHTML=act.length?'<div style="z-index:1">'+act.map(n=>'<span class="ch-tag">'+n+'</span>').join('')+'</div>':'';
+}
+
+// === ACTIONS ===
+function buyB(id){
+let b=BLD.find(x=>x.id===id);if(!b)return;
+let cnt=bc(id),amt=bBA(b,cnt);if(amt<=0)return;
+let cost=bBC(b,cnt,amt);
+let dc=Math.ceil(cost*(cMod().costM||1));
+if(G.sig<dc)return;
+G.sig-=dc;G.bld[id]=(G.bld[id]||0)+amt;
+recalc();rBld();rUpg();
+}
+function buyU(id){
+let u=UPG.find(x=>x.id===id);if(!u||G.upg[id]||G.sig<u.cost||!u.req())return;
+G.sig-=u.cost;G.upg[id]=true;recalc();rUpg();rBld();
+notify(u.nm,u.desc);
+}
+function doPre(){
+let g=pGain();if(g<=0||!confirm('Сбросить ради '+g+' кристаллов частоты?'))return;
+G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};
+recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов');save();
+}
+function doHarm(){
+let g=hGain();if(g<=0||!confirm('Сбросить всё ради '+g+' гармоник?'))return;
+G.harm+=g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};
+recalc();renderAll();notify('🔵 Гармоники','+'+g+' гармоник');save();
+}
+function startCh(id){
+let ch=CH.find(x=>x.id===id);if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req())return;
+if(!confirm('Начать "'+ch.nm+'"?\n'+ch.desc+'\nДлительность: '+ch.dur+' секунд'))return;
+G.chStart[id]=Date.now();
+recalc();rChal();notify('🔥 '+ch.nm,ch.desc);
+}
+
+// === AUTO ===
+function autoTick(){
+if(G.autoB){
+let best=null,bv=0,cm=cMod();
+for(let b of BLD){
+let cnt=bc(b.id),cost=bC(b,cnt)*(cm.costM||1);
+let sg=b.sps*bMult(b.id);
+let v=cost>0?sg/cost:0;
+if(v>bv&&G.sig>=cost){bv=v;best=b}
+}
+if(best){
+let cnt=bc(best.id),amt=Math.min(G.buy,bBA(best,cnt));
+if(amt>0){let cost=bBC(best,cnt,amt)*(cm.costM||1);if(G.sig>=cost){G.sig-=cost;G.bld[best.id]=(G.bld[best.id]||0)+amt}}
+}
+}
+if(G.autoU){
+for(let u of UPG)if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost){G.sig-=u.cost;G.upg[u.id]=true;notify('⚡ '+u.nm,u.desc)}
+}
+}
+
+// === CLICK ===
+document.getElementById('clickOverlay').addEventListener('click',function(e){
+let pow=cPow();
+G.sig+=pow;G.tot+=pow;G.totAll+=pow;G.clicks++;
+let area=document.getElementById('towerArea');
+let rect=area.getBoundingClientRect();
+let x=e.clientX-rect.left,y=e.clientY-rect.top;
+let f=document.createElement('div');f.className='fnum';
+f.textContent='+'+fmt(pow);f.style.left=x+'px';f.style.top=(y-12)+'px';
+let sz=pow>1e4?'1.4rem':pow>1e3?'1.1rem':'1rem';
+f.style.fontSize=sz;
+area.appendChild(f);setTimeout(()=>f.remove(),800);
+let g=document.createElement('div');g.className='glow';
+g.style.left=x+'px';g.style.top=y+'px';area.appendChild(g);setTimeout(()=>g.remove(),250);
+let s=document.createElement('div');s.className='shock';
+s.style.left=x+'px';s.style.top=y+'px';area.appendChild(s);setTimeout(()=>s.remove(),450);
+let cols=['#EA212E','#77C7E6','#FDFDFD','#3388BB','#104586'];
+let n=Math.min(6+Math.floor(Math.min(Math.log10(Math.max(pow,1))/3,2)),10);
+for(let i=0;i<n;i++){
+let p=document.createElement('div');p.className='burst';
+p.style.left=x+'px';p.style.top=y+'px';
+let a=Math.random()*Math.PI*2,d=25+Math.random()*50;
+p.style.setProperty('--tx',Math.cos(a)*d+'px');
+p.style.setProperty('--ty',Math.sin(a)*d+'px');
+let c=cols[Math.floor(Math.random()*cols.length)];
+p.style.background=c;p.style.color=c;
+area.appendChild(p);setTimeout(()=>p.remove(),500);
+}
+let ce=document.getElementById('sCount');ce.classList.add('pop');
+setTimeout(()=>ce.classList.remove('pop'),120);
+recalc();upd();
+});
+
+// === GOLDEN ===
+function spawnStar(){
+let panel=document.getElementById('panel');
+let s=document.createElement('div');s.className='golden';s.textContent='🌟';
+s.style.left=(15+Math.random()*70)+'%';s.style.top=(15+Math.random()*70)+'%';
+panel.appendChild(s);
+s.addEventListener('click',function(e){
+e.stopPropagation();
+let r=Math.random(),bonus=0,msg='';
+if(r<.4){bonus=Math.max(G.sps*60,cPow()*50);msg='+'+fmt(bonus)}
+else if(r<.75){bonus=Math.max(G.sps*300,cPow()*250);msg='МЕГА: +'+fmt(bonus)}
+else{msg='БЕЗУМИЕ! +SPS×7 на 15с';
+let fid=setInterval(()=>{let b2=G.sps*7;G.sig+=b2;G.tot+=b2;G.totAll+=b2;upd()},2000);
+setTimeout(()=>{clearInterval(fid);recalc()},15000);
+}
+G.sig+=bonus;G.tot+=bonus;G.totAll+=bonus;
+notify('🌟 Золотой',msg);s.remove();recalc();upd();
+});
+setTimeout(()=>{if(s.parentNode)s.remove()},6000);
+}
+setInterval(()=>{if(Math.random()<.03)spawnStar()},10000);
+
+// === LOOP ===
+function recalc(){G.sps=tSps()}
+function tick(){
+let dt=(Date.now()-G.last)/1000;G.last=Date.now();
+let e=G.sps*dt;if(e>0){G.sig+=e;G.tot+=e;G.totAll+=e}
+
+// Check challenge completions
+let now=Date.now();
+for(let ch of CH){
+let ts=G.chStart[ch.id];
+if(ts!==undefined){
+let elapsed=(now-ts)/1000;
+if(elapsed>=ch.dur){
+// Complete!
+G.chDone[ch.rw]=true;
+delete G.chStart[ch.id];
+notify('🎉 '+ch.nm+' пройден!',ch.rwD);
+recalc();
+}
+}
+}
+
+for(let a of ACH)if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true;notify('🏆 '+a.nm,a.desc)}
+recalc();upd();
+}
+function notify(t,m){
+let n=document.createElement('div');n.className='notif';
+n.innerHTML='<div class="ntitle">'+t+'</div><div class="ntext">'+m+'</div>';
+document.body.appendChild(n);setTimeout(()=>n.remove(),3000);
+}
+function renderAll(){upd();rBuyRow();rBld();rUpg();rAch();rPre();rChal();rAuto();rStats()}
+
+function save(){try{localStorage.setItem('rtrs5',JSON.stringify(G))}catch(e){}}
+function load(){
+let r=localStorage.getItem('rtrs5');if(!r)return;
+try{let d=JSON.parse(r);for(let k in d)if(G.hasOwnProperty(k))G[k]=d[k];
+let off=(Date.now()-(d.last||Date.now()))/1000;
+if(off>10){recalc();let g=G.sps*off*.5;if(g>0){G.sig+=g;G.tot+=g;G.totAll+=g;
+setTimeout(()=>notify('📡 Оффлайн','+'+fmt(g)+' за '+fmtT(off*1000)),600)}}
+}catch(e){console.error(e)}
+}
+
+setInterval(tick,50);
+setInterval(render,1000);
+setInterval(autoTick,1000);
+setInterval(save,30000);
+G.last=Date.now();load();recalc();renderAll();
+</script>
+</body>
+</html>
