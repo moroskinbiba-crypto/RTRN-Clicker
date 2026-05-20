@@ -5,1099 +5,1160 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>📡 RTRS Clicker</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
 :root{
---white:#FDFDFD;--red:#EA212E;--lblue:#77C7E6;
---dblue:#104586;--mblue:#3388BB;--yellow:#FBBF24;
---bg:#060d18;--bg2:#0a1628;--bg3:#0d1f3a;--bg4:#102240;--bg5:#162d52;
---border:#1a3555;--radius:20px;--radius-sm:16px;--shadow:0 8px 32px rgba(0,0,0,.4)
+  --c0:#060d1a;--c1:#0a1628;--c2:#0e1f3d;--c3:#142852;--c4:#1a3366;
+  --b0:#1d3b78;--b1:#2a529e;--b2:#3a6db8;
+  --acc:#00d4ff;--acc2:#0099cc;--acc3:#00ffaa;
+  --red:#ff4757;--red2:#cc2233;
+  --gold:#ffd700;--gold2:#e6c000;
+  --txt:#e8f4fd;--txt2:#8ab4d4;--txt3:#4a7a9b;
+  --border:rgba(0,180,255,0.12);--border2:rgba(0,180,255,0.25);
+  --shadow:0 8px 32px rgba(0,0,0,0.6);
+  --r:14px;--r2:10px;--r3:6px;
 }
 body.light{
---bg:#F5F7FA;--bg2:#FFFFFF;--bg3:#E8EDF5;--bg4:#F0F4F8;--bg5:#E8EEF5;
---border:#D1D9E6;--text:#1A202C;--white:#1A202C;--mblue:#2D5A8C;
---shadow:0 8px 32px rgba(0,0,0,.08)
+  --c0:#f0f4f8;--c1:#e8eef5;--c2:#dde5ef;--c3:#d0dcea;--c4:#c2cfe0;
+  --b0:#b4c2d6;--b1:#8da8c4;--b2:#6b8fb0;
+  --acc:#0077aa;--acc2:#005588;--acc3:#00994d;
+  --red:#cc2233;--red2:#aa1122;
+  --gold:#b8860b;--gold2:#9a7000;
+  --txt:#1a2a3a;--txt2:#3a5a7a;--txt3:#6a8aaa;
+  --border:rgba(0,100,180,0.15);--border2:rgba(0,100,180,0.3);
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden;min-height:100vh;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background .4s ease,color .4s ease}
 
-.header{background:linear-gradient(135deg,var(--dblue) 0%,var(--bg) 100%);
-border-bottom:1px solid rgba(119,199,230,.3);padding:14px 16px;
-display:flex;align-items:center;justify-content:space-between;
-position:sticky;top:0;z-index:100;border-radius:0 0 var(--radius) 0;
-box-shadow:var(--shadow)}
-body.light .header{background:linear-gradient(135deg,var(--mblue) 0%,var(--bg2) 100%);
-border-bottom:1px solid rgba(119,199,230,.4)}
-.header-title{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;
-background:linear-gradient(135deg,var(--lblue),var(--white));
--webkit-background-clip:text;-webkit-text-fill-color:transparent;
-letter-spacing:.5px}
-.header-stats{display:flex;gap:16px;align-items:center}
-.h-stat{text-align:center;padding:6px 12px;background:rgba(255,255,255,.05);
-border-radius:12px;min-width:70px}
-body.light .h-stat{background:rgba(0,0,0,.03)}
-.h-label{font-size:.55rem;color:var(--mblue);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;font-weight:600}
-.h-val{font-family:'Orbitron',sans-serif;font-size:.95rem;color:var(--white);font-weight:700}
-body.light .h-val{color:var(--text)}
-.h-val.blue{color:var(--lblue)}
-.h-val.red{color:var(--red)}
+body{
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--c0);color:var(--txt);
+  overflow-x:hidden;min-height:100vh;
+  touch-action:manipulation;transition:all .3s;
+}
 
-.game{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 70px)}
-.click-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;
-padding:30px 20px;position:relative;overflow:hidden;
-background:radial-gradient(ellipse at top,var(--bg3) 0%,var(--bg) 60%);
-border-radius:0 0 var(--radius) 0}
-.click-panel::before{content:'';position:absolute;inset:0;
-background:radial-gradient(2px 2px at 15% 25%,rgba(234,33,46,.25),transparent),
-radial-gradient(2px 2px at 85% 15%,rgba(119,199,230,.25),transparent),
-radial-gradient(2px 2px at 50% 80%,rgba(119,199,230,.15),transparent),
-radial-gradient(2px 2px at 75% 65%,rgba(234,33,46,.15),transparent);
-animation:twinkle 4s ease-in-out infinite alternate;pointer-events:none}
-@keyframes twinkle{0%{opacity:.4}100%{opacity:1}}
+/* Animated bg */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,100,200,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 20%, rgba(0,180,255,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 50% 50%, rgba(0,255,170,0.03) 0%, transparent 70%);
+  pointer-events:none;z-index:0;animation:bgPulse 8s ease-in-out infinite alternate;
+}
+@keyframes bgPulse{0%{opacity:.6}100%{opacity:1}}
 
-.sig-display{text-align:center;margin-bottom:25px;z-index:1;position:relative}
-.sig-count{font-family:'Orbitron',sans-serif;font-size:2.6rem;font-weight:900;
-color:var(--white);line-height:1.1;text-shadow:0 0 30px rgba(119,199,230,.4);transition:transform .1s ease}
-.sig-count.pop{transform:scale(1.08)}
-.sig-label{font-size:.9rem;color:var(--lblue);margin-top:4px;font-weight:400;letter-spacing:.5px}
-.sps-txt{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--mblue);margin-top:6px}
+/* HEADER */
+.hdr{
+  position:sticky;top:0;z-index:200;
+  background:rgba(10,22,40,0.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border2);
+  padding:10px 16px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+body.light .hdr{background:rgba(240,244,248,0.92)}
+.logo{
+  font-family:'Space Mono',monospace;font-weight:700;font-size:1rem;
+  color:var(--acc);letter-spacing:2px;text-transform:uppercase;
+  text-shadow:0 0 20px rgba(0,212,255,0.5);flex-shrink:0;
+}
+.hstats{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.hstat{
+  display:flex;flex-direction:column;align-items:center;
+  padding:5px 12px;
+  background:rgba(0,180,255,0.06);
+  border:1px solid var(--border);border-radius:var(--r3);
+  min-width:65px;flex:1;
+}
+.hstat-l{font-size:.52rem;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.hstat-v{font-family:'Space Mono',monospace;font-size:.88rem;color:var(--txt);font-weight:700;margin-top:1px}
+.hstat-v.blu{color:var(--acc)}.hstat-v.red{color:var(--red)}.hstat-v.gld{color:var(--gold)}
+.thm{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);
+  background:var(--c2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:all .2s;flex-shrink:0;
+}
+.thm:hover{background:var(--c3);transform:scale(1.1)}
 
-.tower-area{position:relative;z-index:1;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;width:240px;height:320px}
-.tower-overlay{position:absolute;inset:0;z-index:2;border-radius:var(--radius)}
-.tower-svg{transition:transform .15s cubic-bezier(.34,1.56,.64,1);transform-origin:bottom center;width:100%;height:100%;filter:drop-shadow(0 10px 30px rgba(0,0,0,.3))}
-.tower-area:active .tower-svg{transform:scale(.94) translateY(3px)}
+/* LAYOUT */
+.wrap{
+  display:grid;grid-template-columns:1fr 360px;
+  min-height:calc(100vh - 56px);position:relative;z-index:1;
+}
 
-.stage-badge{margin-top:20px;z-index:1;font-size:.65rem;color:var(--lblue);
-font-family:'Orbitron',sans-serif;text-transform:uppercase;letter-spacing:2px;
-padding:8px 20px;border:1px solid var(--mblue);border-radius:20px;
-background:rgba(16,69,134,.4);text-align:center;box-shadow:var(--shadow)}
-.click-info{margin-top:16px;z-index:1;font-size:.8rem;color:var(--mblue);font-weight:500}
-.click-info span{color:var(--lblue);font-family:'Orbitron',sans-serif;font-weight:700}
+/* CLICK PANEL */
+.cpanel{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:28px 20px;gap:20px;position:relative;overflow:hidden;
+}
 
-.ch-bar{z-index:1;margin-bottom:10px;min-height:0}
-.ch-tag{display:inline-block;margin:2px;padding:5px 12px;background:rgba(234,33,46,.2);
-border:1px solid rgba(234,33,46,.5);border-radius:14px;font-size:.6rem;
-font-weight:600;color:var(--red);box-shadow:0 2px 10px rgba(234,33,46,.2)}
+.sig-box{text-align:center}
+.sig-n{
+  font-family:'Space Mono',monospace;font-size:3.2rem;font-weight:700;
+  color:var(--txt);line-height:1;
+  text-shadow:0 0 40px rgba(0,212,255,0.3);
+  transition:transform .08s;
+}
+.sig-n.pop{transform:scale(1.04) translateY(-2px)}
+.sig-lbl{font-size:.9rem;color:var(--acc);font-weight:500;margin-top:6px;letter-spacing:1px}
+.sig-sps{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--txt3);margin-top:4px}
 
-.fnum{position:absolute;font-family:'Orbitron',sans-serif;font-weight:700;
-color:var(--red);pointer-events:none;white-space:nowrap;
-text-shadow:0 0 15px rgba(234,33,46,.9),0 2px 6px rgba(0,0,0,.8);
-animation:fUp .9s cubic-bezier(.2,.8,.2,1) forwards;z-index:50;font-size:1.2rem}
-@keyframes fUp{0%{transform:translateY(0) scale(.5);opacity:0}
-20%{transform:translateY(-10px) scale(1.3);opacity:1}
-80%{transform:translateY(-60px) scale(1);opacity:.9}
-100%{transform:translateY(-80px) scale(.8);opacity:0}}
-.shock{position:absolute;border-radius:50%;pointer-events:none;
-border:2px solid rgba(234,33,46,.6);animation:sEx .5s cubic-bezier(.1,.8,.2,1) forwards;z-index:50}
-@keyframes sEx{0%{width:10px;height:10px;opacity:.9;transform:translate(-50%,-50%)}
-100%{width:160px;height:160px;opacity:0;transform:translate(-50%,-50%)}}
-.burst{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;
-box-shadow:0 0 8px currentColor;animation:bFl .6s cubic-bezier(.15,.8,.3,1) forwards;z-index:50}
-@keyframes bFl{0%{transform:translate(0,0) scale(1.3);opacity:1}
-100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
-.glow{position:absolute;border-radius:50%;pointer-events:none;
-background:radial-gradient(circle,rgba(234,33,46,.4) 0%,transparent 70%);
-animation:gF .3s ease-out forwards;z-index:50}
-@keyframes gF{0%{width:25px;height:25px;opacity:.9;transform:translate(-50%,-50%)}
-100%{width:100px;height:100px;opacity:0;transform:translate(-50%,-50%)}}
+/* Challenges bar */
+.ch-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:0}
+.ch-tag{
+  padding:4px 12px;
+  background:rgba(255,71,87,0.12);border:1px solid rgba(255,71,87,0.35);
+  border-radius:20px;font-size:.58rem;color:var(--red);font-weight:700;letter-spacing:.5px;
+  animation:tagPulse 2s ease-in-out infinite;
+}
+@keyframes tagPulse{0%,100%{border-color:rgba(255,71,87,0.35)}50%{border-color:rgba(255,71,87,0.7)}}
 
-.shop{background:var(--bg2);border-left:1px solid rgba(119,199,230,.3);overflow-y:auto;
-max-height:calc(100vh - 70px);scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-border-radius:0 0 0 var(--radius)}
-body.light .shop{border-left:1px solid rgba(119,199,230,.4);background:var(--bg2)}
-.shop-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:12px;
-position:sticky;top:0;background:var(--bg2);z-index:10;border-bottom:1px solid var(--border)}
-body.light .shop-tabs{background:var(--bg2)}
-.stab{display:flex;flex-direction:column;align-items:center;justify-content:center;
-padding:10px 4px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.6rem;
-font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mblue);
-border:none;transition:all .2s;background:none;border-radius:12px;gap:4px}
-.stab:hover{background:rgba(119,199,230,.1);transform:translateY(-2px)}
-.stab.active{background:linear-gradient(135deg,rgba(119,199,230,.2),rgba(119,199,230,.1));
-color:var(--lblue);box-shadow:0 4px 12px rgba(119,199,230,.15)}
-.stab-emoji{font-size:1.6rem;line-height:1}
-.stab-text{font-size:.55rem;font-weight:700}
-.tcont{display:none;padding:16px}
-.tcont.active{display:block}
-.brow{display:flex;gap:8px;margin-bottom:12px;justify-content:center;flex-wrap:wrap}
-.bbtn{font-family:'Inter',sans-serif;font-size:.7rem;padding:7px 14px;
-border:1px solid var(--border);background:var(--bg4);color:var(--mblue);
-border-radius:10px;cursor:pointer;transition:all .2s;font-weight:600}
-body.light .bbtn{background:var(--bg4);color:var(--mblue)}
-.bbtn.active{border-color:var(--lblue);color:var(--lblue);background:rgba(119,199,230,.15);box-shadow:0 0 0 2px rgba(119,199,230,.3)}
+/* TOWER */
+.tower-wrap{
+  position:relative;cursor:pointer;user-select:none;
+  width:220px;height:300px;
+  filter:drop-shadow(0 0 30px rgba(0,180,255,0.15));
+  transition:filter .3s;
+}
+.tower-wrap:hover{filter:drop-shadow(0 0 40px rgba(0,180,255,0.3))}
+.tower-wrap:active{transform:scale(.97)}
+.tower-svg{width:100%;height:100%;transition:transform .1s cubic-bezier(.34,1.56,.64,1)}
+.t-click-zone{position:absolute;inset:0;border-radius:var(--r2)}
 
-.card{background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);
-padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;
-cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
-box-shadow:0 2px 12px rgba(0,0,0,.15)}
-body.light .card{box-shadow:0 2px 12px rgba(0,0,0,.06);background:var(--bg4)}
-.card:hover{background:var(--bg5);border-color:var(--mblue);transform:translateX(4px);
-box-shadow:0 4px 20px rgba(119,199,230,.15)}
-.card.aff{border-color:rgba(119,199,230,.5)}
-.card.aff:hover{border-color:var(--lblue);box-shadow:0 0 0 2px rgba(119,199,230,.25)}
+/* Stage badge */
+.stage-b{
+  font-family:'Space Mono',monospace;font-size:.6rem;color:var(--acc);
+  letter-spacing:2px;text-transform:uppercase;
+  padding:6px 18px;border:1px solid var(--border2);border-radius:20px;
+  background:rgba(0,180,255,0.06);
+}
+.clk-pw{font-size:.78rem;color:var(--txt3);font-weight:500}
+.clk-pw span{color:var(--acc);font-family:'Space Mono',monospace;font-weight:700}
+
+/* Floating numbers */
+.float{
+  position:absolute;font-family:'Space Mono',monospace;font-weight:700;
+  pointer-events:none;white-space:nowrap;z-index:50;font-size:1rem;
+  animation:floatUp .9s cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes floatUp{
+  0%{transform:translateY(0) scale(.7);opacity:0}
+  15%{transform:translateY(-8px) scale(1.1);opacity:1}
+  100%{transform:translateY(-70px) scale(.85);opacity:0}
+}
+.burst-p{
+  position:absolute;border-radius:50%;pointer-events:none;z-index:50;
+  animation:burstOut .6s cubic-bezier(.15,.8,.3,1) forwards;
+}
+@keyframes burstOut{0%{transform:translate(0,0) scale(1.5);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+
+/* SHOP */
+.shop{
+  background:var(--c1);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;max-height:calc(100vh - 56px);overflow:hidden;
+}
+.shop-tabs{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:10px;gap:4px;
+  background:var(--c1);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;flex-shrink:0;
+}
+.stab{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 4px;border:none;background:var(--c2);border-radius:var(--r3);
+  cursor:pointer;font-family:'Space Grotesk',sans-serif;
+  color:var(--txt3);transition:all .2s;
+}
+.stab:hover{background:var(--c3);color:var(--txt2)}
+.stab.active{background:rgba(0,180,255,0.12);color:var(--acc);border-bottom:2px solid var(--acc)}
+.stab-em{font-size:1.3rem;line-height:1}
+.stab-tx{font-size:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.shop-body{flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.tcont{display:none}.tcont.active{display:block}
+
+/* Buy row */
+.buy-row{display:flex;gap:6px;margin-bottom:12px}
+.bbtn{
+  flex:1;padding:7px;border:1px solid var(--border);background:var(--c2);
+  color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;
+  font-size:.7rem;font-weight:700;transition:all .2s;
+}
+.bbtn:hover{background:var(--c3)}.bbtn.active{border-color:var(--acc);color:var(--acc);background:rgba(0,180,255,0.08)}
+
+/* Cards */
+.card{
+  background:var(--c2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:11px;margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:0;opacity:0;
+  background:linear-gradient(135deg,rgba(0,180,255,0.05),transparent);
+  transition:opacity .2s;
+}
+.card:hover{background:var(--c3);border-color:var(--border2);transform:translateY(-1px)}
+.card:hover::before{opacity:1}
+.card.aff{border-color:rgba(0,212,255,0.35)}
 .card.lock{opacity:.35;pointer-events:none}
-.cicon{width:44px;height:44px;background:linear-gradient(135deg,var(--dblue),var(--bg));
-border-radius:12px;display:flex;align-items:center;justify-content:center;
-font-size:1.4rem;flex-shrink:0;border:1px solid var(--border);
-box-shadow:0 4px 12px rgba(0,0,0,.2)}
-body.light .cicon{background:linear-gradient(135deg,var(--mblue),var(--bg3));
-box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.cinfo{flex:1;min-width:0}
-.cname{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;color:var(--white);margin-bottom:3px}
-body.light .cname{color:var(--text)}
-.cdesc{font-size:.62rem;color:var(--mblue);margin-bottom:4px;line-height:1.3}
-.csub{font-size:.62rem;color:var(--lblue);font-weight:600}
-.cright{text-align:right;flex-shrink:0}
-.ccost{font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;color:var(--white)}
-body.light .ccost{color:var(--text)}
-.ccost.no{color:var(--red)}
-.ccost.partial{color:var(--yellow)}
-.ccount{font-size:.6rem;color:var(--mblue);margin-top:3px;font-weight:500}
-
-.ucard.aff{border-color:rgba(234,33,46,.5)}
-.ucard.aff:hover{border-color:var(--red);box-shadow:0 0 0 2px rgba(234,33,46,.2)}
-.ucard.done{opacity:.4;pointer-events:none;border-color:var(--lblue)}
-.ucost{font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;color:var(--white)}
-body.light .ucost{color:var(--text)}
-.ucost.no{color:var(--red)}
-.ucost.partial{color:var(--yellow)}
-
-.achcard.unl{border-color:rgba(234,33,46,.5);background:rgba(234,33,46,.06)}
-.achcard.lock{opacity:.3}
-.achicon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;
-justify-content:center;font-size:1.2rem;flex-shrink:0;
-background:linear-gradient(135deg,#1a0a10,#0a0508);border:1px solid var(--border);
-box-shadow:0 4px 12px rgba(0,0,0,.2)}
-body.light .achicon{background:linear-gradient(135deg,#2a1015,#1a0810)}
-.achcard.unl .achicon{background:linear-gradient(135deg,#2a1015,#1a0810);
-border-color:rgba(234,33,46,.5);box-shadow:0 0 0 2px rgba(234,33,46,.25)}
-.achname{font-family:'Inter',sans-serif;font-size:.65rem;font-weight:700;color:var(--red);margin-bottom:2px}
-.achdesc{font-size:.6rem;color:var(--mblue)}
-
-.seclbl{font-family:'Inter',sans-serif;font-size:.6rem;color:var(--mblue);
-text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;padding-bottom:6px;
-border-bottom:1px solid var(--border);font-weight:700}
-
-.pbar{height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin-top:10px}
-.pfill{height:100%;background:linear-gradient(90deg,var(--red),#FF6B6B);border-radius:5px;transition:width .4s ease}
-.pfill.done{background:linear-gradient(90deg,var(--lblue),#4ECDC4)}
-.ptxt{font-size:.6rem;color:var(--mblue);margin-top:6px;font-family:'Inter',sans-serif;font-weight:600}
-
-.psec{text-align:center;padding:22px 16px;margin-bottom:16px;
-background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);
-box-shadow:var(--shadow)}
-body.light .psec{background:var(--bg4)}
-.psec h3{font-family:'Orbitron',sans-serif;font-size:1rem;margin-bottom:10px;color:var(--white)}
-body.light .psec h3{color:var(--text)}
-.psec .rd{color:var(--red)}
-.psec .bl{color:var(--lblue)}
-.psec p{font-size:.72rem;color:var(--mblue);margin-bottom:14px;line-height:1.5}
-.pgain{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:900;margin:12px 0;color:var(--white)}
-body.light .pgain{color:var(--text)}
-.pbtn{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;padding:12px 28px;
-border:2px solid;border-radius:14px;cursor:pointer;transition:all .3s;
-text-transform:uppercase;letter-spacing:1px;margin:8px 0;background:transparent;
-box-shadow:0 4px 15px rgba(0,0,0,.2);font-weight:600}
-.pbtn.red{border-color:var(--red);color:var(--red)}
-.pbtn.red:hover{background:rgba(234,33,46,.15);box-shadow:0 0 0 3px rgba(234,33,46,.3),0 8px 25px rgba(234,33,46,.25);transform:translateY(-2px)}
-.pbtn.blue{border-color:var(--lblue);color:var(--lblue)}
-.pbtn.blue:hover{background:rgba(119,199,230,.15);box-shadow:0 0 0 3px rgba(119,199,230,.3),0 8px 25px rgba(119,199,230,.2);transform:translateY(-2px)}
-.pbtn:disabled{opacity:.25;cursor:not-allowed;transform:none!important;box-shadow:none!important}
-
-.chcard{background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);
-padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;
-box-shadow:0 2px 12px rgba(0,0,0,.15)}
-body.light .chcard{box-shadow:0 2px 12px rgba(0,0,0,.06);background:var(--bg4)}
-.chcard:hover{border-color:var(--mblue);transform:translateX(4px);box-shadow:0 4px 20px rgba(119,199,230,.15)}
-body.light .chcard:hover{background:var(--bg5)}
-.chcard.active{border-color:var(--red);background:rgba(234,33,46,.1);box-shadow:0 0 0 2px rgba(234,33,46,.25)}
-body.light .chcard.active{background:rgba(234,33,46,.08)}
-.chcard.done{border-color:var(--lblue);opacity:.5;pointer-events:none}
-.chnm{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;color:var(--white);margin-bottom:5px}
-body.light .chnm{color:var(--text)}
-.chdesc{font-size:.65rem;color:var(--mblue);margin-bottom:5px;line-height:1.4}
-.chreward{font-size:.62rem;color:var(--lblue);font-weight:600}
-
-.autorow{display:flex;align-items:center;justify-content:space-between;padding:14px;margin-bottom:10px;
-background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);
-box-shadow:0 2px 10px rgba(0,0,0,.1)}
-body.light .autorow{box-shadow:0 2px 10px rgba(0,0,0,.05);background:var(--bg4)}
-.autolbl{font-family:'Inter',sans-serif;font-size:.7rem;color:var(--white);font-weight:600}
-body.light .autolbl{color:var(--text)}
-.autodsc{font-size:.62rem;color:var(--mblue);margin-top:3px}
-.tgl{width:50px;height:26px;border-radius:13px;background:var(--border);cursor:pointer;
-position:relative;transition:background .2s;flex-shrink:0}
-.tgl.on{background:var(--lblue)}
-.tgl::after{content:'';position:absolute;width:22px;height:22px;border-radius:50%;
-background:var(--white);top:2px;left:2px;transition:transform .2s;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.tgl.on::after{transform:translateX(24px)}
-
-.srow{display:flex;justify-content:space-between;padding:10px 0;
-border-bottom:1px solid rgba(255,255,255,.06);font-size:.75rem}
-body.light .srow{border-bottom:1px solid rgba(0,0,0,.06)}
-.slbl{color:var(--mblue);font-weight:500}
-.sval{font-family:'Orbitron',sans-serif;font-size:.68rem;color:var(--lblue);font-weight:700}
-
-.golden{position:absolute;font-size:1.8rem;cursor:pointer;z-index:200;
-animation:gFl 6s ease-in-out forwards;filter:drop-shadow(0 0 15px rgba(234,33,46,.7));transition:transform .15s}
-.golden:hover{transform:scale(1.3)}
-@keyframes gFl{0%{opacity:0;transform:scale(.4)}10%{opacity:1;transform:scale(1)}
-90%{opacity:1}100%{opacity:0;transform:scale(.4)}}
-
-.notif{position:fixed;top:75px;right:18px;background:var(--bg4);border:2px solid var(--lblue);
-border-radius:var(--radius-sm);padding:14px 20px;z-index:1000;max-width:320px;
-box-shadow:0 10px 40px rgba(0,0,0,.4);animation:nIn .4s ease-out,nOut .5s ease-in 2.5s forwards}
-body.light .notif{background:var(--bg4);box-shadow:0 10px 40px rgba(0,0,0,.15)}
-.ntitle{font-family:'Orbitron',sans-serif;font-size:.72rem;color:var(--lblue);margin-bottom:4px;font-weight:700}
-.ntext{font-size:.68rem;color:var(--mblue);line-height:1.4}
-
-.theme-toggle{position:fixed;top:75px;left:18px;z-index:1000;
-background:var(--bg4);border:2px solid var(--mblue);border-radius:50%;
-width:48px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-font-size:1.4rem;box-shadow:var(--shadow);transition:all .3s}
-body.light .theme-toggle{background:var(--bg4)}
-.theme-toggle:hover{transform:scale(1.15) rotate(15deg);box-shadow:0 0 0 3px rgba(119,199,230,.3)}
-
-@media(max-width:900px){
-.game{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-.click-panel{min-height:42vh;padding:25px 16px;border-radius:0}
-.shop{max-height:none;border-left:none;border-top:1px solid var(--border);border-radius:0}
-body.light .shop{border-top:1px solid var(--mblue)}
-.sig-count{font-size:1.8rem}
-.header{padding:12px 14px;flex-wrap:wrap;gap:8px;border-radius:0}
-.header-title{font-size:1.05rem;width:100%;text-align:center}
-.header-stats{width:100%;justify-content:center;gap:8px}
-.h-stat{min-width:60px;padding:5px 10px}
-.h-val{font-size:.85rem}
-.tower-area{width:200px;height:270px}
-.shop-tabs{grid-template-columns:repeat(4,1fr);gap:2px;padding:8px}
-.stab-emoji{font-size:1.3rem}
-.stab-text{font-size:.5rem}
-.theme-toggle{top:70px;left:14px;width:44px;height:44px;font-size:1.2rem}
+.card.done{opacity:.45;pointer-events:none;background:var(--c1)}
+.cicon{
+  width:40px;height:40px;background:var(--c3);border-radius:var(--r3);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  flex-shrink:0;border:1px solid var(--border);
 }
-@media(max-width:480px){
-.click-panel{min-height:38vh;padding:18px 12px}
-.sig-count{font-size:1.5rem}
-.tower-area{width:170px;height:230px}
-.header-title{font-size:.95rem}
-.h-val{font-size:.75rem}
-.h-label{font-size:.5rem}
-.shop-tabs{gap:1px}
-.stab{padding:8px 2px}
-.stab-emoji{font-size:1.2rem}
-.stab-text{font-size:.45rem}
-.card{padding:12px;gap:10px}
-.cicon{width:40px;height:40px;font-size:1.2rem}
-.cname{font-size:.7rem}
-.cdesc,.csub{font-size:.58rem}
-.ccost,.ucost{font-size:.68rem}
-.achname{font-size:.62rem}
-.psec{padding:16px 12px}
-.pbtn{padding:10px 20px;font-size:.68rem}
-.pgain{font-size:1.1rem}
-.srow{font-size:.68rem;padding:8px 0}
-.sval{font-size:.6rem}
-.autorow{padding:12px}
-.autolbl{font-size:.68rem}
-.bbtn{padding:6px 12px;font-size:.65rem}
+.ci{flex:1;min-width:0}
+.cn{font-size:.73rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.cd{font-size:.6rem;color:var(--txt3);margin-bottom:3px;line-height:1.3}
+.cs{font-size:.6rem;color:var(--acc);font-weight:600}
+.cr{text-align:right;flex-shrink:0}
+.cc{font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;color:var(--txt)}
+.cc.no{color:var(--red)}.cc.ok{color:var(--acc3)}.cc.some{color:var(--gold)}
+.cct{font-size:.57rem;color:var(--txt3);margin-top:2px;font-weight:600}
+
+/* Section label */
+.slbl{
+  font-size:.55rem;color:var(--txt3);text-transform:uppercase;letter-spacing:2px;
+  margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);font-weight:700;
+}
+
+/* Upgrade card */
+.ucard.aff{border-color:rgba(255,71,87,0.4)}
+.ucost{font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;color:var(--txt)}
+.ucost.no{color:var(--red)}
+
+/* Achievements */
+.achcard.unl{border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.04)}
+.achi{width:38px;height:38px;border-radius:var(--r3);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:var(--c3);border:1px solid var(--border)}
+.achcard.unl .achi{border-color:rgba(255,215,0,0.5)}
+.achn{font-size:.65rem;font-weight:700;color:var(--gold);margin-bottom:2px}
+
+/* Progress bar */
+.pbar{height:6px;background:var(--c1);border-radius:3px;overflow:hidden;margin-top:6px;border:1px solid var(--border)}
+.pfill{height:100%;background:linear-gradient(90deg,var(--red),#ff6b7a);border-radius:3px;transition:width .4s ease}
+.pfill.done{background:linear-gradient(90deg,var(--acc),var(--acc3))}
+.ptxt{font-size:.58rem;color:var(--txt3);margin-top:5px;font-weight:600}
+
+/* Prestige sections */
+.psec{
+  text-align:center;padding:18px 14px;margin-bottom:12px;
+  background:var(--c2);border:1px solid var(--border);border-radius:var(--r2);
+  position:relative;overflow:hidden;
+}
+.psec::before{
+  content:'';position:absolute;inset:0;opacity:.04;
+  background:radial-gradient(circle at 50% 0%,var(--acc),transparent 70%);
+}
+.psec h3{font-family:'Space Mono',monospace;font-size:.95rem;margin-bottom:8px;color:var(--txt);font-weight:700}
+.psec p{font-size:.68rem;color:var(--txt3);margin-bottom:10px;line-height:1.5}
+.pbtn{
+  font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;
+  padding:9px 22px;border:1px solid;border-radius:var(--r3);cursor:pointer;
+  transition:all .2s;text-transform:uppercase;letter-spacing:1px;background:var(--c3);margin:6px 0;
+}
+.pbtn.red{border-color:var(--red);color:var(--red)}
+.pbtn.red:not(:disabled):hover{background:var(--red);color:var(--c0)}
+.pbtn.blu{border-color:var(--acc);color:var(--acc)}
+.pbtn.blu:not(:disabled):hover{background:var(--acc);color:var(--c0)}
+.pbtn:disabled{opacity:.25;cursor:not-allowed;background:var(--c2)!important;color:var(--txt3)!important;border-color:var(--border)!important}
+
+/* Challenge cards */
+.chcard{
+  background:var(--c2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:11px;margin-bottom:8px;cursor:pointer;transition:all .2s;
+}
+.chcard:hover:not(.done){border-color:var(--border2);transform:translateY(-1px)}
+.chcard.active{border-color:rgba(255,71,87,0.5);background:rgba(255,71,87,0.04)}
+.chcard.done{opacity:.5;pointer-events:none}
+.chn{font-size:.72rem;font-weight:700;color:var(--txt);margin-bottom:3px}
+.chd{font-size:.62rem;color:var(--txt3);margin-bottom:4px;line-height:1.4}
+.chr{font-size:.6rem;color:var(--acc);font-weight:600}
+
+/* Auto toggles */
+.arow{display:flex;align-items:center;justify-content:space-between;padding:11px;margin-bottom:8px;background:var(--c2);border:1px solid var(--border);border-radius:var(--r2)}
+.albl{font-size:.7rem;color:var(--txt);font-weight:600}
+.adsc{font-size:.6rem;color:var(--txt3);margin-top:2px}
+.tgl{width:44px;height:24px;border-radius:12px;background:var(--c3);border:1px solid var(--border);cursor:pointer;position:relative;transition:all .25s;flex-shrink:0}
+.tgl.on{background:var(--acc2);border-color:var(--acc)}
+.tgl::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:var(--txt);top:2px;left:2px;transition:transform .25s;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.tgl.on::after{transform:translateX(20px)}
+
+/* Stats */
+.srow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:.73rem}
+.slb{color:var(--txt3);font-weight:500}
+.sv{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--acc);font-weight:700}
+
+/* Notification */
+.notif{
+  position:fixed;top:66px;right:14px;z-index:1000;max-width:280px;
+  background:var(--c3);border:1px solid var(--border2);border-radius:var(--r2);
+  padding:11px 14px;box-shadow:var(--shadow);
+  animation:nIn .3s cubic-bezier(.34,1.56,.64,1),nOut .4s ease-in 2.4s forwards;
+}
+@keyframes nIn{from{transform:translateX(120%) scale(.9);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+@keyframes nOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+.nt{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--txt);margin-bottom:3px;font-weight:700}
+.nb{font-size:.62rem;color:var(--acc);line-height:1.4}
+
+/* Offline overlay */
+.off-ov{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(6,13,26,0.95);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+}
+.off-card{
+  background:var(--c2);border:1px solid var(--border2);border-radius:var(--r);
+  padding:32px;text-align:center;max-width:320px;
+}
+.off-card h2{font-family:'Space Mono',monospace;color:var(--acc);margin-bottom:12px;font-size:1.1rem}
+.off-card p{color:var(--txt2);font-size:.8rem;line-height:1.6;margin-bottom:20px}
+.off-card .pbtn{display:block;width:100%}
+
+/* Pulse ring on tower */
+@keyframes ringPulse{0%{transform:translate(-50%,-50%) scale(1);opacity:.6}100%{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+.ring{
+  position:absolute;left:50%;top:45%;
+  width:120px;height:120px;border-radius:50%;
+  border:2px solid var(--acc);pointer-events:none;
+  transform:translate(-50%,-50%);
+  animation:ringPulse 2s ease-out infinite;
+}
+.ring2{animation-delay:.7s;border-color:rgba(0,212,255,0.4)}
+
+/* Scanline effect on click */
+@keyframes scan{0%{background-position:0 -100%}100%{background-position:0 100%}}
+.scan-line{
+  position:absolute;inset:0;pointer-events:none;border-radius:var(--r2);opacity:0;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,rgba(0,212,255,.03) 3px,rgba(0,212,255,.03) 4px);
+  animation:scan 3s linear infinite;
+}
+.tower-wrap:hover .scan-line{opacity:1}
+
+/* Glitch on click */
+@keyframes glitch{0%,100%{clip-path:inset(0)}10%{clip-path:inset(10% 0 80% 0)}30%{clip-path:inset(40% 0 40% 0)}50%{clip-path:inset(80% 0 10% 0)}60%{clip-path:inset(0 0 0 0)}}
+.glitch{animation:glitch .15s steps(1) 1}
+
+/* Mobile */
+@media(max-width:780px){
+  .wrap{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .shop{max-height:none;border-left:none;border-top:1px solid var(--border)}
+  .sig-n{font-size:2.4rem}
+  .cpanel{min-height:42vh;padding:18px 14px;gap:14px}
+  .tower-wrap{width:180px;height:240px}
+  .shop-tabs{grid-template-columns:repeat(4,1fr)}
+  .hdr{gap:8px}
+  .logo{font-size:.85rem}
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-<div class="header-title">📡 RTRS CLICKER</div>
-<div class="header-stats">
-<div class="h-stat"><div class="h-label">Сигналы</div><div class="h-val" id="hSig">0</div></div>
-<div class="h-stat"><div class="h-label">В сек</div><div class="h-val blue" id="hSps">0</div></div>
-<div class="h-stat" id="fBox" style="display:none"><div class="h-label">Частота</div><div class="h-val red" id="hFreq">0</div></div>
-<div class="h-stat" id="haBox" style="display:none"><div class="h-label">Гармоники</div><div class="h-val blue" id="hHarm">0</div></div>
-</div>
-</div>
-
-<button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">🌓</button>
-
-<div class="game">
-<div class="click-panel" id="panel">
-<div class="sig-display">
-<div class="sig-count" id="sCount">0</div>
-<div class="sig-label">📡 сигналов</div>
-<div class="sps-txt" id="spsTxt">0 сигналов/сек</div>
-</div>
-<div class="ch-bar" id="chBar"></div>
-<div class="tower-area" id="towerArea">
-<div class="tower-overlay" id="clickOverlay"></div>
-<div id="towerSVG"></div>
-</div>
-<div class="stage-badge" id="stageBadge">Стадия: Антенна</div>
-<div class="click-info">Клик: <span id="cpVal">1</span> сигнал</div>
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">📡 RTRS</div>
+  <div class="hstats">
+    <div class="hstat"><div class="hstat-l">Сигналы</div><div class="hstat-v" id="hSig">0</div></div>
+    <div class="hstat"><div class="hstat-l">В секунду</div><div class="hstat-v blu" id="hSps">0</div></div>
+    <div class="hstat" id="fBox" style="display:none"><div class="hstat-l">Частота</div><div class="hstat-v red" id="hFreq">0</div></div>
+    <div class="hstat" id="haBox" style="display:none"><div class="hstat-l">Гармоники</div><div class="hstat-v gld" id="hHarm">0</div></div>
+  </div>
+  <button class="thm" onclick="toggleTheme()" title="Сменить тему">🌓</button>
 </div>
 
-<div class="shop">
-<div class="shop-tabs">
-<button class="stab active" onclick="openTab('b')"><span class="stab-emoji">🏗️</span><span class="stab-text">Здания</span></button>
-<button class="stab" onclick="openTab('u')"><span class="stab-emoji">⚡</span><span class="stab-text">Улучшения</span></button>
-<button class="stab" onclick="openTab('c')"><span class="stab-emoji">🔥</span><span class="stab-text">Челленджи</span></button>
-<button class="stab" onclick="openTab('a')"><span class="stab-emoji">🏆</span><span class="stab-text">Достижения</span></button>
-<button class="stab" onclick="openTab('p')"><span class="stab-emoji">🌌</span><span class="stab-text">Престиж</span></button>
-<button class="stab" onclick="openTab('m')"><span class="stab-emoji">🔧</span><span class="stab-text">Авто</span></button>
-<button class="stab" onclick="openTab('s')"><span class="stab-emoji">📊</span><span class="stab-text">Статы</span></button>
-</div>
-<div class="tcont active" id="tb"><div class="brow" id="buyRow"></div><div id="bList"></div></div>
-<div class="tcont" id="tu"><div id="uList"></div></div>
-<div class="tcont" id="tc"><div id="cList"></div></div>
-<div class="tcont" id="ta"><div id="aList"></div></div>
-<div class="tcont" id="tp"><div id="pList"></div></div>
-<div class="tcont" id="tm"><div id="mList"></div></div>
-<div class="tcont" id="ts"><div id="stList"></div></div>
-</div>
+<div class="wrap">
+  <!-- CLICK PANEL -->
+  <div class="cpanel" id="cpanel">
+    <div class="sig-box">
+      <div class="sig-n" id="sCount">0</div>
+      <div class="sig-lbl">сигналов</div>
+      <div class="sig-sps" id="spsTxt">0 с/сек</div>
+    </div>
+
+    <div class="ch-bar" id="chBar"></div>
+
+    <div class="tower-wrap" id="towerWrap">
+      <div class="ring"></div>
+      <div class="ring ring2"></div>
+      <div class="scan-line"></div>
+      <div id="towerSVG"></div>
+      <div class="t-click-zone" id="clickZone"></div>
+    </div>
+
+    <div class="stage-b" id="stageBadge">Стадия: Антенна</div>
+    <div class="clk-pw">Клик: <span id="cpVal">1</span> сигнал</div>
+  </div>
+
+  <!-- SHOP -->
+  <div class="shop">
+    <div class="shop-tabs">
+      <button class="stab active" onclick="openTab(this,'b')"><span class="stab-em">🏗️</span><span class="stab-tx">Здания</span></button>
+      <button class="stab" onclick="openTab(this,'u')"><span class="stab-em">⚡</span><span class="stab-tx">Апгрейд</span></button>
+      <button class="stab" onclick="openTab(this,'c')"><span class="stab-em">🔥</span><span class="stab-tx">Испыт.</span></button>
+      <button class="stab" onclick="openTab(this,'a')"><span class="stab-em">🏆</span><span class="stab-tx">Награды</span></button>
+      <button class="stab" onclick="openTab(this,'p')"><span class="stab-em">🌌</span><span class="stab-tx">Престиж</span></button>
+      <button class="stab" onclick="openTab(this,'m')"><span class="stab-em">🤖</span><span class="stab-tx">Авто</span></button>
+      <button class="stab" onclick="openTab(this,'s')"><span class="stab-em">📊</span><span class="stab-tx">Статы</span></button>
+    </div>
+    <div class="shop-body">
+      <div class="tcont active" id="tb"><div class="buy-row" id="buyRow"></div><div id="bList"></div></div>
+      <div class="tcont" id="tu"><div id="uList"></div></div>
+      <div class="tcont" id="tc"><div id="cList"></div></div>
+      <div class="tcont" id="ta"><div id="aList"></div></div>
+      <div class="tcont" id="tp"><div id="pList"></div></div>
+      <div class="tcont" id="tm"><div id="mList"></div></div>
+      <div class="tcont" id="ts"><div id="stList"></div></div>
+    </div>
+  </div>
 </div>
 
 <script>
-let G={sig:0,tot:0,totAll:0,clicks:0,freq:0,harm:0,buy:1,
-bld:{},upg:{},ach:{},ch:{},chDone:{},chStart:{},
-autoB:false,autoU:false,theme:'dark',
-start:Date.now(),last:Date.now()};
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let G = {
+  sig:0, tot:0, totAll:0, clicks:0,
+  freq:0, harm:0, buy:1,
+  bld:{}, upg:{}, ach:{}, chDone:{}, chStart:{},
+  autoB:false, autoU:false, theme:'dark',
+  start:Date.now(), last:Date.now(), sps:0
+};
+let Cache = {sps:0, click:1, bMult:{}};
 
-const BLD=[
-{id:'ant',name:'Антенна',ic:'📻',desc:'Базовая FM-антенна',cost:15,sps:1,cm:1.15},
-{id:'twr',name:'Радиовышка',ic:'🗼',desc:'Стальная вышка',cost:100,sps:5,cm:1.15},
-{id:'mast',name:'Радиомачта',ic:'📡',desc:'Направленные антенны',cost:500,sps:25,cm:1.15},
-{id:'rep',name:'Ретранслятор',ic:'🔁',desc:'Повторяет сигнал',cost:3e3,sps:120,cm:1.15},
-{id:'sta',name:'Радиостанция',ic:'🎙️',desc:'Передатчик 50 кВт',cost:18e3,sps:650,cm:1.15},
-{id:'tv',name:'Телевышка',ic:'📺',desc:'HD покрытие',cost:120e3,sps:3500,cm:1.15},
-{id:'sat',name:'Спутниковая',ic:'🛰️',desc:'Орбитальная связь',cost:900e3,sps:18e3,cm:1.15},
-{id:'obs',name:'Обсерватория',ic:'🔭',desc:'Космические волны',cost:12e6,sps:95e3,cm:1.15},
-{id:'pha',name:'Фаз. решётка',ic:'📶',desc:'Управление лучом',cost:150e6,sps:520e3,cm:1.15},
-{id:'qnt',name:'Квантовый',ic:'⚛️',desc:'Запутанность',cost:2e9,sps:3.2e6,cm:1.15}
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+const BLD = [
+  {id:'ant', name:'Антенна',       ic:'📻', desc:'Базовая FM-антенна',        cost:15,    sps:1,      cm:1.15},
+  {id:'twr', name:'Радиовышка',    ic:'🗼', desc:'Стальная конструкция',       cost:100,   sps:5,      cm:1.15},
+  {id:'mst', name:'Радиомачта',    ic:'📡', desc:'Направленные антенны',       cost:500,   sps:25,     cm:1.15},
+  {id:'rep', name:'Ретранслятор',  ic:'🔁', desc:'Усиление сигнала',           cost:3e3,   sps:120,    cm:1.15},
+  {id:'sta', name:'Радиостанция',  ic:'🎙️', desc:'Передатчик 50 кВт',         cost:18e3,  sps:650,    cm:1.15},
+  {id:'tv',  name:'Телевышка',     ic:'📺', desc:'HD покрытие региона',        cost:120e3, sps:3500,   cm:1.15},
+  {id:'sat', name:'Спутниковая',   ic:'🛰️', desc:'Орбитальная связь',          cost:900e3, sps:18e3,   cm:1.15},
+  {id:'obs', name:'Обсерватория',  ic:'🔭', desc:'Приём космических волн',     cost:12e6,  sps:95e3,   cm:1.15},
+  {id:'pha', name:'Фаз. решётка',  ic:'📶', desc:'Адаптивное управление лучом',cost:150e6, sps:520e3,  cm:1.15},
+  {id:'qnt', name:'Квантовый',     ic:'⚛️', desc:'Квантовая запутанность',     cost:2e9,   sps:3.2e6,  cm:1.15},
 ];
 
-const UPG=[
-{id:'c1',nm:'Кабель',ic:'🔌',desc:'Клик ×2',cost:200,tp:'clk',m:2,req:()=>G.tot>=100},
-{id:'c2',nm:'Усилитель',ic:'📈',desc:'Клик ×2',cost:1500,tp:'clk',m:2,req:()=>G.tot>=800},
-{id:'c3',nm:'Процессор',ic:'💻',desc:'Клик ×3',cost:15e3,tp:'clk',m:3,req:()=>G.tot>=10e3},
-{id:'c4',nm:'Нейросеть',ic:'🧠',desc:'Клик ×5',cost:150e3,tp:'clk',m:5,req:()=>G.tot>=100e3},
-{id:'c5',nm:'Квант. клик',ic:'⚛️',desc:'Клик ×10',cost:3e6,tp:'clk',m:10,req:()=>G.tot>=2e6},
-{id:'a1',nm:'УНЧ',ic:'📻',desc:'Антенны ×2',cost:300,tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=5},
-{id:'a2',nm:'Тюнер',ic:'📻',desc:'Антенны ×2',cost:5e3,tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=25},
-{id:'t1',nm:'Решётка',ic:'🗼',desc:'Вышки ×2',cost:2e3,tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=5},
-{id:'t2',nm:'Антилёд',ic:'🗼',desc:'Вышки ×2',cost:20e3,tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=25},
-{id:'m1',nm:'Элементы',ic:'📡',desc:'Мачты ×2',cost:10e3,tp:'bld',b:'mast',m:2,req:()=>bc('mast')>=5},
-{id:'r1',nm:'Релейная',ic:'🔁',desc:'Ретрансляторы ×2',cost:60e3,tp:'bld',b:'rep',m:2,req:()=>bc('rep')>=5},
-{id:'s1',nm:'100кВт',ic:'🎙️',desc:'Станции ×2',cost:300e3,tp:'bld',b:'sta',m:2,req:()=>bc('sta')>=5},
-{id:'g1',nm:'Усилитель',ic:'📶',desc:'Всё ×2',cost:100e3,tp:'glb',m:2,req:()=>G.tot>=50e3},
-{id:'g2',nm:'Модуляция',ic:'📶',desc:'Всё ×2',cost:1.5e6,tp:'glb',m:2,req:()=>G.tot>=500e3},
-{id:'g3',nm:'Оптоволокно',ic:'📶',desc:'Всё ×3',cost:80e6,tp:'glb',m:3,req:()=>G.tot>=30e6},
-{id:'g4',nm:'Спутники',ic:'📶',desc:'Всё ×5',cost:8e9,tp:'glb',m:5,req:()=>G.tot>=2e9}
+const UPG = [
+  {id:'c1',nm:'Медный кабель',  ic:'🔌',desc:'Сила клика ×2',   cost:200,   tp:'clk',m:2,req:()=>G.tot>=100},
+  {id:'c2',nm:'Усилитель',      ic:'📈',desc:'Сила клика ×2',   cost:1500,  tp:'clk',m:2,req:()=>G.tot>=800},
+  {id:'c3',nm:'Сигнальный проц.',ic:'💻',desc:'Сила клика ×3',  cost:15e3,  tp:'clk',m:3,req:()=>G.tot>=10e3},
+  {id:'c4',nm:'Нейросеть',      ic:'🧠',desc:'Сила клика ×5',   cost:150e3, tp:'clk',m:5,req:()=>G.tot>=100e3},
+  {id:'c5',nm:'Квант. клик',    ic:'⚛️',desc:'Сила клика ×10',  cost:3e6,   tp:'clk',m:10,req:()=>G.tot>=2e6},
+  {id:'a1',nm:'УНЧ',            ic:'📻',desc:'Антенны ×2',       cost:300,   tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=5},
+  {id:'a2',nm:'Прецизионный тюнер',ic:'📻',desc:'Антенны ×2',  cost:5e3,   tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=25},
+  {id:'t1',nm:'Решётчатая мачта',ic:'🗼',desc:'Вышки ×2',       cost:2e3,   tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=5},
+  {id:'t2',nm:'Антиобледенение',ic:'🗼',desc:'Вышки ×2',        cost:20e3,  tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=25},
+  {id:'m1',nm:'Активные элементы',ic:'📡',desc:'Мачты ×2',      cost:10e3,  tp:'bld',b:'mst',m:2,req:()=>bc('mst')>=5},
+  {id:'r1',nm:'Релейная сеть',  ic:'🔁',desc:'Ретранс. ×2',     cost:60e3,  tp:'bld',b:'rep',m:2,req:()=>bc('rep')>=5},
+  {id:'s1',nm:'100 кВт мощности',ic:'🎙️',desc:'Станции ×2',    cost:300e3, tp:'bld',b:'sta',m:2,req:()=>bc('sta')>=5},
+  {id:'g1',nm:'Широкополосный',  ic:'📶',desc:'Всё ×2',         cost:100e3, tp:'glb',m:2,req:()=>G.tot>=50e3},
+  {id:'g2',nm:'Цифровая модуляция',ic:'📶',desc:'Всё ×2',       cost:1.5e6, tp:'glb',m:2,req:()=>G.tot>=500e3},
+  {id:'g3',nm:'Оптоволокно',    ic:'📶',desc:'Всё ×3',          cost:80e6,  tp:'glb',m:3,req:()=>G.tot>=30e6},
+  {id:'g4',nm:'Орбитальная сеть',ic:'📶',desc:'Всё ×5',         cost:8e9,   tp:'glb',m:5,req:()=>G.tot>=2e9},
 ];
 
-const ACH=[
-{id:'ac1',nm:'Первый сигнал',ic:'👆',desc:'Кликните 1 раз',ck:()=>G.clicks>=1},
-{id:'ac100',nm:'Оператор',ic:'👆',desc:'100 кликов',ck:()=>G.clicks>=100},
-{id:'ac1k',nm:'Мастер клика',ic:'👆',desc:'1000 кликов',ck:()=>G.clicks>=1000},
-{id:'as100',nm:'100',ic:'📊',desc:'100 сигналов',ck:()=>G.tot>=100},
-{id:'as10k',nm:'10К',ic:'📊',desc:'10 000 сигналов',ck:()=>G.tot>=10e3},
-{id:'as1m',nm:'Миллион',ic:'📊',desc:'1 000 000',ck:()=>G.tot>=1e6},
-{id:'as1b',nm:'Миллиард',ic:'📊',desc:'1 000 000 000',ck:()=>G.tot>=1e9},
-{id:'ab10',nm:'Строитель',ic:'🏗️',desc:'10 зданий',ck:()=>tB()>=10},
-{id:'ab50',nm:'Застройщик',ic:'🏗️',desc:'50 зданий',ck:()=>tB()>=50},
-{id:'ab100',nm:'Архитектор',ic:'🏗️',desc:'100 зданий',ck:()=>tB()>=100},
-{id:'ap100',nm:'100/с',ic:'⚡',desc:'100/сек',ck:()=>G.sps>=100},
-{id:'ap10k',nm:'10К/с',ic:'⚡',desc:'10 000/сек',ck:()=>G.sps>=10e3},
-{id:'af1',nm:'Резонанс',ic:'🌌',desc:'Первый престиж',ck:()=>G.freq>=1},
-{id:'ah1',nm:'Гармония',ic:'🎵',desc:'Мега-престиж',ck:()=>G.harm>=1},
-{id:'aq',nm:'Квант. эпоха',ic:'⚛️',desc:'Купите квантовый',ck:()=>bc('qnt')>=1}
+const ACH = [
+  {id:'ac1',  nm:'Первый сигнал',  ic:'👆',desc:'Нажать 1 раз',         ck:()=>G.clicks>=1},
+  {id:'ac100',nm:'Оператор',       ic:'☝️',desc:'100 кликов',           ck:()=>G.clicks>=100},
+  {id:'ac1k', nm:'Мастер клика',   ic:'✊',desc:'1000 кликов',          ck:()=>G.clicks>=1000},
+  {id:'as100',nm:'100 сигналов',   ic:'📊',desc:'Накопить 100',         ck:()=>G.tot>=100},
+  {id:'as10k',nm:'10К сигналов',   ic:'📊',desc:'Накопить 10 000',      ck:()=>G.tot>=10e3},
+  {id:'as1m', nm:'Миллион',        ic:'💰',desc:'Накопить 1 000 000',   ck:()=>G.tot>=1e6},
+  {id:'as1b', nm:'Миллиард',       ic:'💎',desc:'Накопить миллиард',    ck:()=>G.tot>=1e9},
+  {id:'ab10', nm:'Строитель',      ic:'🏗️',desc:'10 зданий',            ck:()=>tB()>=10},
+  {id:'ab50', nm:'Застройщик',     ic:'🏙️',desc:'50 зданий',            ck:()=>tB()>=50},
+  {id:'ab100',nm:'Архитектор',     ic:'🏛️',desc:'100 зданий',           ck:()=>tB()>=100},
+  {id:'ap100',nm:'100/сек',        ic:'⚡',desc:'100 с/сек',            ck:()=>G.sps>=100},
+  {id:'ap10k',nm:'10К/сек',        ic:'⚡',desc:'10 000 с/сек',         ck:()=>G.sps>=10e3},
+  {id:'af1',  nm:'Резонанс',       ic:'🌌',desc:'Первый престиж',       ck:()=>G.freq>=1},
+  {id:'ah1',  nm:'Гармония',       ic:'🎵',desc:'Мега-престиж',         ck:()=>G.harm>=1},
+  {id:'aq',   nm:'Квантовая эпоха',ic:'⚛️',desc:'Купить квантовый',     ck:()=>bc('qnt')>=1},
 ];
 
-const CH=[
-{id:'cc1',nm:'Только клики',desc:'SPS=0, клик ×10',mod:{spsM:0,clkM:10},
-rw:'pc1',rwD:'+5% к клику навсегда',req:()=>G.tot>=100e3,dur:60,diff:'Средний'},
-{id:'cc2',nm:'Сложный эфир',desc:'Производство -50%',mod:{prodM:.5},
-rw:'pc2',rwD:'+10% к производству навсегда',req:()=>G.tot>=1e6,dur:60,diff:'Сложный'},
-{id:'cc3',nm:'Золотой эфир',desc:'Здания ×3 дороже, кристаллов ×2',mod:{costM:3,freqM:2},
-rw:'pc3',rwD:'Здания -10% навсегда',req:()=>G.tot>=10e6,dur:60,diff:'Очень сложный'},
-{id:'cc4',nm:'Хардкор',desc:'Клик ×0.5, SPS ×3',mod:{clkM:0.5,spsM:3},
-rw:'pc4',rwD:'+15% ко всему производству',req:()=>G.tot>=50e6,dur:90,diff:'Экстрим'},
-{id:'cc5',nm:'Баланс',desc:'Клик ×5, SPS ×0.3',mod:{clkM:5,spsM:0.3},
-rw:'pc5',rwD:'+20% к силе клика',req:()=>G.tot>=100e6,dur:90,diff:'Экстрим'},
-{id:'cc6',nm:'Марафон',desc:'Всё ×0.7',mod:{prodM:0.7,clkM:0.7},
-rw:'pc6',rwD:'+25% ко всему',req:()=>G.tot>=500e6,dur:120,diff:'Легендарный'},
-{id:'cc7',nm:'Спидран',desc:'Время ×2 (быстрее)',mod:{durM:2},
-rw:'pc7',rwD:'+30% к скорости престижа',req:()=>G.tot>=1e9,dur:45,diff:'Легендарный'},
-{id:'cc8',nm:'Жадность',desc:'Здания ×5, но SPS ×4',mod:{costM:5,prodM:4},
-rw:'pc8',rwD:'Здания -15% навсегда',req:()=>G.tot>=5e9,dur:90,diff:'Легендарный'}
+const CH = [
+  {id:'cc1',nm:'Только руки',    desc:'SPS=0, клик ×10 на 60с',            mod:{spsM:0,clkM:10},       rw:'pc1',rwD:'+5% клика навсегда',       req:()=>G.tot>=100e3,  reqVal:100e3,  dur:60,  diff:'Средний',    dCol:'#ffd700'},
+  {id:'cc2',nm:'Помехи в эфире', desc:'Производство −50% на 60с',           mod:{prodM:.5},              rw:'pc2',rwD:'+10% производства навсегда',req:()=>G.tot>=1e6,    reqVal:1e6,    dur:60,  diff:'Сложный',    dCol:'#ff8800'},
+  {id:'cc3',nm:'Золотой эфир',   desc:'Здания ×3 дороже, кристаллов ×2',   mod:{costM:3,freqM:2},       rw:'pc3',rwD:'Здания −10% навсегда',      req:()=>G.tot>=10e6,   reqVal:10e6,   dur:60,  diff:'Очень сложный',dCol:'#ff5500'},
+  {id:'cc4',nm:'Хардкор',        desc:'Клик ×0.5, SPS ×3 на 90с',          mod:{clkM:.5,spsM:3},        rw:'pc4',rwD:'+15% ко всему',            req:()=>G.tot>=50e6,   reqVal:50e6,   dur:90,  diff:'Экстрим',    dCol:'#ff2200'},
+  {id:'cc5',nm:'Баланс частот',  desc:'Клик ×5, SPS ×0.3 на 90с',          mod:{clkM:5,spsM:.3},        rw:'pc5',rwD:'+20% к силе клика',        req:()=>G.tot>=100e6,  reqVal:100e6,  dur:90,  diff:'Экстрим',    dCol:'#ff0055'},
+  {id:'cc6',nm:'Марафон',        desc:'Всё ×0.7 на 120с',                   mod:{prodM:.7,clkM:.7},      rw:'pc6',rwD:'+25% ко всему',            req:()=>G.tot>=500e6,  reqVal:500e6,  dur:120, diff:'Легендарный', dCol:'#cc00ff'},
 ];
 
-const SNAMES=['Антенна','Радиовышка','Телебашня','Спутниковая','Квантовая'];
-function gStage(){if(G.totAll>=1e12)return 4;if(G.totAll>=1e9)return 3;if(G.totAll>=1e6)return 2;if(G.totAll>=1e4)return 1;return 0}
-
+// ════════════════════════════════════════
+// CORE FUNCTIONS
+// ════════════════════════════════════════
+const SNAMES = ['Антенна','Радиовышка','Телебашня','Спутниковая','Квантовая'];
+function gStage(){
+  if(G.totAll>=1e12) return 4;
+  if(G.totAll>=1e9)  return 3;
+  if(G.totAll>=1e6)  return 2;
+  if(G.totAll>=1e4)  return 1;
+  return 0;
+}
 function bc(id){return G.bld[id]||0}
-function tB(){let t=0;for(let k in G.bld)t+=G.bld[k];return t}
-function bC(b,n){return Math.ceil(b.cost*Math.pow(b.cm,n))}
-function bBC(b,n,a){let t=0;for(let i=0;i<a;i++)t+=bC(b,n+i);return t}
-function bBA(b,n){let a=0,t=0;while(t+bC(b,n+a)<=G.sig&&a<G.buy){t+=bC(b,n+a);a++}return a}
-
-function cMod(){
-let m={spsM:1,clkM:1,prodM:1,costM:1,freqM:1,durM:1};
-for(let c of CH)if(G.chStart[c.id]){
-if(c.mod.spsM!==undefined)m.spsM*=c.mod.spsM;
-if(c.mod.clkM!==undefined)m.clkM*=c.mod.clkM;
-if(c.mod.prodM!==undefined)m.prodM*=c.mod.prodM;
-if(c.mod.costM!==undefined)m.costM*=c.mod.costM;
-if(c.mod.freqM!==undefined)m.freqM*=c.mod.freqM;
-if(c.mod.durM!==undefined)m.durM*=c.mod.durM;
-}return m;
-}
-
-function bMult(id){
-let m=1;
-for(let u of UPG)if(G.upg[u.id]&&u.tp==='bld'&&u.b===id)m*=u.m;
-for(let u of UPG)if(G.upg[u.id]&&u.tp==='glb')m*=u.m;
-m*=(1+G.freq*.05)*(1+G.harm*.1);
-m*=cMod().prodM;
-return m;
-}
-function bSps(id){let b=BLD.find(x=>x.id===id);return b?b.sps*bMult(id)*bc(id):0}
-function tSps(){return BLD.reduce((s,b)=>s+bSps(b.id),0)*cMod().spsM}
-function cPow(){
-let p=1;
-for(let u of UPG)if(G.upg[u.id]&&u.tp==='clk')p*=u.m;
-p*=cMod().clkM;
-p*=(1+G.freq*.05)*(1+G.harm*.1);
-if(G.chDone.pc1)p*=1.05;
-if(G.chDone.pc5)p*=1.2;
-return p;
+function tB(){return Object.values(G.bld).reduce((a,b)=>a+b,0)}
+function bCost(b,n){return Math.ceil(b.cost*Math.pow(b.cm,n))}
+function bBulkCost(b,n,amt){let t=0;for(let i=0;i<amt;i++)t+=bCost(b,n+i);return t}
+function bMaxBuy(b,n){
+  let a=0,t=0;
+  while(a<G.buy){let c=bCost(b,n+a);if(t+c>G.sig)break;t+=c;a++}
+  return a;
 }
 function pGain(){return G.totAll<1e6?0:Math.floor(Math.pow(G.totAll/1e6,.5))}
 function hGain(){return G.freq<1e3?0:Math.floor(Math.pow(G.freq/1e3,.5))}
 
+function cMod(){
+  let m={spsM:1,clkM:1,prodM:1,costM:1,freqM:1};
+  for(let ch of CH) if(G.chStart[ch.id]) for(let k in ch.mod) m[k]*=ch.mod[k];
+  return m;
+}
+
+function recalc(){
+  const cm = cMod();
+  // Click power
+  let cp = 1;
+  for(let u of UPG) if(G.upg[u.id] && u.tp==='clk') cp*=u.m;
+  cp *= cm.clkM * (1+G.freq*.05) * (1+G.harm*.1);
+  if(G.chDone.pc1) cp*=1.05;
+  if(G.chDone.pc5) cp*=1.2;
+  Cache.click = Math.max(1, cp);
+
+  // SPS
+  let glb=1;
+  for(let u of UPG) if(G.upg[u.id] && u.tp==='glb') glb*=u.m;
+  glb *= (1+G.freq*.05) * (1+G.harm*.1) * cm.prodM;
+  if(G.chDone.pc2) glb*=1.1;
+  if(G.chDone.pc4) glb*=1.15;
+  if(G.chDone.pc6) glb*=1.25;
+
+  let tsps=0;
+  for(let b of BLD){
+    let bm=glb;
+    for(let u of UPG) if(G.upg[u.id] && u.tp==='bld' && u.b===b.id) bm*=u.m;
+    Cache.bMult[b.id]=bm;
+    tsps+=b.sps*bm*(G.bld[b.id]||0);
+  }
+  Cache.sps = tsps * cm.spsM;
+  G.sps = Cache.sps;
+}
+
+// ════════════════════════════════════════
+// FORMAT
+// ════════════════════════════════════════
 function fmt(n){
-if(n==null||isNaN(n))return'0';if(n<0)n=0;
-if(n<1)return n.toFixed(1);
-if(n<1e4)return Math.floor(n).toLocaleString('ru');
-if(n<1e6)return(n/1e3).toFixed(1)+'K';
-if(n<1e9)return(n/1e6).toFixed(2)+'M';
-if(n<1e12)return(n/1e9).toFixed(2)+'B';
-if(n<1e15)return(n/1e12).toFixed(2)+'T';
-return n.toExponential(2);
+  if(n==null||isNaN(n)) return '0';
+  if(n<0) n=0;
+  if(n<1) return n.toFixed(1);
+  if(n<1e4) return Math.floor(n).toLocaleString('ru');
+  if(n<1e6) return (n/1e3).toFixed(1)+'K';
+  if(n<1e9) return (n/1e6).toFixed(2)+'M';
+  if(n<1e12) return (n/1e9).toFixed(2)+'B';
+  if(n<1e15) return (n/1e12).toFixed(2)+'T';
+  return n.toExponential(2);
 }
 function fmtT(ms){
-let s=Math.floor(ms/1e3),m=Math.floor(s/60);s%=60;
-let h=Math.floor(m/60);m%=60;let d=Math.floor(h/24);h%=24;
-if(d>0)return d+'д '+h+'ч';if(h>0)return h+'ч '+m+'м';if(m>0)return m+'м '+s+'с';return s+'с';
+  let s=Math.floor(ms/1e3), m=Math.floor(s/60); s%=60;
+  let h=Math.floor(m/60); m%=60; let d=Math.floor(h/24); h%=24;
+  if(d>0) return d+'д '+h+'ч';
+  if(h>0) return h+'ч '+m+'м';
+  if(m>0) return m+'м '+s+'с';
+  return s+'с';
 }
 
+// ════════════════════════════════════════
+// SVG TOWERS
+// ════════════════════════════════════════
 function tSVG(stage){
-const red='#EA212E',lblue='#77C7E6',dk='#104586',mt='#3388BB',glow='#4ECDC4';
-if(stage===0)return `<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
-<defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${dk};stop-opacity:1"/><stop offset="100%" style="stop-color:${mt};stop-opacity:1"/></linearGradient>
-<filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<ellipse cx="120" cy="290" rx="80" ry="14" fill="rgba(119,199,230,.15)"/>
-<g opacity=".6"><ellipse cx="120" cy="55" rx="28" ry="10" fill="none" stroke="${lblue}" stroke-width="2">
-<animate attributeName="rx" values="28;60;28" dur="3s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".6;0;.6" dur="3s" repeatCount="indefinite"/></ellipse>
-<ellipse cx="120" cy="55" rx="45" ry="15" fill="none" stroke="${lblue}" stroke-width="1.5">
-<animate attributeName="rx" values="45;80;45" dur="3s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".4;0;.4" dur="3s" repeatCount="indefinite"/></ellipse></g>
-<rect x="65" y="275" width="110" height="10" rx="5" fill="url(#g1)" stroke="${mt}" stroke-width="1.5"/>
-<line x1="88" y1="275" x2="98" y2="85" stroke="url(#g1)" stroke-width="4" stroke-linecap="round"/>
-<line x1="152" y1="275" x2="142" y2="85" stroke="url(#g1)" stroke-width="4" stroke-linecap="round"/>
-<rect x="90" y="80" width="60" height="6" rx="3" fill="url(#g1)" stroke="${mt}" stroke-width="1.5"/>
-<rect x="116" y="25" width="8" height="55" fill="${mt}" rx="2"/>
-<ellipse cx="120" cy="55" rx="24" ry="12" fill="#0a1a30" stroke="${mt}" stroke-width="2"/>
-<circle cx="120" cy="28" r="4" fill="${red}" filter="url(#glow)"><animate attributeName="opacity" values="1;.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
-<line x1="5" y1="305" x2="235" y2="305" stroke="#0a1520" stroke-width="1.5"/></svg>`;
-if(stage===1)return `<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
-<defs><linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${dk};stop-opacity:1"/><stop offset="100%" style="stop-color:${mt};stop-opacity:1"/></linearGradient>
-<filter id="glow2"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<ellipse cx="120" cy="290" rx="85" ry="16" fill="rgba(119,199,230,.15)"/>
-<g opacity=".5"><ellipse cx="120" cy="55" rx="28" ry="10" fill="none" stroke="${lblue}" stroke-width="2">
-<animate attributeName="rx" values="28;65;28" dur="3s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".5;0;.5" dur="3s" repeatCount="indefinite"/></ellipse></g>
-<rect x="62" y="275" width="116" height="12" rx="6" fill="url(#g2)" stroke="${mt}" stroke-width="1.5"/>
-<rect x="75" y="265" width="90" height="10" rx="4" fill="#0d1a30" stroke="${mt}" stroke-width="1.5"/>
-<line x1="88" y1="265" x2="98" y2="80" stroke="url(#g2)" stroke-width="4" stroke-linecap="round"/>
-<line x1="152" y1="265" x2="142" y2="80" stroke="url(#g2)" stroke-width="4" stroke-linecap="round"/>
-<line x1="88" y1="265" x2="152" y2="243" stroke="rgba(51,136,187,.5)" stroke-width="2"/>
-<line x1="152" y1="265" x2="88" y2="243" stroke="rgba(51,136,187,.5)" stroke-width="2"/>
-<line x1="91" y1="243" x2="149" y2="221" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="149" y1="243" x2="91" y2="221" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="94" y1="221" x2="146" y2="199" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="146" y1="221" x2="94" y2="199" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="97" y1="199" x2="143" y2="177" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="143" y1="199" x2="97" y2="177" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="100" y1="177" x2="140" y2="155" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="140" y1="177" x2="100" y2="155" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="102" y1="155" x2="138" y2="133" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="138" y1="155" x2="102" y2="133" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="104" y1="133" x2="136" y2="111" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="136" y1="133" x2="104" y2="111" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="105" y1="111" x2="135" y2="93" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="135" y1="111" x2="105" y2="93" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="106" y1="93" x2="134" y2="80" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<line x1="134" y1="93" x2="106" y2="80" stroke="rgba(51,136,187,.4)" stroke-width="2"/>
-<rect x="90" y="76" width="60" height="6" rx="3" fill="url(#g2)" stroke="${mt}" stroke-width="1.5"/>
-<rect x="116" y="25" width="8" height="51" fill="${mt}" rx="2"/>
-<ellipse cx="120" cy="55" rx="24" ry="12" fill="#0a1a30" stroke="${mt}" stroke-width="2"/>
-<circle cx="120" cy="28" r="4" fill="${red}" filter="url(#glow2)"><animate attributeName="opacity" values="1;.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
-<line x1="90" y1="76" x2="70" y2="63" stroke="url(#g2)" stroke-width="2.5"/>
-<circle cx="67" cy="61" r="3" fill="${mt}"/>
-<line x1="150" y1="76" x2="170" y2="63" stroke="url(#g2)" stroke-width="2.5"/>
-<circle cx="173" cy="61" r="3" fill="${mt}"/>
-<line x1="5" y1="305" x2="235" y2="305" stroke="#0a1520" stroke-width="1.5"/></svg>`;
-if(stage===2)return `<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
-<defs><linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${dk};stop-opacity:1"/><stop offset="100%" style="stop-color:${mt};stop-opacity:1"/></linearGradient>
-<filter id="glow3"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<ellipse cx="120" cy="290" rx="90" ry="18" fill="rgba(234,33,46,.12)"/>
-<g opacity=".5"><ellipse cx="120" cy="52" rx="30" ry="11" fill="none" stroke="${red}" stroke-width="2">
-<animate attributeName="rx" values="30;68;30" dur="2.5s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".5;0;.5" dur="2.5s" repeatCount="indefinite"/></ellipse>
-<ellipse cx="120" cy="52" rx="48" ry="16" fill="none" stroke="${lblue}" stroke-width="1.5">
-<animate attributeName="rx" values="48;85;48" dur="2.5s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".35;0;.35" dur="2.5s" repeatCount="indefinite"/></ellipse></g>
-<rect x="58" y="275" width="124" height="14" rx="7" fill="url(#g3)" stroke="${mt}" stroke-width="1.5"/>
-<rect x="70" y="263" width="100" height="12" rx="5" fill="#0d1a30" stroke="${mt}" stroke-width="1.5"/>
-<line x1="85" y1="263" x2="97" y2="75" stroke="url(#g3)" stroke-width="5" stroke-linecap="round"/>
-<line x1="155" y1="263" x2="143" y2="75" stroke="url(#g3)" stroke-width="5" stroke-linecap="round"/>
-<line x1="85" y1="263" x2="155" y2="239" stroke="rgba(234,33,46,.3)" stroke-width="2"/>
-<line x1="155" y1="263" x2="85" y2="239" stroke="rgba(234,33,46,.3)" stroke-width="2"/>
-<line x1="88" y1="239" x2="152" y2="215" stroke="rgba(234,33,46,.25)" stroke-width="2"/>
-<line x1="152" y1="239" x2="88" y2="215" stroke="rgba(234,33,46,.25)" stroke-width="2"/>
-<line x1="91" y1="215" x2="149" y2="191" stroke="rgba(119,199,230,.25)" stroke-width="2"/>
-<line x1="149" y1="215" x2="91" y2="191" stroke="rgba(119,199,230,.25)" stroke-width="2"/>
-<line x1="94" y1="191" x2="146" y2="167" stroke="rgba(234,33,46,.2)" stroke-width="2"/>
-<line x1="146" y1="191" x2="94" y2="167" stroke="rgba(234,33,46,.2)" stroke-width="2"/>
-<line x1="97" y1="167" x2="143" y2="143" stroke="rgba(119,199,230,.2)" stroke-width="2"/>
-<line x1="143" y1="167" x2="97" y2="143" stroke="rgba(119,199,230,.2)" stroke-width="2"/>
-<line x1="100" y1="143" x2="140" y2="119" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
-<line x1="140" y1="143" x2="100" y2="119" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
-<line x1="102" y1="119" x2="138" y2="95" stroke="rgba(119,199,230,.15)" stroke-width="2"/>
-<line x1="138" y1="119" x2="102" y2="95" stroke="rgba(119,199,230,.15)" stroke-width="2"/>
-<line x1="104" y1="95" x2="136" y2="78" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
-<line x1="136" y1="95" x2="104" y2="78" stroke="rgba(234,33,46,.15)" stroke-width="2"/>
-<rect x="85" y="70" width="70" height="7" rx="4" fill="url(#g3)" stroke="${mt}" stroke-width="1.5"/>
-<rect x="116" y="22" width="8" height="48" fill="${mt}" rx="2"/>
-<ellipse cx="100" cy="50" rx="18" ry="10" fill="#0a1a30" stroke="${red}" stroke-width="2"/>
-<ellipse cx="140" cy="50" rx="18" ry="10" fill="#0a1a30" stroke="${red}" stroke-width="2"/>
-<circle cx="120" cy="24" r="5" fill="${red}" filter="url(#glow3)"><animate attributeName="opacity" values="1;.3;1" dur="1.2s" repeatCount="indefinite"/>
-<animate attributeName="r" values="4;6;4" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="85" y1="70" x2="63" y2="56" stroke="url(#g3)" stroke-width="3"/>
-<circle cx="60" cy="54" r="4" fill="${mt}"/>
-<line x1="155" y1="70" x2="177" y2="56" stroke="url(#g3)" stroke-width="3"/>
-<circle cx="180" cy="54" r="4" fill="${mt}"/>
-<line x1="85" y1="70" x2="68" y2="35" stroke="rgba(51,136,187,.6)" stroke-width="2"/>
-<circle cx="65" cy="33" r="3" fill="rgba(119,199,230,.6)"/>
-<line x1="155" y1="70" x2="172" y2="35" stroke="rgba(51,136,187,.6)" stroke-width="2"/>
-<circle cx="175" cy="33" r="3" fill="rgba(119,199,230,.6)"/>
-<line x1="5" y1="305" x2="235" y2="305" stroke="#0a1520" stroke-width="1.5"/></svg>`;
-if(stage===3)return `<svg viewBox="0 0 260 330" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
-<defs><linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${dk};stop-opacity:1"/><stop offset="100%" style="stop-color:${mt};stop-opacity:1"/></linearGradient>
-<filter id="glow4"><feGaussianBlur stdDeviation="5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<ellipse cx="130" cy="300" rx="95" ry="20" fill="rgba(234,33,46,.15)"/>
-<g opacity=".6"><ellipse cx="130" cy="48" rx="26" ry="10" fill="none" stroke="${red}" stroke-width="2.5">
-<animate attributeName="rx" values="26;65;26" dur="2s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".6;0;.6" dur="2s" repeatCount="indefinite"/></ellipse>
-<ellipse cx="130" cy="48" rx="42" ry="15" fill="none" stroke="${lblue}" stroke-width="2">
-<animate attributeName="rx" values="42;82;42" dur="2s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".4;0;.4" dur="2s" repeatCount="indefinite"/></ellipse></g>
-<rect x="52" y="285" width="156" height="16" rx="8" fill="url(#g4)" stroke="${mt}" stroke-width="2"/>
-<rect x="68" y="272" width="124" height="13" rx="6" fill="#0d1a30" stroke="${mt}" stroke-width="1.5"/>
-<line x1="83" y1="272" x2="98" y2="70" stroke="url(#g4)" stroke-width="6" stroke-linecap="round"/>
-<line x1="177" y1="272" x2="162" y2="70" stroke="url(#g4)" stroke-width="6" stroke-linecap="round"/>
-<line x1="83" y1="272" x2="177" y2="246" stroke="rgba(234,33,46,.3)" stroke-width="2.5"/>
-<line x1="177" y1="272" x2="83" y2="246" stroke="rgba(234,33,46,.3)" stroke-width="2.5"/>
-<line x1="87" y1="246" x2="173" y2="220" stroke="rgba(234,33,46,.25)" stroke-width="2.5"/>
-<line x1="173" y1="246" x2="87" y2="220" stroke="rgba(234,33,46,.25)" stroke-width="2.5"/>
-<line x1="91" y1="220" x2="169" y2="194" stroke="rgba(119,199,230,.25)" stroke-width="2.5"/>
-<line x1="169" y1="220" x2="91" y2="194" stroke="rgba(119,199,230,.25)" stroke-width="2.5"/>
-<line x1="95" y1="194" x2="165" y2="168" stroke="rgba(234,33,46,.2)" stroke-width="2.5"/>
-<line x1="165" y1="194" x2="95" y2="168" stroke="rgba(234,33,46,.2)" stroke-width="2.5"/>
-<line x1="98" y1="168" x2="162" y2="142" stroke="rgba(119,199,230,.2)" stroke-width="2.5"/>
-<line x1="162" y1="168" x2="98" y2="142" stroke="rgba(119,199,230,.2)" stroke-width="2.5"/>
-<line x1="101" y1="142" x2="159" y2="116" stroke="rgba(234,33,46,.15)" stroke-width="2.5"/>
-<line x1="159" y1="142" x2="101" y2="116" stroke="rgba(234,33,46,.15)" stroke-width="2.5"/>
-<line x1="104" y1="116" x2="156" y2="90" stroke="rgba(119,199,230,.15)" stroke-width="2.5"/>
-<line x1="156" y1="116" x2="104" y2="90" stroke="rgba(119,199,230,.15)" stroke-width="2.5"/>
-<rect x="78" y="65" width="104" height="7" rx="4" fill="url(#g4)" stroke="${mt}" stroke-width="1.5"/>
-<ellipse cx="105" cy="48" rx="20" ry="11" fill="#0a1a30" stroke="${red}" stroke-width="2.5"/>
-<ellipse cx="155" cy="48" rx="20" ry="11" fill="#0a1a30" stroke="${red}" stroke-width="2.5"/>
-<rect x="126" y="22" width="8" height="43" fill="${mt}" rx="2"/>
-<circle cx="130" cy="24" r="5" fill="${red}" filter="url(#glow4)"><animate attributeName="r" values="4;7;4" dur="1s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values="1;.4;1" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="78" y1="65" x2="52" y2="45" stroke="url(#g4)" stroke-width="3"/>
-<circle cx="49" cy="43" r="5" fill="rgba(234,33,46,.5)"><animate attributeName="r" values="4;6;4" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="182" y1="65" x2="208" y2="45" stroke="url(#g4)" stroke-width="3"/>
-<circle cx="211" cy="43" r="5" fill="rgba(234,33,46,.5)"><animate attributeName="r" values="4;6;4" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="78" y1="65" x2="58" y2="22" stroke="rgba(119,199,230,.5)" stroke-width="2"/>
-<circle cx="55" cy="20" r="4" fill="rgba(119,199,230,.5)"/>
-<line x1="182" y1="65" x2="202" y2="22" stroke="rgba(119,199,230,.5)" stroke-width="2"/>
-<circle cx="205" cy="20" r="4" fill="rgba(119,199,230,.5)"/>
-<line x1="5" y1="315" x2="255" y2="315" stroke="#0a1520" stroke-width="1.5"/></svg>`;
-return `<svg viewBox="0 0 260 330" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
-<defs><linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${dk};stop-opacity:1"/><stop offset="100%" style="stop-color:${mt};stop-opacity:1"/></linearGradient>
-<filter id="glow5"><feGaussianBlur stdDeviation="6" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<ellipse cx="130" cy="300" rx="100" ry="22" fill="rgba(234,33,46,.15)"/>
-<g opacity=".7"><ellipse cx="130" cy="45" rx="24" ry="9" fill="none" stroke="${red}" stroke-width="2.5">
-<animate attributeName="rx" values="24;68;24" dur="1.5s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".7;0;.7" dur="1.5s" repeatCount="indefinite"/></ellipse>
-<ellipse cx="130" cy="45" rx="42" ry="14" fill="none" stroke="${lblue}" stroke-width="2">
-<animate attributeName="rx" values="42;88;42" dur="1.5s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".5;0;.5" dur="1.5s" repeatCount="indefinite"/></ellipse>
-<ellipse cx="130" cy="45" rx="62" ry="19" fill="none" stroke="${red}" stroke-width="1.5">
-<animate attributeName="rx" values="62;108;62" dur="2s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".35;0;.35" dur="2s" repeatCount="indefinite"/></ellipse></g>
-<rect x="45" y="285" width="170" height="18" rx="9" fill="url(#g5)" stroke="${mt}" stroke-width="2"/>
-<rect x="62" y="270" width="136" height="14" rx="6" fill="#0d1a30" stroke="${mt}" stroke-width="1.5"/>
-<line x1="80" y1="270" x2="98" y2="65" stroke="url(#g5)" stroke-width="7" stroke-linecap="round"/>
-<line x1="180" y1="270" x2="162" y2="65" stroke="url(#g5)" stroke-width="7" stroke-linecap="round"/>
-<line x1="80" y1="270" x2="180" y2="244" stroke="rgba(234,33,46,.3)" stroke-width="3"/>
-<line x1="180" y1="270" x2="80" y2="244" stroke="rgba(234,33,46,.3)" stroke-width="3"/>
-<line x1="85" y1="244" x2="175" y2="218" stroke="rgba(234,33,46,.25)" stroke-width="3"/>
-<line x1="175" y1="244" x2="85" y2="218" stroke="rgba(234,33,46,.25)" stroke-width="3"/>
-<line x1="89" y1="218" x2="171" y2="192" stroke="rgba(119,199,230,.25)" stroke-width="3"/>
-<line x1="171" y1="218" x2="89" y2="192" stroke="rgba(119,199,230,.25)" stroke-width="3"/>
-<line x1="93" y1="192" x2="167" y2="166" stroke="rgba(234,33,46,.2)" stroke-width="3"/>
-<line x1="167" y1="192" x2="93" y2="166" stroke="rgba(234,33,46,.2)" stroke-width="3"/>
-<line x1="97" y1="166" x2="163" y2="140" stroke="rgba(119,199,230,.2)" stroke-width="3"/>
-<line x1="163" y1="166" x2="97" y2="140" stroke="rgba(119,199,230,.2)" stroke-width="3"/>
-<line x1="100" y1="140" x2="160" y2="114" stroke="rgba(234,33,46,.15)" stroke-width="3"/>
-<line x1="160" y1="140" x2="100" y2="114" stroke="rgba(234,33,46,.15)" stroke-width="3"/>
-<line x1="103" y1="114" x2="157" y2="88" stroke="rgba(119,199,230,.15)" stroke-width="3"/>
-<line x1="157" y1="114" x2="103" y2="88" stroke="rgba(119,199,230,.15)" stroke-width="3"/>
-<rect x="75" y="60" width="110" height="8" rx="4" fill="url(#g5)" stroke="${mt}" stroke-width="1.5"/>
-<circle cx="130" cy="45" r="22" fill="none" stroke="${red}" stroke-width="3" opacity=".9">
-<animate attributeName="r" values="20;24;20" dur="2s" repeatCount="indefinite"/>
-<animate attributeName="opacity" values=".9;.4;.9" dur="2s" repeatCount="indefinite"/></circle>
-<circle cx="130" cy="45" r="12" fill="${red}" opacity=".7">
-<animate attributeName="r" values="10;14;10" dur="1s" repeatCount="indefinite"/></circle>
-<circle cx="130" cy="45" r="5" fill="#FDFDFD">
-<animate attributeName="opacity" values="1;.4;1" dur=".8s" repeatCount="indefinite"/></circle>
-<line x1="75" y1="60" x2="45" y2="38" stroke="${red}" stroke-width="3" opacity=".6"/>
-<circle cx="42" cy="36" r="6" fill="rgba(234,33,46,.5)"><animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="185" y1="60" x2="215" y2="38" stroke="${red}" stroke-width="3" opacity=".6"/>
-<circle cx="218" cy="36" r="6" fill="rgba(234,33,46,.5)"><animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="75" y1="60" x2="52" y2="15" stroke="rgba(119,199,230,.5)" stroke-width="2"/>
-<circle cx="49" cy="13" r="4" fill="rgba(119,199,230,.5)"/>
-<line x1="185" y1="60" x2="208" y2="15" stroke="rgba(119,199,230,.5)" stroke-width="2"/>
-<circle cx="211" cy="13" r="4" fill="rgba(119,199,230,.5)"/>
-<line x1="5" y1="315" x2="255" y2="315" stroke="#0a1520" stroke-width="1.5"/></svg>`;
+  const acc='#00d4ff', red='#ff4757', bg='#0a1628', dk='#142852', mt='#2a529e', dim='#1a3366';
+  const glow = `<filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  const base = `<defs>${glow}</defs>`;
+
+  if(stage===0) return `<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+    ${base}
+    <ellipse cx="110" cy="278" rx="75" ry="12" fill="${dk}" opacity=".6"/>
+    <rect x="58" y="266" width="104" height="10" rx="5" fill="${bg}" stroke="${mt}" stroke-width="1.5"/>
+    <line x1="82" y1="264" x2="92" y2="78" stroke="${mt}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="138" y1="264" x2="128" y2="78" stroke="${mt}" stroke-width="4" stroke-linecap="round"/>
+    <rect x="86" y="72" width="48" height="8" rx="4" fill="${bg}" stroke="${mt}" stroke-width="1.5"/>
+    <rect x="107" y="22" width="6" height="50" fill="${mt}" rx="2"/>
+    <ellipse cx="110" cy="52" rx="22" ry="10" fill="${bg}" stroke="${acc}" stroke-width="2" filter="url(#glow)"/>
+    <circle cx="110" cy="24" r="4" fill="${red}" filter="url(#glow)"/>
+    <animate attributeName="opacity" values="1;0.7;1" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+  </svg>`;
+
+  if(stage===1) return `<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+    ${base}
+    <ellipse cx="110" cy="278" rx="78" ry="13" fill="${dk}" opacity=".6"/>
+    <rect x="55" y="266" width="110" height="11" rx="5.5" fill="${bg}" stroke="${mt}" stroke-width="1.5"/>
+    <line x1="80" y1="256" x2="92" y2="72" stroke="${mt}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="140" y1="256" x2="128" y2="72" stroke="${mt}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="80" y1="256" x2="140" y2="235" stroke="${dim}" stroke-width="1.5"/>
+    <line x1="140" y1="256" x2="80" y2="235" stroke="${dim}" stroke-width="1.5"/>
+    <line x1="80" y1="235" x2="140" y2="214" stroke="${dim}" stroke-width="1.5"/>
+    <line x1="140" y1="235" x2="80" y2="214" stroke="${dim}" stroke-width="1.5"/>
+    <rect x="86" y="68" width="48" height="6" rx="3" fill="${bg}" stroke="${mt}" stroke-width="1.5"/>
+    <rect x="107" y="22" width="6" height="46" fill="${mt}" rx="2"/>
+    <ellipse cx="110" cy="50" rx="22" ry="10" fill="${bg}" stroke="${acc}" stroke-width="2" filter="url(#glow)"/>
+    <circle cx="110" cy="24" r="4" fill="${red}" filter="url(#glow)"/>
+  </svg>`;
+
+  if(stage===2) return `<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+    ${base}
+    <ellipse cx="110" cy="280" rx="82" ry="14" fill="${dk}" opacity=".6"/>
+    <rect x="52" y="268" width="116" height="12" rx="6" fill="${bg}" stroke="${mt}" stroke-width="2"/>
+    <line x1="76" y1="256" x2="90" y2="65" stroke="${mt}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="144" y1="256" x2="130" y2="65" stroke="${mt}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="76" y1="256" x2="144" y2="234" stroke="${red}" stroke-width="1.5" opacity=".5"/>
+    <line x1="144" y1="256" x2="76" y2="234" stroke="${red}" stroke-width="1.5" opacity=".5"/>
+    <line x1="76" y1="234" x2="144" y2="212" stroke="${dim}" stroke-width="1.5"/>
+    <line x1="144" y1="234" x2="76" y2="212" stroke="${dim}" stroke-width="1.5"/>
+    <rect x="83" y="60" width="54" height="7" rx="3" fill="${bg}" stroke="${mt}" stroke-width="2"/>
+    <rect x="107" y="18" width="6" height="42" fill="${mt}" rx="2"/>
+    <ellipse cx="94" cy="44" rx="16" ry="8" fill="${bg}" stroke="${acc}" stroke-width="2" filter="url(#glow)"/>
+    <ellipse cx="126" cy="44" rx="16" ry="8" fill="${bg}" stroke="${acc}" stroke-width="2" filter="url(#glow)"/>
+    <circle cx="110" cy="20" r="5" fill="${red}" filter="url(#glow)"/>
+  </svg>`;
+
+  if(stage===3) return `<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+    ${base}
+    <ellipse cx="110" cy="282" rx="88" ry="15" fill="${dk}" opacity=".6"/>
+    <rect x="48" y="270" width="124" height="13" rx="6.5" fill="${bg}" stroke="${mt}" stroke-width="2"/>
+    <line x1="72" y1="258" x2="88" y2="60" stroke="${mt}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="148" y1="258" x2="132" y2="60" stroke="${mt}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="72" y1="258" x2="148" y2="234" stroke="${acc}" stroke-width="1.5" opacity=".4"/>
+    <line x1="148" y1="258" x2="72" y2="234" stroke="${acc}" stroke-width="1.5" opacity=".4"/>
+    <line x1="72" y1="234" x2="148" y2="210" stroke="${acc}" stroke-width="1" opacity=".3"/>
+    <line x1="148" y1="234" x2="72" y2="210" stroke="${acc}" stroke-width="1" opacity=".3"/>
+    <rect x="80" y="55" width="60" height="7" rx="3" fill="${bg}" stroke="${acc}" stroke-width="2"/>
+    <rect x="107" y="14" width="6" height="41" fill="${mt}" rx="2"/>
+    <ellipse cx="88" cy="40" rx="16" ry="8" fill="${bg}" stroke="${acc}" stroke-width="2.5" filter="url(#glow)"/>
+    <ellipse cx="110" cy="36" rx="10" ry="6" fill="${bg}" stroke="${red}" stroke-width="2" filter="url(#glow)"/>
+    <ellipse cx="132" cy="40" rx="16" ry="8" fill="${bg}" stroke="${acc}" stroke-width="2.5" filter="url(#glow)"/>
+    <circle cx="110" cy="16" r="5" fill="${red}" filter="url(#glow)"/>
+    <circle cx="110" cy="16" r="5" fill="${red}" opacity=".5"><animate attributeName="r" values="5;9;5" dur="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="1.2s" repeatCount="indefinite"/></circle>
+  </svg>`;
+
+  // stage 4 — quantum
+  return `<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" class="tower-svg">
+    ${base}
+    <defs><radialGradient id="qg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${acc}" stop-opacity=".3"/><stop offset="100%" stop-color="${acc}" stop-opacity="0"/></radialGradient></defs>
+    <ellipse cx="110" cy="282" rx="90" ry="16" fill="${dk}" opacity=".6"/>
+    <ellipse cx="110" cy="110" rx="60" ry="60" fill="url(#qg)"><animate attributeName="rx" values="60;68;60" dur="3s" repeatCount="indefinite"/><animate attributeName="ry" values="60;68;60" dur="3s" repeatCount="indefinite"/></ellipse>
+    <rect x="46" y="270" width="128" height="14" rx="7" fill="${bg}" stroke="${acc}" stroke-width="2"/>
+    <line x1="70" y1="258" x2="88" y2="55" stroke="${mt}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="150" y1="258" x2="132" y2="55" stroke="${mt}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="70" y1="258" x2="150" y2="232" stroke="${acc}" stroke-width="2" opacity=".6"/>
+    <line x1="150" y1="258" x2="70" y2="232" stroke="${acc}" stroke-width="2" opacity=".6"/>
+    <line x1="70" y1="232" x2="150" y2="206" stroke="${red}" stroke-width="1.5" opacity=".5"/>
+    <line x1="150" y1="232" x2="70" y2="206" stroke="${red}" stroke-width="1.5" opacity=".5"/>
+    <rect x="78" y="50" width="64" height="7" rx="3" fill="${bg}" stroke="${acc}" stroke-width="2.5" filter="url(#glow)"/>
+    <rect x="107" y="10" width="6" height="40" fill="${acc}" rx="2" filter="url(#glow)"/>
+    <ellipse cx="85" cy="36" rx="18" ry="9" fill="${bg}" stroke="${acc}" stroke-width="2.5" filter="url(#glow)"/>
+    <ellipse cx="110" cy="30" rx="12" ry="7" fill="${bg}" stroke="${red}" stroke-width="2" filter="url(#glow)"/>
+    <ellipse cx="135" cy="36" rx="18" ry="9" fill="${bg}" stroke="${acc}" stroke-width="2.5" filter="url(#glow)"/>
+    <circle cx="110" cy="12" r="6" fill="${red}" filter="url(#glow)"/>
+    <circle cx="110" cy="12" r="6" fill="${red}" opacity=".6"><animate attributeName="r" values="6;14;6" dur=".8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".6;0;.6" dur=".8s" repeatCount="indefinite"/></circle>
+  </svg>`;
 }
 
-function openTab(t){
-document.querySelectorAll('.stab').forEach(e=>e.classList.remove('active'));
-document.querySelectorAll('.tcont').forEach(e=>e.classList.remove('active'));
-event.currentTarget.classList.add('active');
-document.getElementById('t'+t).classList.add('active');
+// ════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════
+function openTab(btn, t){
+  document.querySelectorAll('.stab').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tcont').forEach(e=>e.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('t'+t).classList.add('active');
+  render();
 }
+
 function rBuyRow(){
-let h='';
-for(let x of[1,10,100])h+='<button class="bbtn'+(G.buy===x?' active':'')+'" onclick="setBuy('+x+')">x'+x+'</button>';
-document.getElementById('buyRow').innerHTML=h;
+  document.getElementById('buyRow').innerHTML =
+    [1,10,100].map(x=>`<button class="bbtn${G.buy===x?' active':''}" onclick="setBuy(${x})">×${x}</button>`).join('');
 }
 function setBuy(n){G.buy=n;rBuyRow();rBld()}
 
+// ════════════════════════════════════════
+// RENDER BUILDINGS
+// ════════════════════════════════════════
 function rBld(){
-let c=document.getElementById('bList'),h='';
-let cm=cMod();
-for(let b of BLD){
-let cnt=bc(b.id);
-let maxAffordable=bBA(b,cnt);
-let cost=bBC(b,cnt,G.buy);
-let aff=G.sig>=cost;
-let amt=maxAffordable;
-if(amt>0)cost=bBC(b,cnt,amt);
-let dc=Math.ceil(cost*(cm.costM||1));
-let sps=b.sps*bMult(b.id),tot=bSps(b.id);
-let locked=cnt===0&&G.tot<b.cost*.4;
-
-let costClass='ccost';
-if(!aff){
-if(maxAffordable>0)costClass='ccost partial';
-else costClass='ccost no';
+  const cm = cMod();
+  let h='';
+  for(let b of BLD){
+    const cnt = bc(b.id);
+    const buyAmt = bMaxBuy(b, cnt);
+    const cost = buyAmt>0 ? bBulkCost(b,cnt,buyAmt) : bBulkCost(b,cnt,G.buy);
+    const dc = Math.ceil(cost*(cm.costM||1));
+    const aff = buyAmt>0 && G.sig>=bBulkCost(b,cnt,1);
+    const locked = cnt===0 && G.tot < b.cost*.35;
+    const sps = b.sps*(Cache.bMult[b.id]||1);
+    const tot = sps*cnt;
+    let cc = 'cc';
+    if(G.sig>=dc) cc='cc ok'; else if(buyAmt>0) cc='cc some'; else cc='cc no';
+    if(locked){h+=`<div class="card lock"><div class="cicon">🔒</div><div class="ci"><div class="cn">${b.name}</div><div class="cd">${b.desc}</div></div><div class="cr"><div class="cc no">???</div></div></div>`;continue;}
+    h+=`<div class="card${aff?' aff':''}" onclick="buyB('${b.id}')">
+      <div class="cicon">${b.ic}</div>
+      <div class="ci"><div class="cn">${b.name}</div><div class="cd">${b.desc}</div><div class="cs">+${fmt(sps)}/с · всего ${fmt(tot)}</div></div>
+      <div class="cr"><div class="${cc}">${fmt(dc)}</div><div class="cct">${cnt}${buyAmt>1?' (×'+buyAmt+')':''}</div></div>
+    </div>`;
+  }
+  document.getElementById('bList').innerHTML=h;
 }
 
-h+='<div class="card'+(aff?' aff':'')+(locked?' lock':'')+'" onclick="buyB(\''+b.id+'\')">';
-h+='<div class="cicon">'+b.ic+'</div><div class="cinfo">';
-h+='<div class="cname">'+b.name+'</div><div class="cdesc">'+b.desc+'</div>';
-h+='<div class="csub">+'+fmt(sps)+'/с | '+fmt(tot)+'</div></div>';
-h+='<div class="cright"><div class="'+costClass+'">'+fmt(dc)+'</div>';
-h+='<div class="ccount">'+cnt+(amt>1&&G.buy>1?' (×'+amt+')':'')+'</div></div></div>';
-}
-c.innerHTML=h;
-}
-
+// ════════════════════════════════════════
+// RENDER UPGRADES
+// ════════════════════════════════════════
 function rUpg(){
-let c=document.getElementById('uList'),h='',av=0;
-for(let u of UPG){
-if(G.upg[u.id]){h+='<div class="card ucard done"><div class="cicon">'+u.ic+'</div><div class="cinfo"><div class="cname">'+u.nm+' ✓</div><div class="cdesc">'+u.desc+'</div></div></div>';continue}
-if(!u.req())continue;av++;
-
-let costClass='ucost';
-if(G.sig<u.cost)costClass='ucost no';
-
-h+='<div class="card ucard'+(G.sig>=u.cost?' aff':'')+'" onclick="buyU(\''+u.id+'\')">';
-h+='<div class="cicon">'+u.ic+'</div><div class="cinfo"><div class="cname">'+u.nm+'</div><div class="cdesc">'+u.desc+'</div><div class="'+costClass+'">'+fmt(u.cost)+'</div></div></div>';
+  let h='', av=0;
+  const avail=[], done=[];
+  for(let u of UPG){
+    if(G.upg[u.id]){done.push(u);continue}
+    if(!u.req()) continue;
+    av++;
+    const aff=G.sig>=u.cost;
+    avail.push(`<div class="card ucard${aff?' aff':''}" onclick="buyU('${u.id}')">
+      <div class="cicon">${u.ic}</div>
+      <div class="ci"><div class="cn">${u.nm}</div><div class="cd">${u.desc}</div></div>
+      <div class="cr"><div class="ucost${aff?'':' no'}">${fmt(u.cost)}</div></div>
+    </div>`);
+  }
+  if(!av) h='<div style="text-align:center;color:var(--txt3);padding:24px;font-size:.75rem;border:1px solid var(--border);border-radius:var(--r2);background:var(--c2)">Нет доступных улучшений</div>';
+  else h=avail.join('');
+  if(done.length){
+    h+=`<div class="slbl" style="margin-top:14px">Куплено (${done.length})</div>`;
+    h+=done.map(u=>`<div class="card done"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm} ✓</div><div class="cd">${u.desc}</div></div></div>`).join('');
+  }
+  document.getElementById('uList').innerHTML=h;
 }
-if(!av)h='<div style="text-align:center;color:var(--mblue);padding:30px;font-size:.75rem">Нет улучшений</div>';
-c.innerHTML=h;
-}
 
+// ════════════════════════════════════════
+// RENDER ACHIEVEMENTS
+// ════════════════════════════════════════
 function rAch(){
-let c=document.getElementById('aList'),un=0;
-let h='<div class="seclbl">Разблокировано: 0/'+ACH.length+'</div>';
-for(let a of ACH){
-let u=G.ach[a.id];if(u)un++;
-h+='<div class="card achcard'+(u?' unl':' lock')+'">';
-h+='<div class="achicon">'+(u?a.ic:'❓')+'</div><div class="cinfo">';
-h+='<div class="achname">'+(u?a.nm:'???')+'</div><div class="cdesc">'+a.desc+'</div></div></div>';
-}
-h=h.replace('0/',un+'/');c.innerHTML=h;
+  const unl=ACH.filter(a=>G.ach[a.id]).length;
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div class="slbl" style="margin:0;border:none;padding:0">Достижения</div>
+    <div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--gold)">${unl}/${ACH.length}</div>
+  </div>`;
+  const pw = Math.round(unl/ACH.length*100);
+  h+=`<div class="pbar"><div class="pfill${unl>=ACH.length?' done':''}" style="width:${pw}%"></div></div><div class="ptxt">${pw}% выполнено</div><br>`;
+  for(let a of ACH){
+    const u=G.ach[a.id];
+    h+=`<div class="card achcard${u?' unl':' lock'}">
+      <div class="achi">${u?a.ic:'🔒'}</div>
+      <div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div>
+    </div>`;
+  }
+  document.getElementById('aList').innerHTML=h;
 }
 
+// ════════════════════════════════════════
+// RENDER PRESTIGE
+// ════════════════════════════════════════
 function rPre(){
-let c=document.getElementById('pList'),h='';
-let fg=pGain(),hg=hGain();
-h+='<div class="psec"><h3>🔴 <span class="rd">Резонанс Частоты</span></h3>';
-h+='<p>Сброс: сигналы + здания → кристаллы частоты (+5% каждый)</p>';
-h+='<div style="font-size:.65rem;color:var(--mblue);margin-bottom:4px">Кристаллов: <span style="color:var(--red);font-weight:700;font-size:.8rem">+'+fmt(fg)+'</span></div>';
-h+='<div style="font-size:.6rem;color:var(--mblue);margin-bottom:8px">Частота: '+G.freq+' (+'+G.freq*5+'%)</div>';
-h+='<button class="pbtn red" onclick="doPre()" '+(fg<=0?'disabled':'')+'>Резонанс</button></div>';
-h+='<div class="psec"><h3>🔵 <span class="bl">Гармоники</span></h3>';
-h+='<p>Сброс: частота + сигналы + здания → гармоники (+10% ко ВСЕМУ каждая)</p>';
-h+='<div style="font-size:.65rem;color:var(--mblue);margin-bottom:4px">Гармоник: <span style="color:var(--lblue);font-weight:700;font-size:.8rem">+'+fmt(hg)+'</span></div>';
-h+='<div style="font-size:.6rem;color:var(--mblue);margin-bottom:8px">Гармоники: '+G.harm+' (+'+G.harm*10+'%)</div>';
-h+='<button class="pbtn blue" onclick="doHarm()" '+(hg<=0?'disabled':'')+'>Гармоники</button>';
-h+='<div style="margin-top:8px;font-size:.6rem;color:var(--mblue)">Нужно 1000 кристаллов</div></div>';
-c.innerHTML=h;
+  const fg=pGain(), hg=hGain();
+  let h=`<div class="psec">
+    <h3>🔴 Резонанс Частоты</h3>
+    <p>Сброс прогресса → кристаллы частоты<br>Каждый кристалл даёт +5% ко всему</p>
+    <div style="font-size:.65rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--red);font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700">+${fmt(fg)}</span></div>
+    <div style="font-size:.6rem;color:var(--txt3);margin-bottom:10px">Уже есть: ${G.freq} (+${G.freq*5}%)</div>
+    <button class="pbtn red" onclick="doPre()" ${fg<=0?'disabled':''}>Сбросить прогресс</button>
+  </div>`;
+  h+=`<div class="psec">
+    <h3>🔵 Гармоники</h3>
+    <p>Великий сброс → гармоники<br>Каждая гармоника даёт +10% ко ВСЕМУ</p>
+    <div style="font-size:.65rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--acc);font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700">+${fmt(hg)}</span></div>
+    <div style="font-size:.6rem;color:var(--txt3);margin-bottom:10px">Уже есть: ${G.harm} (+${G.harm*10}%)</div>
+    <button class="pbtn blu" onclick="doHarm()" ${hg<=0?'disabled':''}>Великий сброс</button>
+  </div>`;
+  document.getElementById('pList').innerHTML=h;
 }
 
+// ════════════════════════════════════════
+// RENDER CHALLENGES
+// ════════════════════════════════════════
 function rChal(){
-let c=document.getElementById('cList'),h='<div class="seclbl">Активные</div>';
-let has=false;
-let now=Date.now();
-let cm=cMod();
-for(let ch of CH){
-let ts=G.chStart[ch.id];
-if(ts!==undefined){
-has=true;
-let baseDur=ch.dur*(cm.durM||1);
-let elapsed=(now-ts)/1000;
-let pct=Math.min((elapsed/baseDur)*100,100);
-let done=pct>=100;
-let timeLeft=Math.max(baseDur-elapsed,0);
-h+='<div class="chcard active">';
-h+='<div class="chnm">🔥 '+ch.nm+'</div>';
-h+='<div class="chdesc">'+ch.desc+'</div>';
-h+='<div class="pbar"><div class="pfill'+(done?' done':'')+'" style="width:'+pct+'%"></div></div>';
-h+='<div class="ptxt">'+(done?'✓ Завершается...':Math.ceil(timeLeft)+'с осталось')+' ('+Math.floor(pct)+'%)</div>';
-h+='</div>';
-}
-}
-if(!has)h+='<div style="text-align:center;color:var(--mblue);padding:8px;font-size:.65rem">Нет активных челленджей</div>';
-
-h+='<div class="seclbl" style="margin-top:12px">Доступные челленджи</div>';
-for(let ch of CH){
-let active=G.chStart[ch.id]!==undefined;
-let done=G.chDone[ch.rw];
-let can=!active&&!done&&ch.req();
-h+='<div class="chcard'+(done?' done':'')+
-'"'+(can?' onclick="startCh(\''+ch.id+'\')"':'')+'> ';
-h+='<div class="chnm">'+ch.nm+(active?' 🔥':'')+(done?' ✓':'')+'</div>';
-h+='<div class="chdesc">'+ch.desc+'</div>';
-h+='<div style="font-size:.58rem;color:var(--mblue);margin:5px 0"><span style="color:var(--red);font-weight:700">'+ch.diff+'</span> | '+ch.dur+'с</div>';
-if(done)h+='<div class="chreward">🎁 '+ch.rwD+' (получено)</div>';
-else h+='<div class="chreward">Награда: '+ch.rwD+'</div>';
-if(!done&&!active)h+='<div style="font-size:.55rem;color:var(--mblue);margin-top:3px">Требование: '+fmt(ch.req.val||0)+' сигналов</div>';
-h+='</div>';
-}
-c.innerHTML=h;
+  const now=Date.now(), cm=cMod();
+  let h='';
+  const active=CH.filter(c=>G.chStart[c.id]!==undefined);
+  if(active.length){
+    h+=`<div class="slbl">Активные испытания</div>`;
+    for(let ch of active){
+      const elapsed=(now-G.chStart[ch.id])/1000;
+      const dur=ch.dur;
+      const pct=Math.min((elapsed/dur)*100,100);
+      const done=pct>=100;
+      const tl=Math.max(dur-elapsed,0);
+      h+=`<div class="chcard active">
+        <div class="chn">🔥 ${ch.nm}</div>
+        <div class="chd">${ch.desc}</div>
+        <div class="pbar"><div class="pfill${done?' done':''}" style="width:${pct}%"></div></div>
+        <div class="ptxt">${done?'✓ Завершается...':Math.ceil(tl)+'с осталось · '+Math.round(pct)+'%'}</div>
+      </div>`;
+    }
+    h+=`<br>`;
+  }
+  h+=`<div class="slbl">Доступные испытания</div>`;
+  for(let ch of CH){
+    const isActive=G.chStart[ch.id]!==undefined;
+    const isDone=G.chDone[ch.rw];
+    const canStart=!isActive&&!isDone&&ch.req();
+    h+=`<div class="chcard${isDone?' done':isActive?' active':''}" ${canStart?`onclick="startCh('${ch.id}')"`:''}>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="chn">${ch.nm}${isActive?' 🔥':''}${isDone?' ✓':''}</div>
+        <span style="font-size:.57rem;font-weight:700;color:${ch.dCol||'#ff4757'};padding:2px 8px;border:1px solid ${ch.dCol||'#ff4757'};border-radius:10px;opacity:.8">${ch.diff}</span>
+      </div>
+      <div class="chd">${ch.desc}</div>
+      <div class="chr">${isDone?'🎁 Получено: ':'Награда: '}${ch.rwD}</div>
+      ${!isDone&&!isActive?`<div style="font-size:.55rem;color:var(--txt3);margin-top:3px">Требуется: ${fmt(ch.reqVal)} сигналов · ${ch.dur}с</div>`:''}
+    </div>`;
+  }
+  document.getElementById('cList').innerHTML=h;
 }
 
+// ════════════════════════════════════════
+// RENDER AUTO
+// ════════════════════════════════════════
 function rAuto(){
-let c=document.getElementById('mList'),h='<div class="seclbl">Автоматизация</div>';
-
-if(G.freq<=0&&G.harm<=0){
-h+='<div style="text-align:center;padding:24px;color:var(--mblue);font-size:.72rem;background:var(--bg4);border-radius:var(--radius-sm);border:1px solid var(--border)">';
-h+='🔒 Автопокупка доступна после первого престижа<br><br>';
-h+='<span style="color:var(--red);font-weight:600">Сделайте "Резонанс Частоты" чтобы разблокировать</span>';
-h+='</div>';
-}else{
-h+='<div class="autorow"><div><div class="autolbl">🏗️ Авто-здания</div><div class="autodsc">Покупает лучшее по SPS/стоимость</div></div><div class="tgl'+(G.autoB?' on':'')+'" onclick="togA(\'b\')"></div></div>';
-h+='<div class="autorow"><div><div class="autolbl">⚡ Авто-улучшения</div><div class="autodsc">Покупает доступные улучшения</div></div><div class="tgl'+(G.autoU?' on':'')+'" onclick="togA(\'u\')"></div></div>';
-if(G.autoB||G.autoU)h+='<div style="margin-top:10px;font-size:.62rem;color:var(--mblue);padding:8px;background:var(--bg4);border-radius:var(--radius-sm);border:1px solid var(--border)">Работает каждую секунду</div>';
-}
-c.innerHTML=h;
+  let h='<div class="slbl">Автоматизация</div>';
+  if(G.freq<=0&&G.harm<=0){
+    h+=`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:.72rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border);line-height:1.6">
+      🔒 Автоматизация разблокируется<br>после первого престижа
+    </div>`;
+  } else {
+    h+=`<div class="arow"><div><div class="albl">🏗️ Авто-здания</div><div class="adsc">Покупает лучшие здания по соотношению SPS/цена</div></div><div class="tgl${G.autoB?' on':''}" onclick="togA('b')"></div></div>`;
+    h+=`<div class="arow"><div><div class="albl">⚡ Авто-улучшения</div><div class="adsc">Покупает все доступные улучшения</div></div><div class="tgl${G.autoU?' on':''}" onclick="togA('u')"></div></div>`;
+  }
+  document.getElementById('mList').innerHTML=h;
 }
 function togA(t){if(t==='b')G.autoB=!G.autoB;else G.autoU=!G.autoU;rAuto()}
 
+// ════════════════════════════════════════
+// RENDER STATS
+// ════════════════════════════════════════
 function rStats(){
-document.getElementById('stList').innerHTML=
-'<div class="srow"><span class="slbl">Сигналы</span><span class="sval">'+fmt(G.sig)+'</span></div>'+
-'<div class="srow"><span class="slbl">За всё время</span><span class="sval">'+fmt(G.totAll)+'</span></div>'+
-'<div class="srow"><span class="slbl">В секунду</span><span class="sval">'+fmt(G.sps)+'</span></div>'+
-'<div class="srow"><span class="slbl">Клик</span><span class="sval">'+fmt(cPow())+'</span></div>'+
-'<div class="srow"><span class="slbl">Клики</span><span class="sval">'+G.clicks.toLocaleString('ru')+'</span></div>'+
-'<div class="srow"><span class="slbl">Здания</span><span class="sval">'+tB()+'</span></div>'+
-'<div class="srow"><span class="slbl">Частота</span><span class="sval">'+G.freq+' (+'+G.freq*5+'%)</span></div>'+
-'<div class="srow"><span class="slbl">Гармоники</span><span class="sval">'+G.harm+' (+'+G.harm*10+'%)</span></div>'+
-'<div class="srow"><span class="slbl">Улучшения</span><span class="sval">'+Object.keys(G.upg).length+'/'+UPG.length+'</span></div>'+
-'<div class="srow"><span class="slbl">Достижения</span><span class="sval">'+Object.keys(G.ach).length+'/'+ACH.length+'</span></div>'+
-'<div class="srow"><span class="slbl">Челленджи</span><span class="sval">'+Object.keys(G.chDone).length+'/'+CH.length+'</span></div>'+
-'<div class="srow"><span class="slbl">Время</span><span class="sval">'+fmtT(Date.now()-G.start)+'</span></div>';
+  const rows=[
+    ['💰 Сигналы сейчас', fmt(G.sig)],
+    ['📈 Всего заработано', fmt(G.totAll)],
+    ['⚡ Сигналов/сек',    fmt(Cache.sps)],
+    ['👆 Сила клика',      fmt(Cache.click)],
+    ['🖱️ Всего кликов',   G.clicks.toLocaleString('ru')],
+    ['🏗️ Зданий',         tB()],
+    ['⚡ Улучшений',       Object.keys(G.upg).length+'/'+UPG.length],
+    ['🏆 Достижений',      Object.keys(G.ach).length+'/'+ACH.length],
+    ['🔴 Кристаллы',      G.freq],
+    ['🔵 Гармоники',      G.harm],
+    ['⏱️ Время в игре',   fmtT(Date.now()-G.start)],
+  ];
+  document.getElementById('stList').innerHTML=
+    '<div class="slbl">Статистика</div>'+
+    rows.map(([l,v])=>`<div class="srow"><span class="slb">${l}</span><span class="sv">${v}</span></div>`).join('');
 }
 
+// ════════════════════════════════════════
+// RENDER DISPATCH
+// ════════════════════════════════════════
 function render(){
-let tab=document.querySelector('.stab.active');if(!tab)return;
-let t=tab.textContent.trim();
-if(t.includes('Здания'))rBld();
-else if(t.includes('Улучшения'))rUpg();
-else if(t.includes('Челлендж'))rChal();
-else if(t.includes('Достижения'))rAch();
-else if(t.includes('Престиж'))rPre();
-else if(t.includes('Авто'))rAuto();
-else if(t.includes('Статы'))rStats();
+  const tab=document.querySelector('.stab.active');
+  if(!tab) return;
+  const tx=tab.querySelector('.stab-tx')?.textContent||'';
+  if(tx.includes('Зд')) rBld();
+  else if(tx.includes('Апг')) rUpg();
+  else if(tx.includes('Исп')) rChal();
+  else if(tx.includes('Нагр')) rAch();
+  else if(tx.includes('Пр')) rPre();
+  else if(tx.includes('Авт')) rAuto();
+  else if(tx.includes('Ст')) rStats();
 }
 
+// ════════════════════════════════════════
+// HUD UPDATE
+// ════════════════════════════════════════
 function upd(){
-document.getElementById('sCount').textContent=fmt(G.sig);
-document.getElementById('hSig').textContent=fmt(G.sig);
-document.getElementById('hSps').textContent=fmt(G.sps);
-document.getElementById('spsTxt').textContent=fmt(G.sps)+' с/сек';
-document.getElementById('cpVal').textContent=fmt(cPow());
-document.getElementById('fBox').style.display=G.freq>0?'block':'none';
-document.getElementById('hFreq').textContent=fmt(G.freq);
-document.getElementById('haBox').style.display=G.harm>0?'block':'none';
-document.getElementById('hHarm').textContent=fmt(G.harm);
-let st=gStage();
-document.getElementById('towerSVG').innerHTML=tSVG(st);
-document.getElementById('stageBadge').textContent='Стадия: '+SNAMES[st];
-let bar=document.getElementById('chBar');
-let act=[];
-for(let ch of CH){if(G.chStart[ch.id]!==undefined)act.push(ch.nm)}
-bar.innerHTML=act.length?'<div style="z-index:1">'+act.map(n=>'<span class="ch-tag">'+n+'</span>').join('')+'</div>':'';
+  document.getElementById('sCount').textContent=fmt(G.sig);
+  document.getElementById('hSig').textContent=fmt(G.sig);
+  document.getElementById('hSps').textContent=fmt(Cache.sps)+'/с';
+  document.getElementById('spsTxt').textContent=fmt(Cache.sps)+' с/сек';
+  document.getElementById('cpVal').textContent=fmt(Cache.click);
+  document.getElementById('fBox').style.display=G.freq>0?'':'none';
+  document.getElementById('hFreq').textContent=G.freq;
+  document.getElementById('haBox').style.display=G.harm>0?'':'none';
+  document.getElementById('hHarm').textContent=G.harm;
+  const st=gStage();
+  document.getElementById('towerSVG').innerHTML=tSVG(st);
+  document.getElementById('stageBadge').textContent='Стадия: '+SNAMES[Math.min(st,SNAMES.length-1)];
+  // active challenge bar
+  const now=Date.now(), cm=cMod();
+  const tags=CH.filter(c=>G.chStart[c.id]!==undefined).map(c=>{
+    const tl=Math.max(c.dur-((now-G.chStart[c.id])/1000),0);
+    return `<div class="ch-tag">🔥 ${c.nm} ${Math.ceil(tl)}с</div>`;
+  });
+  document.getElementById('chBar').innerHTML=tags.join('');
 }
 
+// ════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════
 function buyB(id){
-let b=BLD.find(x=>x.id===id);if(!b)return;
-let cnt=bc(id),amt=bBA(b,cnt);if(amt<=0)return;
-let cost=bBC(b,cnt,amt);
-let dc=Math.ceil(cost*(cMod().costM||1));
-if(G.sig<dc)return;
-G.sig-=dc;G.bld[id]=(G.bld[id]||0)+amt;
-recalc();rBld();rUpg();
+  const b=BLD.find(x=>x.id===id);
+  if(!b) return;
+  const cnt=bc(id);
+  const amt=bMaxBuy(b,cnt);
+  if(amt<=0) return;
+  const dc=Math.ceil(bBulkCost(b,cnt,amt)*(cMod().costM||1));
+  if(G.sig<dc) return;
+  G.sig-=dc;
+  G.bld[id]=(G.bld[id]||0)+amt;
+  recalc();rBld();rUpg();
 }
+
 function buyU(id){
-let u=UPG.find(x=>x.id===id);if(!u||G.upg[id]||G.sig<u.cost||!u.req())return;
-G.sig-=u.cost;G.upg[id]=true;recalc();rUpg();rBld();
-notify(u.nm,u.desc);
+  const u=UPG.find(x=>x.id===id);
+  if(!u||G.upg[id]||G.sig<u.cost||!u.req()) return;
+  G.sig-=u.cost;
+  G.upg[id]=true;
+  recalc();rUpg();rBld();
+  notify('⚡ '+u.nm, u.desc);
 }
+
 function doPre(){
-let g=pGain();if(g<=0||!confirm('Сбросить ради '+g+' кристаллов частоты?'))return;
-G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};
-recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов');save();
+  const g=pGain();
+  if(g<=0||!confirm('Сбросить прогресс ради +'+g+' кристаллов частоты?')) return;
+  G.freq+=g;
+  G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};
+  recalc();renderAll();
+  notify('🔴 Резонанс','+'+g+' кристаллов частоты');
+  save();
 }
+
 function doHarm(){
-let g=hGain();if(g<=0||!confirm('Сбросить всё ради '+g+' гармоник?'))return;
-G.harm+=g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};
-recalc();renderAll();notify('🔵 Гармоники','+'+g+' гармоник');save();
+  const g=hGain();
+  if(g<=0||!confirm('Великий сброс ради +'+g+' гармоник?')) return;
+  G.harm+=g;G.freq=0;
+  G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};
+  recalc();renderAll();
+  notify('🔵 Гармоники','+'+g+' гармоник');
+  save();
 }
+
 function startCh(id){
-let ch=CH.find(x=>x.id===id);if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req())return;
-if(!confirm('Начать "'+ch.nm+'"?\n'+ch.desc+'\nДлительность: '+ch.dur+' секунд'))return;
-G.chStart[id]=Date.now();
-recalc();rChal();notify('🔥 '+ch.nm,ch.desc);
+  const ch=CH.find(x=>x.id===id);
+  if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req()) return;
+  if(!confirm('Начать испытание "'+ch.nm+'"?\n'+ch.desc+'\nПродолжительность: '+ch.dur+'с')) return;
+  G.chStart[id]=Date.now();
+  recalc();rChal();
+  notify('🔥 '+ch.nm,ch.desc);
+}
+
+// ════════════════════════════════════════
+// CLICK HANDLER
+// ════════════════════════════════════════
+document.getElementById('clickZone').addEventListener('click', function(e){
+  const pow=Cache.click;
+  G.sig+=pow;G.tot+=pow;G.totAll+=pow;G.clicks++;
+
+  const area=document.getElementById('towerWrap');
+  const rect=area.getBoundingClientRect();
+  const x=e.clientX-rect.left, y=e.clientY-rect.top;
+
+  // Float number
+  const f=document.createElement('div');
+  f.className='float';
+  f.textContent='+'+fmt(pow);
+  f.style.cssText=`left:${x}px;top:${y-20}px;color:${pow>100?'var(--gold)':pow>10?'var(--acc3)':'var(--acc)'}`;
+  area.appendChild(f);
+  setTimeout(()=>f.remove(),900);
+
+  // Burst particles
+  const colors=['#00d4ff','#00ffaa','#ffd700','#ff4757'];
+  for(let i=0;i<5;i++){
+    const p=document.createElement('div');
+    p.className='burst-p';
+    const a=Math.random()*Math.PI*2, d=25+Math.random()*50;
+    const sz=3+Math.random()*5;
+    p.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px`;
+    area.appendChild(p);
+    setTimeout(()=>p.remove(),600);
+  }
+
+  // Pop sig counter
+  const ce=document.getElementById('sCount');
+  ce.classList.add('pop');
+  setTimeout(()=>ce.classList.remove('pop'),100);
+  upd();
+});
+
+// ════════════════════════════════════════
+// GAME LOOP
+// ════════════════════════════════════════
+function tick(){
+  const dt=(Date.now()-G.last)/1000;
+  G.last=Date.now();
+  const e=Cache.sps*dt;
+  if(e>0){G.sig+=e;G.tot+=e;G.totAll+=e}
+
+  // check challenges
+  const now=Date.now(), cm=cMod();
+  for(let ch of CH){
+    const ts=G.chStart[ch.id];
+    if(ts!==undefined && (now-ts)/1000>=ch.dur){
+      G.chDone[ch.rw]=true;
+      delete G.chStart[ch.id];
+      notify('🎉 Испытание пройдено!',ch.rwD);
+      recalc();
+    }
+  }
+
+  // check achievements
+  for(let a of ACH){
+    if(!G.ach[a.id]&&a.ck()){
+      G.ach[a.id]=true;
+      notify('🏆 '+a.nm, a.desc);
+    }
+  }
+
+  upd();
 }
 
 function autoTick(){
-if(G.autoB){
-let best=null,bv=0,cm=cMod();
-for(let b of BLD){
-let cnt=bc(b.id),cost=bC(b,cnt)*(cm.costM||1);
-let sg=b.sps*bMult(b.id);
-let v=cost>0?sg/cost:0;
-if(v>bv&&G.sig>=cost){bv=v;best=b}
-}
-if(best){
-let cnt=bc(best.id),amt=Math.min(G.buy,bBA(best,cnt));
-if(amt>0){let cost=bBC(best,cnt,amt)*(cm.costM||1);if(G.sig>=cost){G.sig-=cost;G.bld[best.id]=(G.bld[best.id]||0)+amt}}
-}
-}
-if(G.autoU){
-for(let u of UPG)if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost){G.sig-=u.cost;G.upg[u.id]=true;notify('⚡ '+u.nm,u.desc)}
-}
-}
-
-document.getElementById('clickOverlay').addEventListener('click',function(e){
-let pow=cPow();
-G.sig+=pow;G.tot+=pow;G.totAll+=pow;G.clicks++;
-let area=document.getElementById('towerArea');
-let rect=area.getBoundingClientRect();
-let x=e.clientX-rect.left,y=e.clientY-rect.top;
-let f=document.createElement('div');f.className='fnum';
-f.textContent='+'+fmt(pow);f.style.left=x+'px';f.style.top=(y-15)+'px';
-area.appendChild(f);setTimeout(()=>f.remove(),900);
-let g=document.createElement('div');g.className='glow';
-g.style.left=x+'px';g.style.top=y+'px';area.appendChild(g);setTimeout(()=>g.remove(),300);
-let s=document.createElement('div');s.className='shock';
-s.style.left=x+'px';s.style.top=y+'px';area.appendChild(s);setTimeout(()=>s.remove(),500);
-let cols=['#EA212E','#77C7E6','#FDFDFD','#3388BB','#104586'];
-let n=Math.min(6+Math.floor(Math.min(Math.log10(Math.max(pow,1))/3,2)),12);
-for(let i=0;i<n;i++){
-let p=document.createElement('div');p.className='burst';
-p.style.left=x+'px';p.style.top=y+'px';
-let a=Math.random()*Math.PI*2,d=30+Math.random()*60;
-p.style.setProperty('--tx',Math.cos(a)*d+'px');
-p.style.setProperty('--ty',Math.sin(a)*d+'px');
-let c=cols[Math.floor(Math.random()*cols.length)];
-p.style.background=c;p.style.color=c;
-area.appendChild(p);setTimeout(()=>p.remove(),600);
-}
-let ce=document.getElementById('sCount');ce.classList.add('pop');
-setTimeout(()=>ce.classList.remove('pop'),150);
-recalc();upd();
-});
-
-function spawnStar(){
-let panel=document.getElementById('panel');
-let s=document.createElement('div');s.className='golden';s.textContent='🌟';
-s.style.left=(15+Math.random()*70)+'%';s.style.top=(15+Math.random()*70)+'%';
-panel.appendChild(s);
-s.addEventListener('click',function(e){
-e.stopPropagation();
-let r=Math.random(),bonus=0,msg='';
-if(r<.4){bonus=Math.max(G.sps*60,cPow()*50);msg='+'+fmt(bonus)}
-else if(r<.75){bonus=Math.max(G.sps*300,cPow()*250);msg='МЕГА: +'+fmt(bonus)}
-else{msg='БЕЗУМИЕ! +SPS×7 на 15с';
-let fid=setInterval(()=>{let b2=G.sps*7;G.sig+=b2;G.tot+=b2;G.totAll+=b2;upd()},2000);
-setTimeout(()=>{clearInterval(fid);recalc()},15000);
-}
-G.sig+=bonus;G.tot+=bonus;G.totAll+=bonus;
-notify('🌟 Золотой',msg);s.remove();recalc();upd();
-});
-setTimeout(()=>{if(s.parentNode)s.remove()},6000);
-}
-setInterval(()=>{if(Math.random()<.03)spawnStar()},10000);
-
-function recalc(){G.sps=tSps()}
-function tick(){
-let dt=(Date.now()-G.last)/1000;G.last=Date.now();
-let e=G.sps*dt;if(e>0){G.sig+=e;G.tot+=e;G.totAll+=e}
-
-let now=Date.now();
-let cm=cMod();
-for(let ch of CH){
-let ts=G.chStart[ch.id];
-if(ts!==undefined){
-let baseDur=ch.dur*(cm.durM||1);
-let elapsed=(now-ts)/1000;
-if(elapsed>=baseDur){
-G.chDone[ch.rw]=true;
-delete G.chStart[ch.id];
-notify('🎉 '+ch.nm+' пройден!',ch.rwD);
-recalc();
-}
-}
+  if(G.autoB){
+    const cm=cMod();
+    let best=null,bv=0;
+    for(let b of BLD){
+      const cnt=bc(b.id);
+      const cost=bCost(b,cnt)*(cm.costM||1);
+      const sg=b.sps*(Cache.bMult[b.id]||1);
+      const v=cost>0?sg/cost:0;
+      if(v>bv&&G.sig>=cost){bv=v;best=b}
+    }
+    if(best){
+      const cnt=bc(best.id);
+      const amt=Math.min(G.buy,bMaxBuy(best,cnt));
+      if(amt>0){
+        const cost=Math.ceil(bBulkCost(best,cnt,amt)*(cMod().costM||1));
+        if(G.sig>=cost){G.sig-=cost;G.bld[best.id]=(G.bld[best.id]||0)+amt;recalc();}
+      }
+    }
+  }
+  if(G.autoU){
+    for(let u of UPG){
+      if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost){
+        G.sig-=u.cost;G.upg[u.id]=true;
+        notify('⚡ '+u.nm,u.desc);
+        recalc();
+      }
+    }
+  }
 }
 
-for(let a of ACH)if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true;notify('🏆 '+a.nm,a.desc)}
-recalc();upd();
-}
+// ════════════════════════════════════════
+// NOTIFY
+// ════════════════════════════════════════
 function notify(t,m){
-let n=document.createElement('div');n.className='notif';
-n.innerHTML='<div class="ntitle">'+t+'</div><div class="ntext">'+m+'</div>';
-document.body.appendChild(n);setTimeout(()=>n.remove(),3000);
+  const n=document.createElement('div');
+  n.className='notif';
+  n.innerHTML=`<div class="nt">${t}</div><div class="nb">${m}</div>`;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(),2900);
 }
-function renderAll(){upd();rBuyRow();rBld();rUpg();rAch();rPre();rChal();rAuto();rStats()}
 
+// ════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════
 function toggleTheme(){
-G.theme=G.theme==='dark'?'light':'dark';
-if(G.theme==='light'){
-document.body.classList.add('light');
-}else{
-document.body.classList.remove('light');
-}
-save();
+  G.theme=G.theme==='dark'?'light':'dark';
+  document.body.classList.toggle('light',G.theme==='light');
+  save();
 }
 
+// ════════════════════════════════════════
+// SAVE / LOAD
+// ════════════════════════════════════════
 function save(){
-const data=JSON.stringify(G);
-if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.CloudStorage){
-Telegram.WebApp.CloudStorage.setItem('rtrs_v2',data,(err,result)=>{
-if(!err)console.log('Saved to cloud');
-});
-}
-try{localStorage.setItem('rtrs_v2',data);}catch(e){}
+  G.last=Date.now();
+  try{localStorage.setItem('rtrs_v3',JSON.stringify(G))}catch(e){}
 }
 
-function load(){
-if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.CloudStorage){
-Telegram.WebApp.CloudStorage.getItem('rtrs_v2',(err,value)=>{
-if(!err&&value){
+function loadSave(){
+  let raw;
+  try{raw=localStorage.getItem('rtrs_v3')}catch(e){return}
+  if(!raw) return;
+  try{
+    const d=JSON.parse(raw);
+    const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps'];
+    const bools=['autoB','autoU'];
+    const strs=['theme'];
+    const objs=['bld','upg','ach','chDone','chStart'];
+    for(let k of nums) if(typeof d[k]==='number') G[k]=d[k];
+    for(let k of bools) if(typeof d[k]==='boolean') G[k]=d[k];
+    for(let k of strs) if(typeof d[k]==='string') G[k]=d[k];
+    for(let k of objs) if(d[k]&&typeof d[k]==='object') Object.assign(G[k],d[k]);
+    if(G.theme==='light') document.body.classList.add('light');
+    if(typeof d.start==='number') G.start=d.start;
+    recalc();
+    // offline income
+    const off=(Date.now()-(d.last||Date.now()))/1000;
+    if(off>10){
+      const gain=Cache.sps*off*0.5;
+      if(gain>0){
+        G.sig+=gain;G.tot+=gain;G.totAll+=gain;
+        setTimeout(()=>{
+          showOfflineModal(gain,off);
+        },600);
+      }
+    }
+  }catch(e){console.error('Load error',e)}
+}
+
+function showOfflineModal(gain, secs){
+  const ov=document.createElement('div');
+  ov.className='off-ov';
+  ov.innerHTML=`<div class="off-card">
+    <h2>📡 Добро пожаловать!</h2>
+    <p>Пока вас не было (<strong>${fmtT(secs*1000)}</strong>),<br>ваши антенны работали<br>и заработали</p>
+    <div style="font-family:'Space Mono',monospace;font-size:1.8rem;color:var(--acc);margin:12px 0">${fmt(gain)}</div>
+    <div style="font-size:.65rem;color:var(--txt3);margin-bottom:16px">сигналов (50% от полного дохода)</div>
+    <button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+// ════════════════════════════════════════
+// RENDER ALL
+// ════════════════════════════════════════
+function renderAll(){
+  upd();rBuyRow();rBld();rUpg();rAch();rPre();rChal();rAuto();rStats();
+}
+
+// ════════════════════════════════════════
+// TELEGRAM INTEGRATION
+// ════════════════════════════════════════
 try{
-const d=JSON.parse(value);
-for(let k in d)if(G.hasOwnProperty(k))G[k]=d[k];
-if(G.theme==='light')document.body.classList.add('light');
+  const tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg){
+    tg.expand();tg.ready();
+    if(tg.colorScheme==='light'){G.theme='light';document.body.classList.add('light');}
+    tg.MainButton.setText('💾 Сохранить прогресс');
+    tg.MainButton.onClick(()=>{save();tg.showAlert('✅ Игра сохранена!')});
+    tg.MainButton.show();
+  }
+}catch(e){}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+G.last=Date.now();
+loadSave();
 recalc();
 renderAll();
-return;
-}catch(e){}
-}
-loadLocal();
-});
-}else{
-loadLocal();
-}
-}
-
-function loadLocal(){
-let r=localStorage.getItem('rtrs_v2');
-if(!r)r=localStorage.getItem('rtrs6');
-if(!r)r=localStorage.getItem('rtrs5');
-if(!r)r=localStorage.getItem('rtrs_save');
-if(!r)return;
-try{
-let d=JSON.parse(r);
-for(let k in d)if(G.hasOwnProperty(k))G[k]=d[k];
-if(G.theme==='light')document.body.classList.add('light');
-let off=(Date.now()-(d.last||Date.now()))/1000;
-if(off>10){
-recalc();
-let g=G.sps*off*0.5;
-if(g>0){
-G.sig+=g;G.tot+=g;G.totAll+=g;
-setTimeout(()=>notify('📡 Оффлайн','+'+fmt(g)+' за '+fmtT(off*1000)),600);
-}
-}
-}catch(e){console.error(e);}
-}
-
-const tg=window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-
-if(tg.colorScheme==='dark'){
-G.theme='dark';
-document.body.classList.remove('light');
-}else if(tg.colorScheme==='light'){
-G.theme='light';
-document.body.classList.add('light');
-}
-
-tg.MainButton.setText('💾 Сохранить прогресс');
-tg.MainButton.onClick(()=>{
-save();
-tg.showAlert('✅ Игра сохранена!');
-});
-tg.MainButton.show();
-
 setInterval(tick,50);
 setInterval(render,1000);
 setInterval(autoTick,1000);
 setInterval(save,30000);
-G.last=Date.now();
-load();
-recalc();
-renderAll();
 </script>
 </body>
 </html>
