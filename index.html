@@ -2,13 +2,12 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📡 RTRS Clicker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>📡 RTRS Clicker v7.1 DESIGN+MECHANICS</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --c0:#060d1a;--c1:#0a1628;--c2:#0e1f3d;--c3:#142852;--c4:#1a3366;
   --acc:#00d4ff;--acc2:#0099cc;--acc3:#00ffaa;
@@ -25,10 +24,11 @@ body.light{
   --txt:#1a2a3a;--txt2:#3a5a7a;--txt3:#6a8aaa;
   --border:rgba(0,100,180,0.15);--border2:rgba(0,100,180,0.3);
 }
+body.skin-neon{--acc:#ff00ff;--acc2:#cc00cc;--acc3:#00ffaa;--border:rgba(255,0,255,0.15);--border2:rgba(255,0,255,0.3)}
+body.skin-gold{--acc:#ffd700;--acc2:#ccaa00;--acc3:#00ffaa;--border:rgba(255,215,0,0.15);--border2:rgba(255,215,0,0.3)}
 body{font-family:'Space Grotesk',sans-serif;background:var(--c0);color:var(--txt);overflow-x:hidden;min-height:100vh;touch-action:manipulation;transition:background .3s,color .3s}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 80%,rgba(0,100,200,0.07) 0%,transparent 60%),radial-gradient(ellipse 40% 60% at 80% 20%,rgba(0,180,255,0.04) 0%,transparent 60%);pointer-events:none;z-index:0}
-
-/* HEADER */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 .hdr{position:sticky;top:0;z-index:200;background:rgba(10,22,40,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border2);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 body.light .hdr{background:rgba(240,244,248,0.94)}
 .logo{font-family:'Space Mono',monospace;font-weight:700;font-size:1rem;color:var(--acc);letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 20px rgba(0,212,255,0.4);flex-shrink:0;text-decoration:none;display:flex;align-items:center;gap:8px;cursor:pointer}
@@ -41,22 +41,24 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 .hstat-v.blu{color:var(--acc)}.hstat-v.red{color:var(--red)}.hstat-v.gld{color:var(--gold)}
 .thm{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:var(--c2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s;flex-shrink:0}
 .thm:hover{background:var(--c3);transform:scale(1.1)}
-
-/* LAYOUT */
-.wrap{display:grid;grid-template-columns:1fr 370px;min-height:calc(100vh - 56px);position:relative;z-index:1}
-
-/* CLICK PANEL */
+.buffs{display:flex;gap:6px;padding:6px 16px;overflow-x:auto;background:rgba(0,0,0,0.15);border-bottom:1px solid var(--border);min-height:0}
+.buff{padding:3px 10px;background:var(--c2);border:1px solid var(--border);border-radius:20px;font-size:.55rem;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:4px;animation:buffIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes buffIn{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.wrap{display:grid;grid-template-columns:1fr 380px;min-height:calc(100vh - 56px - 36px);position:relative;z-index:1}
 .cpanel{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;gap:16px;position:relative;overflow:hidden}
 .sig-box{text-align:center}
 .sig-n{font-family:'Space Mono',monospace;font-size:3rem;font-weight:700;color:var(--txt);line-height:1;text-shadow:0 0 40px rgba(0,212,255,0.25);transition:transform .08s}
 .sig-n.pop{transform:scale(1.05) translateY(-2px)}
+.combo-display{font-size:.7rem;color:var(--acc3);font-weight:700;min-height:16px;margin-top:2px;transition:opacity .3s}
+.combo-display.hot{color:var(--red);animation:pulse .5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .sig-lbl{font-size:.85rem;color:var(--acc);font-weight:500;margin-top:5px;letter-spacing:1px}
 .sig-sps{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--txt3);margin-top:4px}
+.prestige-countdown{font-size:.6rem;color:var(--gold);margin-top:4px;opacity:0;transition:opacity .3s}
+.prestige-countdown.show{opacity:1}
 .ch-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:0}
 .ch-tag{padding:4px 12px;background:rgba(255,71,87,0.12);border:1px solid rgba(255,71,87,0.4);border-radius:20px;font-size:.58rem;color:var(--red);font-weight:700;letter-spacing:.5px;animation:tagP 2s ease-in-out infinite}
 @keyframes tagP{0%,100%{border-color:rgba(255,71,87,0.4)}50%{border-color:rgba(255,71,87,.8)}}
-
-/* TOWER AREA */
 .tower-outer{position:relative;cursor:pointer;user-select:none}
 .tower-outer:active .tower-canvas{transform:scale(.97)}
 .tower-canvas{transition:transform .1s cubic-bezier(.34,1.56,.64,1);display:block;max-width:100%;height:auto;width:100%}
@@ -67,15 +69,11 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 .stage-b{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--acc);letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border:1px solid var(--border2);border-radius:20px;background:rgba(0,180,255,0.05)}
 .clk-pw{font-size:.75rem;color:var(--txt3);font-weight:500}
 .clk-pw span{color:var(--acc);font-family:'Space Mono',monospace;font-weight:700}
-
-/* Floaters */
 .float{position:absolute;font-family:'Space Mono',monospace;font-weight:700;pointer-events:none;white-space:nowrap;z-index:50;font-size:1rem;animation:floatUp .9s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes floatUp{0%{transform:translateY(0) scale(.7);opacity:0}15%{transform:translateY(-8px) scale(1.1);opacity:1}100%{transform:translateY(-70px) scale(.85);opacity:0}}
 .burst-p{position:absolute;border-radius:50%;pointer-events:none;z-index:50;animation:burstOut .6s cubic-bezier(.15,.8,.3,1) forwards}
 @keyframes burstOut{0%{transform:translate(0,0) scale(1.5);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
-
-/* SHOP */
-.shop{background:var(--c1);border-left:1px solid var(--border);display:flex;flex-direction:column;max-height:calc(100vh - 56px);overflow:hidden}
+.shop{background:var(--c1);border-left:1px solid var(--border);display:flex;flex-direction:column;max-height:calc(100vh - 56px - 36px);overflow:hidden}
 .shop-tabs{display:grid;grid-template-columns:repeat(4,1fr);padding:10px;gap:4px;background:var(--c1);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-shrink:0}
 .stab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:none;background:var(--c2);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;color:var(--txt3);transition:all .2s}
 .stab:hover{background:var(--c3);color:var(--txt2)}
@@ -86,13 +84,14 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 .buy-row{display:flex;gap:6px;margin-bottom:12px}
 .bbtn{flex:1;padding:7px;border:1px solid var(--border);background:var(--c2);color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:700;transition:all .2s}
 .bbtn:hover{background:var(--c3)}.bbtn.active{border-color:var(--acc);color:var(--acc);background:rgba(0,180,255,0.08)}
-
-/* Cards */
+.bbtn.max{background:var(--c3);border-color:var(--gold);color:var(--gold)}
 .card{background:var(--c2);border:1px solid var(--border);border-radius:var(--r2);padding:11px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .card:hover{background:var(--c3);border-color:var(--border2);transform:translateY(-1px)}
 .card.aff{border-color:rgba(0,212,255,0.3)}
 .card.lock{opacity:.3;pointer-events:none}
 .card.done{opacity:.4;pointer-events:none;background:var(--c1)}
+.card.pop-anim{animation:cardPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cardPop{0%{transform:scale(.95)}50%{transform:scale(1.03) translateY(-2px)}100%{transform:scale(1) translateY(0)}}
 .cicon{width:40px;height:40px;background:var(--c3);border-radius:var(--r3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;border:1px solid var(--border)}
 .ci{flex:1;min-width:0}
 .cn{font-size:.73rem;font-weight:700;color:var(--txt);margin-bottom:2px}
@@ -104,8 +103,7 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 .cct{font-size:.57rem;color:var(--txt3);margin-top:2px;font-weight:600}
 .slbl{font-size:.55rem;color:var(--txt3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);font-weight:700}
 .ucost{font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;color:var(--txt)}
-.ucost.no{color:var(--red)}
-.ucost.ok{color:var(--acc3)}
+.ucost.no{color:var(--red)}.ucost.ok{color:var(--acc3)}
 .achcard.unl{border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.03)}
 .achi{width:38px;height:38px;border-radius:var(--r3);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:var(--c3);border:1px solid var(--border)}
 .achcard.unl .achi{border-color:rgba(255,215,0,0.5)}
@@ -142,21 +140,58 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 @keyframes nOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
 .nt{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--txt);margin-bottom:3px;font-weight:700}
 .nb{font-size:.62rem;color:var(--acc);line-height:1.4}
+.event-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:1500;background:var(--c2);border:2px solid var(--gold);border-radius:var(--r);padding:24px;text-align:center;max-width:320px;width:90%;box-shadow:0 0 40px rgba(255,215,0,0.3);animation:eventPop .4s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes eventPop{to{transform:translate(-50%,-50%) scale(1)}}
+.event-banner h3{color:var(--gold);margin-bottom:8px;font-family:'Space Mono',monospace}
+.event-banner p{color:var(--txt2);font-size:.75rem;margin-bottom:14px}
 .off-ov{position:fixed;inset:0;z-index:2000;background:rgba(6,13,26,0.95);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
 .off-card{background:var(--c2);border:1px solid var(--border2);border-radius:var(--r);padding:32px;text-align:center;max-width:320px}
 .off-card h2{font-family:'Space Mono',monospace;color:var(--acc);margin-bottom:12px;font-size:1.1rem}
 .off-card p{color:var(--txt2);font-size:.8rem;line-height:1.6;margin-bottom:12px}
-@media(max-width:780px){
-  .wrap{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .shop{max-height:none;border-left:none;border-top:1px solid var(--border)}
-  .sig-n{font-size:2.4rem}
-  .cpanel{min-height:45vh;padding:18px 14px;gap:14px}
-  .hdr{gap:8px}
-}
+.tut-ov{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.75);pointer-events:auto;cursor:pointer;display:none}
+.tut-card{position:absolute;background:var(--c2);border:1px solid var(--acc);border-radius:var(--r);padding:16px;max-width:260px;width:90%;pointer-events:auto;box-shadow:0 0 30px rgba(0,212,255,0.4);z-index:4001}
+.tut-close{background:none;border:none;color:var(--txt3);font-size:1.2rem;cursor:pointer;padding:4px}
+.tut-close:hover{color:var(--txt)}
+.tut-skip{background:none;border:1px solid var(--border);color:var(--txt3);padding:6px 12px;border-radius:var(--r3);cursor:pointer;font-size:.65rem;font-weight:700}
+.tut-skip:hover{background:var(--c3);color:var(--txt)}
+.tut-btn{padding:8px 16px;background:var(--acc);color:var(--c0);border:none;border-radius:var(--r3);cursor:pointer;font-weight:700;font-size:.7rem}
+.tut-btn:hover{opacity:.9}
+.daily-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.d-item{background:var(--c2);border:1px solid var(--border);border-radius:var(--r3);padding:10px;text-align:center;position:relative;opacity:.6;cursor:pointer}
+.d-item.done{border-color:var(--acc3);opacity:1;background:rgba(0,255,170,0.05)}
+.d-item.today{border-color:var(--gold);opacity:1;background:rgba(255,215,0,0.05)}
+.d-day{font-size:.6rem;color:var(--txt3);margin-bottom:4px}
+.d-rw{font-size:1.1rem;margin-bottom:4px}
+.d-claim{font-size:.6rem;color:var(--acc3);font-weight:700}
+.d-item.done .d-claim{color:var(--txt3)}
+.d-item.today .d-claim{color:var(--gold)}
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.set-lbl{font-size:.75rem;color:var(--txt)}
+.set-desc{font-size:.6rem;color:var(--txt3);margin-top:2px}
+.skin-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.skin-card{background:var(--c2);border:1px solid var(--border);border-radius:var(--r3);padding:10px;text-align:center;cursor:pointer;transition:all .2s}
+.skin-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.skin-card.active{border-color:var(--acc);background:rgba(0,180,255,0.08)}
+.skin-card.lock{opacity:.4;cursor:not-allowed}
+.skin-name{font-size:.7rem;font-weight:700;margin-bottom:4px}
+.skin-req{font-size:.55rem;color:var(--txt3)}
+.skin-preview{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;border:2px solid transparent}
+.res-card{background:var(--c2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.res-card.done{opacity:.5}
+.res-card.lock{opacity:.3;pointer-events:none}
+.res-icon{width:44px;height:44px;background:var(--c3);border-radius:var(--r3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:1px solid var(--border)}
+.res-info{flex:1}
+.res-name{font-size:.75rem;font-weight:700;margin-bottom:3px}
+.res-desc{font-size:.6rem;color:var(--txt3);margin-bottom:4px}
+.res-cost{font-family:'Space Mono',monospace;font-size:.65rem}
+.res-btn{padding:6px 12px;border:1px solid var(--border);background:var(--c3);color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-size:.65rem;font-weight:700;transition:all .2s}
+.res-btn:hover:not([disabled]){background:var(--acc);color:var(--c0);border-color:var(--acc)}
+.res-btn[disabled]{opacity:.3;cursor:not-allowed}
+@media(max-width:850px){.wrap{grid-template-columns:1fr;grid-template-rows:auto 1fr}.shop{max-height:none;border-left:none;border-top:1px solid var(--border)}.sig-n{font-size:2.4rem}.cpanel{min-height:45vh;padding:18px 14px;gap:14px}.hdr{gap:8px}.shop-tabs{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
-
+<!-- HEADER -->
 <div class="hdr">
   <a class="logo" href="https://rtrs.ru" target="_blank" rel="noopener">
     <img id="logoImg" src="" alt="RTRS" onerror="this.style.display='none';document.getElementById('logoTxt').style.display='block'">
@@ -171,12 +206,19 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
   <button class="thm" onclick="toggleTheme()">🌓</button>
 </div>
 
+<!-- BUFFS BAR -->
+<div class="buffs" id="buffsBar"></div>
+
+<!-- MAIN WRAPPER -->
 <div class="wrap">
+  <!-- CLICK PANEL -->
   <div class="cpanel" id="cpanel">
     <div class="sig-box">
       <div class="sig-n" id="sCount">0</div>
+      <div class="combo-display" id="comboTxt"></div>
       <div class="sig-lbl">сигналов</div>
       <div class="sig-sps" id="spsTxt">0 с/сек</div>
+      <div class="prestige-countdown" id="prestigeTxt"></div>
     </div>
     <div class="ch-bar" id="chBar"></div>
     <div class="tower-outer" id="towerOuter">
@@ -188,763 +230,558 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
     <div class="clk-pw">Клик: <span id="cpVal">1</span> сигнал</div>
   </div>
 
+  <!-- SHOP PANEL -->
   <div class="shop">
     <div class="shop-tabs">
-      <button class="stab active" onclick="openTab(this,'b')"><span class="stab-em">🏗️</span><span class="stab-tx">Здания</span></button>
-      <button class="stab" onclick="openTab(this,'u')"><span class="stab-em">⚡</span><span class="stab-tx">Апгрейд</span></button>
-      <button class="stab" onclick="openTab(this,'c')"><span class="stab-em">🔥</span><span class="stab-tx">Испыт.</span></button>
-      <button class="stab" onclick="openTab(this,'a')"><span class="stab-em">🏆</span><span class="stab-tx">Награды</span></button>
-      <button class="stab" onclick="openTab(this,'p')"><span class="stab-em">🌌</span><span class="stab-tx">Престиж</span></button>
-      <button class="stab" onclick="openTab(this,'m')"><span class="stab-em">🤖</span><span class="stab-tx">Авто</span></button>
-      <button class="stab" onclick="openTab(this,'s')"><span class="stab-em">📊</span><span class="stab-tx">Статы</span></button>
+      <button class="stab active" data-tab="b" onclick="openTab(this,'b')"><span class="stab-em">🏗️</span><span class="stab-tx">Здания</span></button>
+      <button class="stab" data-tab="u" onclick="openTab(this,'u')"><span class="stab-em">⚡</span><span class="stab-tx">Апгрейд</span></button>
+      <button class="stab" data-tab="r" onclick="openTab(this,'r')"><span class="stab-em">🔬</span><span class="stab-tx">Науч.</span></button>
+      <button class="stab" data-tab="c" onclick="openTab(this,'c')"><span class="stab-em">🔥</span><span class="stab-tx">Испыт.</span></button>
+      <button class="stab" data-tab="a" onclick="openTab(this,'a')"><span class="stab-em">🏆</span><span class="stab-tx">Награды</span></button>
+      <button class="stab" data-tab="p" onclick="openTab(this,'p')"><span class="stab-em">🌌</span><span class="stab-tx">Престиж</span></button>
+      <button class="stab" data-tab="d" onclick="openTab(this,'d')"><span class="stab-em">📅</span><span class="stab-tx">Ежедн.</span></button>
+      <button class="stab" data-tab="s" onclick="openTab(this,'s')"><span class="stab-em">⚙️</span><span class="stab-tx">Настр.</span></button>
+      <button class="stab" data-tab="k" onclick="openTab(this,'k')"><span class="stab-em">🎨</span><span class="stab-tx">Скины</span></button>
+      <button class="stab" data-tab="m" onclick="openTab(this,'m')"><span class="stab-em">🤖</span><span class="stab-tx">Авто</span></button>
     </div>
     <div class="shop-body">
       <div class="tcont active" id="tb"><div class="buy-row" id="buyRow"></div><div id="bList"></div></div>
       <div class="tcont" id="tu"><div id="uList"></div></div>
+      <div class="tcont" id="tr"><div id="rList"></div></div>
       <div class="tcont" id="tc"><div id="cList"></div></div>
       <div class="tcont" id="ta"><div id="aList"></div></div>
       <div class="tcont" id="tp"><div id="pList"></div></div>
+      <div class="tcont" id="td"><div id="dList"></div></div>
+      <div class="tcont" id="ts"><div id="sList"></div></div>
+      <div class="tcont" id="tk"><div id="kList"></div></div>
       <div class="tcont" id="tm"><div id="mList"></div></div>
-      <div class="tcont" id="ts"><div id="stList"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL OVERLAY -->
+<div class="tut-ov" id="tutOv" onclick="if(event.target===this)closeTut()">
+  <div class="tut-card" id="tutCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h4 id="tutTitle" style="margin:0;font-size:.9rem;color:var(--acc)"></h4>
+      <button class="tut-close" onclick="closeTut();event.stopPropagation();">✕</button>
+    </div>
+    <p id="tutText" style="font-size:.72rem;color:var(--txt2);line-height:1.5;margin-bottom:12px"></p>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button class="tut-skip" onclick="closeTut();event.stopPropagation();">Пропустить</button>
+      <button class="tut-btn" id="tutNextBtn" onclick="nextTut();event.stopPropagation();">Далее</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// TELEGRAM & STORAGE SETUP
-// ══════════════════════════════════════════════════════
-const TG = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-const SAVE_KEY = 'rtrs_v4';
+// === CORE CONFIG ===
+const TG = window.Telegram?.WebApp || null;
+const SAVE_KEY = 'rtrs_v7_design';
+let G = {sig:0,tot:0,totAll:0,clicks:0,freq:0,harm:0,buy:1,bld:{},upg:{},ach:{},res:{},skins:{},chDone:{},chFailed:{},chStart:{},combo:{count:0,last:0,mult:1},events:[],boosters:{},daily:{last:0,streak:0,collected:{}},currentSkin:'default',settings:{sound:false,haptics:true},tutorial:{step:0,done:false},autoB:false,autoU:false,theme:'dark',start:Date.now(),last:Date.now(),sps:0,v:2};
+let Cache = {sps:0,click:1,bMult:{}};
+let lastStage=-1, audioCtx=null, audioStarted=false, tutorialActive=false;
 
-async function cloudSave(data){
-  const str = JSON.stringify(data);
-  if(TG && TG.CloudStorage){
-    return new Promise(resolve=>{
-      TG.CloudStorage.setItem(SAVE_KEY, str, ()=>resolve());
-    });
-  } else {
-    try{ localStorage.setItem(SAVE_KEY, str); }catch(e){}
-  }
-}
-
-async function cloudLoad(){
-  if(TG && TG.CloudStorage){
-    return new Promise(resolve=>{
-      TG.CloudStorage.getItem(SAVE_KEY, (err, val)=>{
-        if(!err && val) resolve(val);
-        else {
-          try{ resolve(localStorage.getItem(SAVE_KEY)); }catch(e){ resolve(null); }
-        }
-      });
-    });
-  } else {
-    try{ return localStorage.getItem(SAVE_KEY); }catch(e){ return null; }
-  }
-}
-
-// ══════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════
-let G = {
-  sig:0, tot:0, totAll:0, clicks:0,
-  freq:0, harm:0, buy:1,
-  bld:{}, upg:{}, ach:{},
-  chDone:{}, chFailed:{}, chStart:{},
-  autoB:false, autoU:false, theme:'dark',
-  start:Date.now(), last:Date.now(), sps:0
-};
-let Cache = {sps:0, click:1, bMult:{}};
-let lastStage = -1;
-
-// ══════════════════════════════════════════════════════
-// BUILDINGS DATA
-// ══════════════════════════════════════════════════════
-const BLD = [
-  {id:'ant', name:'Антенна',         ic:'📻', desc:'Базовая FM-антенна',          cost:15,     sps:0.5,   cm:1.15},
-  {id:'twr', name:'Радиовышка',      ic:'🗼', desc:'Стальная конструкция',         cost:100,    sps:3,     cm:1.15},
-  {id:'mst', name:'Радиомачта',      ic:'📡', desc:'Направленные антенны',         cost:550,    sps:15,    cm:1.15},
-  {id:'rep', name:'Ретранслятор',    ic:'🔁', desc:'Усиление и ретрансляция',      cost:3200,   sps:80,    cm:1.15},
-  {id:'sta', name:'Радиостанция',    ic:'🎙️', desc:'Передатчик 50 кВт',           cost:20e3,   sps:400,   cm:1.15},
-  {id:'tv',  name:'Телевышка',       ic:'📺', desc:'HD-покрытие региона',          cost:130e3,  sps:2200,  cm:1.15},
-  {id:'dsh', name:'Тарелка',         ic:'🛸', desc:'Параболическая антенна',       cost:800e3,  sps:12e3,  cm:1.15},
-  {id:'sat', name:'Спутниковая',     ic:'🛰️', desc:'Орбитальная связь',            cost:5e6,    sps:60e3,  cm:1.15},
-  {id:'obs', name:'Обсерватория',    ic:'🔭', desc:'Приём космических волн',       cost:50e6,   sps:350e3, cm:1.15},
-  {id:'pha', name:'Фаз. решётка',    ic:'📶', desc:'Адаптивный луч',               cost:400e6,  sps:2e6,   cm:1.15},
-  {id:'ion', name:'Ионосф. зонд',    ic:'🌐', desc:'Ионосферная связь',            cost:4e9,    sps:12e6,  cm:1.15},
-  {id:'dsp', name:'Глубокий космос', ic:'🌌', desc:'Межпланетный сигнал',          cost:50e9,   sps:80e6,  cm:1.15},
-  {id:'qnt', name:'Квантовый узел',  ic:'⚛️', desc:'Квантовая запутанность',       cost:700e9,  sps:600e6, cm:1.15},
+// === GAME DATA (все видимы сразу) ===
+const BLD=[
+  {id:'ant',name:'Антенна',ic:'📻',desc:'Базовая FM-антенна',cost:100,sps:2.5,cm:1.28},
+  {id:'twr',name:'Радиовышка',ic:'🗼',desc:'Стальная конструкция',cost:800,sps:12,cm:1.28},
+  {id:'mst',name:'Радиомачта',ic:'📡',desc:'Направленные антенны',cost:4500,sps:55,cm:1.28},
+  {id:'rep',name:'Ретранслятор',ic:'🔁',desc:'Усиление и ретрансляция',cost:28e3,sps:250,cm:1.28},
+  {id:'sta',name:'Радиостанция',ic:'🎙️',desc:'Передатчик 50 кВт',cost:180e3,sps:1200,cm:1.28},
+  {id:'tv',name:'Телевышка',ic:'📺',desc:'HD-покрытие региона',cost:1.1e6,sps:6000,cm:1.28},
+  {id:'dsh',name:'Тарелка',ic:'🛸',desc:'Параболическая антенна',cost:7e6,sps:30e3,cm:1.28},
+  {id:'sat',name:'Спутниковая',ic:'🛰️',desc:'Орбитальная связь',cost:45e6,sps:150e3,cm:1.28},
+  {id:'obs',name:'Обсерватория',ic:'🔭',desc:'Приём космических волн',cost:350e6,sps:750e3,cm:1.28},
+  {id:'pha',name:'Фаз. решётка',ic:'📶',desc:'Адаптивный луч',cost:3e9,sps:4e6,cm:1.28},
+  {id:'ion',name:'Ионосф. зонд',ic:'🌐',desc:'Ионосферная связь',cost:25e9,sps:22e6,cm:1.28},
+  {id:'dsp',name:'Глубокий космос',ic:'🌌',desc:'Межпланетный сигнал',cost:200e9,sps:120e6,cm:1.28},
+  {id:'qnt',name:'Квантовый узел',ic:'⚛️',desc:'Квантовая запутанность',cost:1.8e12,sps:700e6,cm:1.28}
 ];
 
-// ══════════════════════════════════════════════════════
-// UPGRADES
-// ══════════════════════════════════════════════════════
-const UPG = [
-  {id:'c1',nm:'Медный кабель',      ic:'🔌',desc:'Клик ×2',    cost:200,    tp:'clk',m:2, req:()=>G.tot>=100},
-  {id:'c2',nm:'Усилитель сигнала',  ic:'📈',desc:'Клик ×2',    cost:2e3,    tp:'clk',m:2, req:()=>G.tot>=1e3},
-  {id:'c3',nm:'Проц. сигнала',      ic:'💻',desc:'Клик ×3',    cost:18e3,   tp:'clk',m:3, req:()=>G.tot>=12e3},
-  {id:'c4',nm:'Нейросеть',          ic:'🧠',desc:'Клик ×5',    cost:200e3,  tp:'clk',m:5, req:()=>G.tot>=150e3},
-  {id:'c5',nm:'Квант. клик',        ic:'⚛️',desc:'Клик ×10',   cost:5e6,    tp:'clk',m:10,req:()=>G.tot>=3e6},
-  {id:'c6',nm:'Сингулярность',      ic:'🌀',desc:'Клик ×20',   cost:200e6,  tp:'clk',m:20,req:()=>G.tot>=100e6},
-  {id:'a1',nm:'УНЧ антенны',        ic:'📻',desc:'Антенны ×2',      cost:300,    tp:'bld',b:'ant',m:2,req:()=>bc('ant')>=5},
-  {id:'a2',nm:'Прецизионный тюнер', ic:'📻',desc:'Антенны ×3',      cost:6e3,    tp:'bld',b:'ant',m:3,req:()=>bc('ant')>=25},
-  {id:'t1',nm:'Решётчатая мачта',   ic:'🗼',desc:'Вышки ×2',        cost:2e3,    tp:'bld',b:'twr',m:2,req:()=>bc('twr')>=5},
-  {id:'t2',nm:'Антиобледенение',    ic:'🗼',desc:'Вышки ×3',        cost:25e3,   tp:'bld',b:'twr',m:3,req:()=>bc('twr')>=25},
-  {id:'m1',nm:'Активные элементы',  ic:'📡',desc:'Мачты ×2',        cost:12e3,   tp:'bld',b:'mst',m:2,req:()=>bc('mst')>=5},
-  {id:'r1',nm:'Релейная сеть',      ic:'🔁',desc:'Ретранс. ×2',     cost:70e3,   tp:'bld',b:'rep',m:2,req:()=>bc('rep')>=5},
-  {id:'s1',nm:'100 кВт',            ic:'🎙️',desc:'Станции ×2',     cost:350e3,  tp:'bld',b:'sta',m:2,req:()=>bc('sta')>=5},
-  {id:'v1',nm:'4K-передатчик',      ic:'📺',desc:'Телевышки ×2',    cost:2e6,    tp:'bld',b:'tv', m:2,req:()=>bc('tv')>=5},
-  {id:'d1',nm:'Высокоточная опт.',  ic:'🛸',desc:'Тарелки ×2',      cost:15e6,   tp:'bld',b:'dsh',m:2,req:()=>bc('dsh')>=5},
-  {id:'q1',nm:'Запутанность ×2',    ic:'⚛️',desc:'Квант. ×2',       cost:5e12,   tp:'bld',b:'qnt',m:2,req:()=>bc('qnt')>=5},
-  {id:'g1',nm:'Широкополосный',     ic:'📶',desc:'Всё ×2',  cost:120e3,  tp:'glb',m:2,req:()=>G.tot>=60e3},
-  {id:'g2',nm:'Цифровая модуляция', ic:'📶',desc:'Всё ×2',  cost:2e6,    tp:'glb',m:2,req:()=>G.tot>=800e3},
-  {id:'g3',nm:'Оптоволокно',        ic:'📶',desc:'Всё ×3',  cost:100e6,  tp:'glb',m:3,req:()=>G.tot>=50e6},
-  {id:'g4',nm:'Орбитальная сеть',   ic:'📶',desc:'Всё ×5',  cost:10e9,   tp:'glb',m:5,req:()=>G.tot>=3e9},
-  {id:'g5',nm:'Квант. ткань',       ic:'🌌',desc:'Всё ×10', cost:2e12,   tp:'glb',m:10,req:()=>G.tot>=500e9},
-  {id:'p1',nm:'Кристалл. ядро',     ic:'💎',desc:'Кристаллы ×1.5 мощнее',  cost:50e3,   tp:'fboost',m:1.5,req:()=>G.freq>=5},
-  {id:'p2',nm:'Гармоника резонанса',ic:'🎵',desc:'Гармоники ×1.5 мощнее', cost:500e6,  tp:'hboost',m:1.5,req:()=>G.harm>=3},
+const UPG=[
+  {id:'c1',nm:'Медный кабель',ic:'🔌',desc:'Клик ×2',cost:1500,tp:'clk',m:2,req:()=>true},
+  {id:'c2',nm:'Усилитель',ic:'📈',desc:'Клик ×2',cost:1.5e4,tp:'clk',m:2,req:()=>true},
+  {id:'c3',nm:'Процессор',ic:'💻',desc:'Клик ×3',cost:1e5,tp:'clk',m:3,req:()=>true},
+  {id:'c4',nm:'Нейросеть',ic:'🧠',desc:'Клик ×5',cost:1.2e6,tp:'clk',m:5,req:()=>true},
+  {id:'c5',nm:'Квант. клик',ic:'⚛️',desc:'Клик ×10',cost:3e7,tp:'clk',m:10,req:()=>true},
+  {id:'c6',nm:'Сингулярность',ic:'🌀',desc:'Клик ×20',cost:1.2e9,tp:'clk',m:20,req:()=>true},
+  {id:'a1',nm:'УНЧ',ic:'📻',desc:'Антенны ×2',cost:3e3,tp:'bld',b:'ant',m:2,req:()=>true},
+  {id:'t1',nm:'Решётка',ic:'🗼',desc:'Вышки ×2',cost:2e4,tp:'bld',b:'twr',m:2,req:()=>true},
+  {id:'m1',nm:'Элементы',ic:'📡',desc:'Мачты ×2',cost:1.2e5,tp:'bld',b:'mst',m:2,req:()=>true},
+  {id:'r1',nm:'Реле',ic:'🔁',desc:'Ретранс. ×2',cost:7e5,tp:'bld',b:'rep',m:2,req:()=>true},
+  {id:'s1',nm:'100 кВт',ic:'🎙️',desc:'Станции ×2',cost:3.5e6,tp:'bld',b:'sta',m:2,req:()=>true},
+  {id:'g1',nm:'Широкопол.',ic:'📶',desc:'Всё ×2',cost:1.2e6,tp:'glb',m:2,req:()=>true},
+  {id:'g2',nm:'Модуляция',ic:'📶',desc:'Всё ×2',cost:2e7,tp:'glb',m:2,req:()=>true},
+  {id:'g3',nm:'Оптоволокно',ic:'📶',desc:'Всё ×3',cost:1e9,tp:'glb',m:3,req:()=>true},
+  {id:'p1',nm:'Ядро',ic:'💎',desc:'Кристаллы ×1.5',cost:5e5,tp:'fboost',m:1.5,req:()=>true},
+  {id:'p2',nm:'Резонанс',ic:'🎵',desc:'Гармоники ×1.5',cost:5e9,tp:'hboost',m:1.5,req:()=>true}
 ];
 
-// ══════════════════════════════════════════════════════
-// CHALLENGES
-// ══════════════════════════════════════════════════════
-const CH = [
-  {id:'cc1',nm:'Радиомолчание',   desc:'SPS=0, только клики. Накопи 500К за 120с',
-    mod:{spsM:0,clkM:8}, goal:500e3,           rw:'pc1',rwD:'+8% клика навсегда',
-    req:()=>G.tot>=50e3, reqVal:50e3, dur:120, diff:'Средний',   dCol:'#ffd700'},
-  {id:'cc2',nm:'Помехи в эфире', desc:'Производство −60%. Накопи 2М за 90с',
-    mod:{prodM:.4},       goal:2e6,             rw:'pc2',rwD:'+12% производства',
-    req:()=>G.tot>=800e3, reqVal:800e3,dur:90,  diff:'Сложный',  dCol:'#ff8800'},
-  {id:'cc3',nm:'Золотой эфир',   desc:'Здания ×4 дороже. Накопи 5М за 90с',
-    mod:{costM:4},        goal:5e6,             rw:'pc3',rwD:'Здания −15% стоят',
-    req:()=>G.tot>=5e6,   reqVal:5e6,  dur:90,  diff:'Сложный',  dCol:'#ff8800'},
-  {id:'cc4',nm:'Хардкор-эфир',   desc:'Клик ×0.3, SPS ×4. Накопи 30М за 120с',
-    mod:{clkM:.3,spsM:4}, goal:30e6,            rw:'pc4',rwD:'+20% ко всему',
-    req:()=>G.tot>=20e6,  reqVal:20e6, dur:120, diff:'Экстрим',  dCol:'#ff3300'},
-  {id:'cc5',nm:'Баланс частот',  desc:'Клик ×6, SPS ×0.2. Накопи 20М за 120с',
-    mod:{clkM:6,spsM:.2}, goal:20e6,            rw:'pc5',rwD:'+25% к силе клика',
-    req:()=>G.tot>=30e6,  reqVal:30e6, dur:120, diff:'Экстрим',  dCol:'#ff3300'},
-  {id:'cc6',nm:'Марафон',        desc:'Всё ×0.6. Накопи 200М за 180с',
-    mod:{prodM:.6,clkM:.6},goal:200e6,          rw:'pc6',rwD:'+30% ко всему',
-    req:()=>G.tot>=100e6, reqVal:100e6,dur:180, diff:'Легендарный',dCol:'#cc00ff'},
-  {id:'cc7',nm:'Буря помех',     desc:'SPS ×0.1, Клик ×15. Накопи 1Б за 150с',
-    mod:{spsM:.1,clkM:15},goal:1e9,             rw:'pc7',rwD:'+50% к клику навсегда',
-    req:()=>G.tot>=500e6, reqVal:500e6,dur:150, diff:'Безумный', dCol:'#ff0099'},
+const RES=[
+  {id:'r1',nm:'Цифр. обработка',ic:'📊',desc:'Клик +15%',cost:5e4,type:'clk',val:1.15,req:()=>true},
+  {id:'r2',nm:'Адаптив. антенна',ic:'📡',desc:'Здания -8% стоимости',cost:1.5e5,type:'cost',val:0.92,req:()=>true},
+  {id:'r3',nm:'Синхронизация',ic:'⚡',desc:'SPS +20%',cost:1e6,type:'sps',val:1.20,req:()=>true},
+  {id:'r4',nm:'Квант. сеть',ic:'🌐',desc:'Автопокупка ×2 скорость',cost:5e7,type:'auto',val:2,req:()=>true},
+  {id:'r5',nm:'Изоляция помех',ic:'🛡️',desc:'Испытания +15% награды',cost:2e8,type:'ch',val:1.15,req:()=>true},
+  {id:'r6',nm:'Мета-резонанс',ic:'🔮',desc:'Престиж +20% кристаллов',cost:5e9,type:'pre',val:1.20,req:()=>true}
 ];
 
-// ══════════════════════════════════════════════════════
-// ACHIEVEMENTS
-// ══════════════════════════════════════════════════════
-const ACH = [
-  {id:'ac1',  nm:'Первый сигнал',   ic:'👆',desc:'Кликнуть 1 раз',          ck:()=>G.clicks>=1},
-  {id:'ac100',nm:'Оператор',        ic:'☝️',desc:'100 кликов',              ck:()=>G.clicks>=100},
-  {id:'ac1k', nm:'Мастер клика',    ic:'✊',desc:'1000 кликов',             ck:()=>G.clicks>=1000},
-  {id:'ac10k',nm:'Клик-машина',     ic:'💪',desc:'10 000 кликов',           ck:()=>G.clicks>=10e3},
-  {id:'as1k', nm:'1К сигналов',     ic:'📊',desc:'Заработать 1 000',        ck:()=>G.tot>=1e3},
-  {id:'as100k',nm:'100К сигналов',  ic:'📊',desc:'Заработать 100 000',      ck:()=>G.tot>=100e3},
-  {id:'as1m', nm:'Миллион',         ic:'💰',desc:'Заработать 1 000 000',    ck:()=>G.tot>=1e6},
-  {id:'as1b', nm:'Миллиард',        ic:'💎',desc:'Заработать миллиард',     ck:()=>G.tot>=1e9},
-  {id:'as1t', nm:'Триллион',        ic:'🌟',desc:'Заработать триллион',     ck:()=>G.tot>=1e12},
-  {id:'ab10', nm:'Строитель',       ic:'🏗️',desc:'10 зданий',               ck:()=>tB()>=10},
-  {id:'ab50', nm:'Застройщик',      ic:'🏙️',desc:'50 зданий',               ck:()=>tB()>=50},
-  {id:'ab100',nm:'Архитектор',      ic:'🏛️',desc:'100 зданий',              ck:()=>tB()>=100},
-  {id:'ab200',nm:'Мегаполис',       ic:'🌆',desc:'200 зданий',              ck:()=>tB()>=200},
-  {id:'ap100',nm:'100/сек',         ic:'⚡',desc:'100 сигналов/сек',        ck:()=>G.sps>=100},
-  {id:'ap10k',nm:'10К/сек',         ic:'⚡',desc:'10 000 с/сек',            ck:()=>G.sps>=10e3},
-  {id:'ap1m', nm:'1М/сек',          ic:'🔥',desc:'1 000 000 с/сек',         ck:()=>G.sps>=1e6},
-  {id:'af1',  nm:'Резонанс',        ic:'🌌',desc:'Первый престиж',          ck:()=>G.freq>=1},
-  {id:'af10', nm:'Мастер частот',   ic:'🔴',desc:'10 кристаллов',           ck:()=>G.freq>=10},
-  {id:'ah1',  nm:'Гармония',        ic:'🎵',desc:'Первый мега-престиж',     ck:()=>G.harm>=1},
-  {id:'ach1', nm:'Испытан',         ic:'🔥',desc:'Пройти 1 испытание',      ck:()=>Object.keys(G.chDone).length>=1},
-  {id:'ach3', nm:'Железный',        ic:'💪',desc:'Пройти 3 испытания',      ck:()=>Object.keys(G.chDone).length>=3},
-  {id:'aq',   nm:'Квантовая эпоха', ic:'⚛️',desc:'Купить квантовый узел',   ck:()=>bc('qnt')>=1},
+const CH=[
+  {id:'cc1',nm:'Радиомолчание',desc:'SPS=0, только клики. Накопи 5М за 120с',mod:{spsM:0,clkM:8},goal:5e6,rw:'pc1',rwD:'+8% клика',req:()=>true,reqVal:0,dur:120,diff:'Средний',dCol:'#ffd700'},
+  {id:'cc2',nm:'Помехи',desc:'Производство −60%. Накопи 20М за 90с',mod:{prodM:.4},goal:2e7,rw:'pc2',rwD:'+12% производства',req:()=>true,reqVal:0,dur:90,diff:'Сложный',dCol:'#ff8800'},
+  {id:'cc3',nm:'Золотой эфир',desc:'Здания ×4 дороже. Накопи 50М за 90с',mod:{costM:4},goal:5e7,rw:'pc3',rwD:'Здания −15%',req:()=>true,reqVal:0,dur:90,diff:'Сложный',dCol:'#ff8800'},
+  {id:'cc4',nm:'Хардкор',desc:'Клик ×0.3, SPS ×4. Накопи 300М за 120с',mod:{clkM:.3,spsM:4},goal:3e8,rw:'pc4',rwD:'+20% ко всему',req:()=>true,reqVal:0,dur:120,diff:'Экстрим',dCol:'#ff3300'},
+  {id:'cc5',nm:'Баланс',desc:'Клик ×6, SPS ×0.2. Накопи 200М за 120с',mod:{clkM:6,spsM:.2},goal:2e8,rw:'pc5',rwD:'+25% к клику',req:()=>true,reqVal:0,dur:120,diff:'Экстрим',dCol:'#ff3300'},
+  {id:'cc6',nm:'Марафон',desc:'Всё ×0.6. Накопи 2Б за 180с',mod:{prodM:.6,clkM:.6},goal:2e9,rw:'pc6',rwD:'+30% ко всему',req:()=>true,reqVal:0,dur:180,diff:'Легенд.',dCol:'#cc00ff'},
+  {id:'cc7',nm:'Буря',desc:'SPS ×0.1, Клик ×15. Накопи 10Б за 150с',mod:{spsM:.1,clkM:15},goal:1e10,rw:'pc7',rwD:'+50% к клику',req:()=>true,reqVal:0,dur:150,diff:'Безум.',dCol:'#ff0099'}
 ];
 
-// ══════════════════════════════════════════════════════
-// CORE FUNCTIONS — ИСПРАВЛЕНО
-// ══════════════════════════════════════════════════════
+const ACH=[
+  {id:'ac1',nm:'Первый сигнал',ic:'👆',desc:'Кликнуть 1 раз',ck:()=>G.clicks>=1},
+  {id:'ac100',nm:'Оператор',ic:'☝️',desc:'100 кликов',ck:()=>G.clicks>=100},
+  {id:'ac1k',nm:'Мастер клика',ic:'✊',desc:'1000 кликов',ck:()=>G.clicks>=1000},
+  {id:'as1k',nm:'1К',ic:'📊',desc:'Заработать 1 000',ck:()=>G.tot>=1e3},
+  {id:'as1m',nm:'Миллион',ic:'💰',desc:'Заработать 1 000 000',ck:()=>G.tot>=1e6},
+  {id:'as1b',nm:'Миллиард',ic:'💎',desc:'Заработать миллиард',ck:()=>G.tot>=1e9},
+  {id:'ab10',nm:'Строитель',ic:'🏗️',desc:'10 зданий',ck:()=>tB()>=10},
+  {id:'ab100',nm:'Архитектор',ic:'🏛️',desc:'100 зданий',ck:()=>tB()>=100},
+  {id:'ap100',nm:'100/сек',ic:'⚡',desc:'100 сигналов/сек',ck:()=>G.sps>=100},
+  {id:'ap1m',nm:'1М/сек',ic:'🔥',desc:'1 000 000 с/сек',ck:()=>G.sps>=1e6},
+  {id:'af1',nm:'Резонанс',ic:'🌌',desc:'Первый престиж',ck:()=>G.freq>=1},
+  {id:'ah1',nm:'Гармония',ic:'🎵',desc:'Первый мега-престиж',ck:()=>G.harm>=1},
+  {id:'ach1',nm:'Испытан',ic:'🔥',desc:'Пройти 1 испытание',ck:()=>Object.keys(G.chDone).length>=1},
+  {id:'aq',nm:'Квант. эпоха',ic:'⚛️',desc:'Купить квантовый узел',ck:()=>bc('qnt')>=1}
+];
+
+const EVENTS=[
+  {id:'e1',nm:'Ионосферный всплеск!',desc:'+200% SPS на 45 секунд',dur:45,apply:()=>G.boosters.e1={ts:Date.now(),dur:45}},
+  {id:'e2',nm:'Спонсор эфира',desc:'+15% от текущего баланса',dur:0,apply:()=>{const g=G.sig*0.15;G.sig+=g;G.tot+=g;G.totAll+=g}},
+  {id:'e3',nm:'Техобслуживание',desc:'Здания -50% SPS, но +50% клика на 60с',dur:60,apply:()=>G.boosters.e3={ts:Date.now(),dur:60}},
+  {id:'e4',nm:'Радужный сигнал',desc:'×2 клик на 30 секунд',dur:30,apply:()=>G.boosters.e4={ts:Date.now(),dur:30}}
+];
+
+const SKINS=[
+  {id:'default',nm:'Стандарт',req:null,colors:{acc:'#00d4ff',bg:'#060d1a'}},
+  {id:'neon',nm:'Неон',req:()=>true,colors:{acc:'#ff00ff',bg:'#0a0014'}},
+  {id:'gold',nm:'Золото',req:()=>true,colors:{acc:'#ffd700',bg:'#141000'}},
+  {id:'matrix',nm:'Матрица',req:()=>true,colors:{acc:'#00ff00',bg:'#001100'}}
+];
+
+const TUTORIAL=[
+  {t:'Добро пожаловать!',txt:'👆 Кликайте по башне. Быстрые клики дают комбо-бонус до ×3!',el:'#clickZone'},
+  {t:'Автоматизация',txt:'🏗️ Купите антенну. Она приносит сигналы автоматически.',el:'#tb'},
+  {t:'Улучшения и Наука',txt:'⚡ Апгрейды усиливают клик. 🔬 Наука даёт постоянные пассивные бонусы.',el:'#tu'},
+  {t:'Ежедневные награды',txt:'📅 Заходите каждый день. Серия сбрасывается при пропуске.',el:'#td'},
+  {t:'Удачи в эфире!',txt:'📡 Игра сохраняется автоматически. Включите звук/вибрацию в настройках.',el:'#ts'}
+];
+
 const SNAMES=['Антенна','Радиовышка','Телебашня','Спутниковая','Квантовая'];
-function gStage(){if(G.totAll>=1e12)return 4;if(G.totAll>=1e9)return 3;if(G.totAll>=1e6)return 2;if(G.totAll>=1e4)return 1;return 0}
+
+// === UTILS ===
+function gStage(){if(G.totAll>=5e12)return 4;if(G.totAll>=5e9)return 3;if(G.totAll>=5e6)return 2;if(G.totAll>=5e4)return 1;return 0}
 function bc(id){return G.bld[id]||0}
 function tB(){return Object.values(G.bld).reduce((a,b)=>a+b,0)}
+function fmt(n){if(n==null||isNaN(n)||!isFinite(n))return'0';n=Math.max(0,n);if(n<10)return parseFloat(n.toFixed(1)).toString();if(n<1e4)return Math.floor(n).toLocaleString('ru');if(n<1e6)return(n/1e3).toFixed(1)+'K';if(n<1e9)return(n/1e6).toFixed(2)+'M';if(n<1e12)return(n/1e9).toFixed(2)+'B';if(n<1e15)return(n/1e12).toFixed(2)+'T';return n.toExponential(2)}
+function fmtT(ms){let s=Math.floor(ms/1e3),m=Math.floor(s/60);s%=60;let h=Math.floor(m/60);m%=60;let d=Math.floor(h/24);h%=24;if(d>0)return d+'д '+h+'ч';if(h>0)return h+'ч '+m+'м';if(m>0)return m+'м '+s+'с';return s+'с'}
+function getResVal(id){const r=RES.find(x=>x.id===id);return r&&G.res[id]?r.val:1}
+function getGlobalMult(){const f=G.upg['p1']?1.5:1;const h=G.upg['p2']?1.5:1;return(1+(G.freq*0.02*f))*(1+(G.harm*0.10*h))}
 
-// 🔧 FIX #1: bCost учитывает скидку pc3
-function bCost(b,n){
-  const discount = G.chDone.pc3 ? 0.85 : 1;  // −15% за прохождение cc3
-  return Math.ceil(b.cost * Math.pow(b.cm, n) * discount);
+// === CORE CALCULATION ===
+function recalc(){
+  try{
+    const cm=cMod();
+    // Click power
+    let cp=1;
+    for(const u of UPG)if(G.upg[u.id]&&u.tp==='clk')cp*=u.m;
+    cp*=cm.clkM*getBoostMult('clk')*getResVal('r1')*(G.chDone.pc1?1.08:1)*(G.chDone.pc5?1.25:1)*(G.chDone.pc7?1.5:1)*getGlobalMult();
+    Cache.click=Math.max(1,isFinite(cp)?cp:1);
+    
+    // Global SPS multiplier
+    let glb=1;
+    for(const u of UPG)if(G.upg[u.id]&&u.tp==='glb')glb*=u.m;
+    glb*=cm.prodM*getResVal('r3')*getGlobalMult();
+    
+    // Boosters
+    const now=Date.now();
+    if(G.boosters.e1&&now-G.boosters.e1.ts<G.boosters.e1.dur*1000)glb*=3;
+    if(G.boosters.e3&&G.boosters.e3.dur&&now-G.boosters.e3.ts<G.boosters.e3.dur*1000)glb*=0.5;
+    
+    // Buildings SPS
+    let tsps=0;Cache.bMult={};
+    for(const b of BLD){
+      let bm=glb;
+      for(const u of UPG)if(G.upg[u.id]&&u.tp==='bld'&&u.b===b.id)bm*=u.m;
+      Cache.bMult[b.id]=isFinite(bm)?bm:1;
+      const cnt=G.bld[b.id]||0;
+      if(cnt>0){const v=b.sps*bm*cnt;if(isFinite(v))tsps+=v}
+    }
+    Cache.sps=tsps*cm.spsM;
+    G.sps=isFinite(Cache.sps)?Cache.sps:0;
+  }catch(e){console.error('recalc err',e);Cache.click=1;Cache.sps=0;G.sps=0}
 }
-
-function bBulkCost(b,n,amt){
-  let t=0;
-  for(let i=0;i<amt;i++) t+=bCost(b,n+i);
-  return t;
-}
-
-// 🔧 FIX #2: bMaxBuy учитывает модификатор стоимости
-function bMaxBuy(b,n){
-  const cm = cMod();
-  let a=0, t=0;
-  const lim = G.buy;
-  while(a < lim){
-    const c = bCost(b, n+a) * (cm.costM || 1);  // ✅ Добавлен costM
-    if(t + c > G.sig) break;
-    t += c;
-    a++;
-  }
-  return a;
-}
-
-function pGain(){return G.totAll<1e6?0:Math.floor(Math.pow(G.totAll/1e6,.5))}
-function hGain(){return G.freq<1e3?0:Math.floor(Math.pow(G.freq/1e3,.5))}
 
 function cMod(){
   let m={spsM:1,clkM:1,prodM:1,costM:1};
   for(const ch of CH){
     const cs=G.chStart[ch.id];
-    if(cs!==undefined) for(const k in ch.mod) m[k]*=ch.mod[k];
+    if(cs)for(const k in ch.mod)m[k]*=ch.mod[k];
   }
   return m;
 }
 
-function recalc(){
-  const cm=cMod();
-  // Click
-  let cp=1;
-  let fBoost=1,hBoost=1;
-  if(G.upg['p1']) fBoost=1.5;
-  if(G.upg['p2']) hBoost=1.5;
-  for(const u of UPG) if(G.upg[u.id]&&u.tp==='clk') cp*=u.m;
-  cp*=cm.clkM*(1+G.freq*.05*fBoost)*(1+G.harm*.1*hBoost);
-  if(G.chDone.pc1) cp*=1.08;
-  if(G.chDone.pc5) cp*=1.25;
-  if(G.chDone.pc7) cp*=1.5;
-  Cache.click=Math.max(1,cp);
-  
-  // SPS
-  let glb=1;
-  for(const u of UPG) if(G.upg[u.id]&&u.tp==='glb') glb*=u.m;
-  glb*=(1+G.freq*.05*fBoost)*(1+G.harm*.1*hBoost)*cm.prodM;
-  if(G.chDone.pc2) glb*=1.12;
-  if(G.chDone.pc4) glb*=1.20;
-  if(G.chDone.pc6) glb*=1.30;
-  
-  let tsps=0;
-  for(const b of BLD){
-    let bm=glb;
-    for(const u of UPG) if(G.upg[u.id]&&u.tp==='bld'&&u.b===b.id) bm*=u.m;
-    Cache.bMult[b.id]=bm;
-    tsps+=b.sps*bm*(G.bld[b.id]||0);
+// 🔧 FIXED: Safe boosters cleanup
+function getBoostMult(type,base=1){
+  const now=Date.now();
+  let mult=base;
+  const toDelete=[];
+  for(const b in G.boosters){
+    const boost=G.boosters[b];
+    if(boost.dur&&now-boost.ts<boost.dur*1000){
+      if((b==='e1'&&type==='sps')||(b==='e4'&&type==='clk'))mult*=2;
+      if(b==='e3'&&type==='clk')mult*=1.5;
+    }else{
+      toDelete.push(b);
+    }
   }
-  Cache.sps=tsps*cm.spsM;
-  G.sps=Cache.sps;
+  toDelete.forEach(b=>delete G.boosters[b]);
+  return mult;
 }
 
-// ══════════════════════════════════════════════════════
-// FORMAT
-// ══════════════════════════════════════════════════════
-function fmt(n){
-  if(n==null||isNaN(n))return'0';n=Math.max(0,n);
-  if(n<1e4)return Math.floor(n).toLocaleString('ru');
-  if(n<1e6)return(n/1e3).toFixed(1)+'K';
-  if(n<1e9)return(n/1e6).toFixed(2)+'M';
-  if(n<1e12)return(n/1e9).toFixed(2)+'B';
-  if(n<1e15)return(n/1e12).toFixed(2)+'T';
-  return n.toExponential(2);
+// === AUDIO ===
+function initAudio(){
+  if(audioCtx||!G.settings.sound)return;
+  try{
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    audioStarted=true;
+  }catch(e){console.warn('Audio init failed',e)}
 }
-function fmtT(ms){
-  let s=Math.floor(ms/1e3),m=Math.floor(s/60);s%=60;
-  let h=Math.floor(m/60);m%=60;let d=Math.floor(h/24);h%=24;
-  if(d>0)return d+'д '+h+'ч';if(h>0)return h+'ч '+m+'м';if(m>0)return m+'м '+s+'с';return s+'с';
+function playClick(){
+  if(!G.settings.sound||!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(400,audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(800,audioCtx.currentTime+0.1);
+  g.gain.setValueAtTime(0.15,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.15);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start();o.stop(audioCtx.currentTime+0.15);
 }
-
-// ══════════════════════════════════════════════════════
-// CANVAS TOWER — ИСПРАВЛЕНО: улучшена функция glow
-// ══════════════════════════════════════════════════════
-function drawTower(stage){
-  const cv=document.getElementById('towerCanvas');
-  if(!cv)return;
-  const ctx=cv.getContext('2d');
-  const W=cv.width, H=cv.height;
-  ctx.clearRect(0,0,W,H);
-
-  const isDark=!document.body.classList.contains('light');
-  const steel=isDark?'#2a4a7a':'#4a7aaa';
-  const steelLight=isDark?'#3a6aaa':'#6a9acc';
-  const steelDark=isDark?'#1a2f50':'#2a5080';
-  const glowC=isDark?'0,212,255':'0,150,200';  // ✅ RGB без rgba()
-  const red=isDark?'#ff4757':'#cc2233';
-  const base=isDark?'#0a1628':'#c8d8e8';
-
-  // 🔧 FIX: Улучшенная функция glow с безопасной обработкой цвета
-  function glow(x,y,r,rgbBase,alpha=0.6){
-    const g=ctx.createRadialGradient(x,y,0,x,y,r);
-    g.addColorStop(0, `rgba(${rgbBase},${alpha})`);
-    g.addColorStop(1, `rgba(${rgbBase},0)`);
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-  }
-
-  function drawGround(){
-    const g=ctx.createLinearGradient(0,H-20,0,H);
-    g.addColorStop(0,steelDark);g.addColorStop(1,'transparent');
-    ctx.fillStyle=g;
-    ctx.fillRect(20,H-22,W-40,20);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;
-    ctx.strokeRect(20,H-22,W-40,20);
-  }
-
-  function drawBeam(x1,y1,x2,y2,w,col){
-    ctx.strokeStyle=col||steel;ctx.lineWidth=w;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-  }
-
-  function drawBolt(x,y){
-    ctx.fillStyle=steelLight;
-    ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
-  }
-
-  function drawDish(cx,cy,rx,ry,angle){
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);
-    const g=ctx.createLinearGradient(-rx,0,rx,0);
-    g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);
-    ctx.fillStyle=g;
-    ctx.strokeStyle=isDark?'#00d4ff':'#0077aa';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle=isDark?'rgba(0,212,255,0.15)':'rgba(0,100,180,0.1)';
-    ctx.beginPath();ctx.ellipse(0,0,rx*.7,ry*.7,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle=steel;ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-ry*1.4);ctx.stroke();
-    ctx.fillStyle=isDark?'#00d4ff':'#0077aa';
-    ctx.beginPath();ctx.arc(0,-ry*1.4,4,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-  }
-
-  function drawAntenna(cx,baseY,topY){
-    const g=ctx.createLinearGradient(cx-4,0,cx+4,0);
-    g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);
-    ctx.fillStyle=g;
-    ctx.fillRect(cx-4,topY,8,baseY-topY);
-    const steps=Math.floor((baseY-topY)/40);
-    for(let i=0;i<=steps;i++){
-      const y=baseY-i*(baseY-topY)/steps;
-      const w=8+i*3;
-      ctx.fillStyle=steelLight;ctx.fillRect(cx-w,y-2,w*2,4);
-      drawBolt(cx-w+4,y);drawBolt(cx+w-4,y);
-    }
-    glow(cx,topY,18,isDark?'255,71,87':'200,30,50',0.6);
-    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,topY,5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.8)';ctx.beginPath();ctx.arc(cx-1,topY-1,2,0,Math.PI*2);ctx.fill();
-  }
-
-  function drawLeg(x1,y1,x2,y2){
-    const g=ctx.createLinearGradient(x1,y1,x2,y2);
-    g.addColorStop(0,steelLight);g.addColorStop(1,steelDark);
-    ctx.strokeStyle=g;ctx.lineWidth=6;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-    const steps=3;
-    for(let i=1;i<steps;i++){
-      const t=i/steps;
-      drawBolt(x1+(x2-x1)*t,y1+(y2-y1)*t);
-    }
-  }
-
-  function drawCross(x1,y1,x2,y2,x3,y3,x4,y4,col){
-    ctx.strokeStyle=col||steel;ctx.lineWidth=2;ctx.lineCap='round';ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x3,y3);ctx.lineTo(x4,y4);ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // ─── STAGE 0: Simple antenna ───
-  if(stage===0){
-    drawGround();
-    const cx=W/2, base=H-22, top=50;
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-30,base-8,60,8);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-30,base-8,60,8);
-    const mg=ctx.createLinearGradient(cx-5,0,cx+5,0);
-    mg.addColorStop(0,steelDark);mg.addColorStop(.5,steelLight);mg.addColorStop(1,steelDark);
-    ctx.fillStyle=mg;ctx.fillRect(cx-5,top+30,10,base-top-38);
-    glow(cx,top+30,30,glowC,0.3);
-    ctx.strokeStyle=isDark?'#00d4ff':'#0077aa';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(cx-40,top+30);ctx.lineTo(cx+40,top+30);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-28,top+20);ctx.lineTo(cx+28,top+20);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-16,top+10);ctx.lineTo(cx+16,top+10);ctx.stroke();
-    ctx.strokeStyle=steel;ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(cx,top+8);ctx.lineTo(cx,top+30);ctx.stroke();
-    glow(cx,top,16,isDark?'255,71,87':'200,30,50',0.7);
-    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,top,4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.9)';ctx.beginPath();ctx.arc(cx-1,top-1,1.5,0,Math.PI*2);ctx.fill();
-  }
-
-  // ─── STAGE 1: Radio tower ───
-  else if(stage===1){
-    drawGround();
-    const cx=W/2, base=H-30, top=35;
-    const bot=base-10;
-    const wBot=70, wTop=10;
-    drawLeg(cx-wBot,bot,cx-wTop,top+60);
-    drawLeg(cx+wBot,bot,cx+wTop,top+60);
-    const levels=4;
-    for(let i=0;i<levels;i++){
-      const t=i/levels, t2=(i+1)/levels;
-      const lx1=cx-(wBot*(1-t)+wTop*t), ly1=bot*(1-t)+( top+60)*t;
-      const rx1=cx+(wBot*(1-t)+wTop*t), ry1=ly1;
-      const lx2=cx-(wBot*(1-t2)+wTop*t2), ly2=bot*(1-t2)+(top+60)*t2;
-      const rx2=cx+(wBot*(1-t2)+wTop*t2), ry2=ly2;
-      drawCross(lx1,ly1,rx2,ry2,rx1,ry1,lx2,ly2,steelDark);
-      ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.setLineDash([]);
-      ctx.beginPath();ctx.moveTo(lx1,ly1);ctx.lineTo(rx1,ry1);ctx.stroke();
-    }
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-20,top+55,40,8);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-20,top+55,40,8);
-    drawAntenna(cx,top+56,top);
-  }
-
-  // ─── STAGE 2: TV Tower ───
-  else if(stage===2){
-    drawGround();
-    const cx=W/2, base=H-30, top=25;
-    const mid=base-60;
-    const wBot=80, wMid=35;
-    drawLeg(cx-wBot,base-10,cx-wMid,mid);
-    drawLeg(cx+wBot,base-10,cx+wMid,mid);
-    drawLeg(cx,base-10,cx,mid);
-    for(let i=0;i<3;i++){
-      const t=i/3;
-      const lx=cx-(wBot*(1-t)+wMid*t);
-      const rx=cx+(wBot*(1-t)+wMid*t);
-      const y=base-10+(mid-base+10)*t;
-      ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([3,4]);
-      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(cx+(wBot*(1-(t+1/3))+wMid*(t+1/3)),y+(mid-base+10)/3);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(rx,y);ctx.lineTo(cx-(wBot*(1-(t+1/3))+wMid*(t+1/3)),y+(mid-base+10)/3);ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.strokeStyle=steelLight;ctx.lineWidth=3;
-      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-    }
-    drawLeg(cx-wMid,mid,cx-8,top+70);
-    drawLeg(cx+wMid,mid,cx+8,top+70);
-    for(let i=0;i<2;i++){
-      const t=i/2;
-      const lx=cx-(wMid*(1-t)+8*t), rx=cx+(wMid*(1-t)+8*t);
-      const y=mid+(top+70-mid)*t;
-      ctx.strokeStyle=steelLight;ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-    }
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-22,top+65,44,10);
-    ctx.strokeStyle=isDark?'#00d4ff':'#0077aa';ctx.lineWidth=1;ctx.strokeRect(cx-22,top+65,44,10);
-    drawAntenna(cx,top+66,top);
-    drawDish(cx-50,mid+20,20,10,-Math.PI/6);
-    drawDish(cx+50,mid+20,20,10,Math.PI/6);
-    glow(cx-50,mid+20,25,glowC,0.2);
-    glow(cx+50,mid+20,25,glowC,0.2);
-  }
-
-  // ─── STAGE 3: Satellite dish complex ───
-  else if(stage===3){
-    drawGround();
-    const cx=W/2, base=H-25;
-    const twH=base-80;
-    const lw=28;
-    for(let i=0;i<6;i++){
-      const y=base-10-i*twH/6, yn=base-10-(i+1)*twH/6;
-      const scale=1-i*0.05;
-      ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();
-      ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([3,4]);
-      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.strokeStyle=steelLight;ctx.lineWidth=3;
-      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,y);ctx.stroke();
-    }
-    const dishY=base-twH-10;
-    glow(cx,dishY,50,glowC,0.25);
-    drawDish(cx,dishY,55,14,0);
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-35,dishY+12,70,10);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-35,dishY+12,70,10);
-    drawDish(cx-65,base-50,30,9,-0.3);
-    glow(cx-65,base-50,35,glowC,0.15);
-    ctx.strokeStyle=isDark?'#00d4ff':'#0077aa';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(cx,dishY-2);ctx.lineTo(cx,dishY-30);ctx.stroke();
-    glow(cx,dishY-30,14,isDark?'255,71,87':'200,30,50',0.8);
-    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,dishY-30,4,0,Math.PI*2);ctx.fill();
-  }
-
-  // ─── STAGE 4: Quantum array ───
-  else {
-    drawGround();
-    const cx=W/2, base=H-25;
-    glow(cx,H/2,120,glowC,0.1);
-    glow(cx,H/2-20,80,glowC,0.08);
-    const positions=[-90,-50,0,50,90];
-    const heights=[0.55,0.75,1,0.75,0.55];
-    for(let i=0;i<5;i++){
-      const ax=cx+positions[i];
-      const ah=base-(180*heights[i]);
-      const scale=heights[i];
-      const bg=ctx.createLinearGradient(ax-4,0,ax+4,0);
-      bg.addColorStop(0,steelDark);bg.addColorStop(.5,steelLight);bg.addColorStop(1,steelDark);
-      ctx.fillStyle=bg;ctx.fillRect(ax-4,ah,8,base-ah);
-      const armW=20*scale;
-      ctx.strokeStyle=isDark?'rgba(0,212,255,0.7)':'rgba(0,100,200,0.7)';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(ax-armW,ah+10);ctx.lineTo(ax+armW,ah+10);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(ax-armW*.7,ah+25);ctx.lineTo(ax+armW*.7,ah+25);ctx.stroke();
-      if(i===2){
-        glow(ax,ah,20,isDark?'255,71,87':'200,30,50',0.6);
-        ctx.fillStyle=red;ctx.beginPath();ctx.arc(ax,ah,5,0,Math.PI*2);ctx.fill();
-      } else {
-        glow(ax,ah,12,glowC,0.5);
-        ctx.fillStyle=isDark?'#00d4ff':'#0077aa';ctx.beginPath();ctx.arc(ax,ah,3,0,Math.PI*2);ctx.fill();
-      }
-    }
-    ctx.strokeStyle=isDark?'rgba(0,212,255,0.2)':'rgba(0,100,180,0.15)';ctx.lineWidth=1;ctx.setLineDash([4,8]);
-    for(let i=0;i<5;i++) for(let j=i+1;j<5;j++){
-      ctx.beginPath();ctx.moveTo(cx+positions[i],base-(180*heights[i]));ctx.lineTo(cx+positions[j],base-(180*heights[j]));ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    ctx.fillStyle=steelDark;ctx.strokeStyle=isDark?'rgba(0,212,255,0.5)':'rgba(0,100,200,0.5)';ctx.lineWidth=1;
-    ctx.fillRect(30,base-10,W-60,10);ctx.strokeRect(30,base-10,W-60,10);
-    glow(cx,base,60,glowC,0.2);
-  }
+function triggerHaptic(){
+  if(!G.settings.haptics||!TG?.HapticFeedback)return;
+  TG.HapticFeedback.impactOccurred('light');
 }
 
-// ══════════════════════════════════════════════════════
-// TAB / UI
-// ══════════════════════════════════════════════════════
+// === UI FUNCTIONS ===
 function openTab(btn,t){
   document.querySelectorAll('.stab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.tcont').forEach(e=>e.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('t'+t).classList.add('active');
-  render();
+  renderAll(); // 🔧 FIXED: was render()
 }
+function toggleTheme(){
+  G.theme=G.theme==='dark'?'light':'dark';
+  document.body.classList.toggle('light',G.theme==='light');
+  drawTower(gStage());
+  save();
+}
+function closeTut(){
+  tutorialActive=false;
+  G.tutorial.done=true;
+  G.tutorial.step=0;
+  document.getElementById('tutOv').style.display='none';
+  save();
+}
+function nextTut(){G.tutorial.step++;showTutStep()}
+function showTutStep(){
+  const step=TUTORIAL[G.tutorial.step];
+  if(!step){closeTut();return}
+  tutorialActive=true;
+  document.getElementById('tutTitle').textContent=step.t;
+  document.getElementById('tutText').textContent=step.txt;
+  const tabBtn=document.querySelector(`.stab[data-tab="${step.el?.replace('#','')}"]`);
+  if(tabBtn&&!tabBtn.classList.contains('active'))openTab(tabBtn,step.el.replace('#',''));
+  setTimeout(()=>{
+    const target=document.querySelector(step.el);
+    const card=document.getElementById('tutCard');
+    if(target){
+      const r=target.getBoundingClientRect();
+      card.style.top=Math.max(10,Math.min(r.bottom+10,window.innerHeight-150))+'px';
+      card.style.left=Math.max(10,Math.min(r.left,window.innerWidth-280))+'px';
+      card.style.transform='none';
+    }else{
+      card.style.top='50%';card.style.left='50%';card.style.transform='translate(-50%,-50%)';
+    }
+    document.getElementById('tutOv').style.display='block';
+    document.getElementById('tutNextBtn').textContent=G.tutorial.step===TUTORIAL.length-1?'Готово!':'Далее';
+  },50);
+}
+function startTut(){if(G.tutorial.done||tutorialActive)return;G.tutorial.step=0;showTutStep()}
 
+// === SHOP RENDERING ===
 function rBuyRow(){
-  document.getElementById('buyRow').innerHTML=
-    [1,10,100].map(x=>`<button class="bbtn${G.buy===x?' active':''}" onclick="setBuy(${x})">×${x}</button>`).join('');
+  document.getElementById('buyRow').innerHTML=`<button class="bbtn${G.buy===1?' active':''}" onclick="setBuy(1)">×1</button><button class="bbtn${G.buy===10?' active':''}" onclick="setBuy(10)">×10</button><button class="bbtn${G.buy===100?' active':''}" onclick="setBuy(100)">×100</button><button class="bbtn max" onclick="buyMax()">МАКС</button>`;
 }
 function setBuy(n){G.buy=n;rBuyRow();rBld()}
+function buyMax(){G.buy=999;rBuyRow();rBld()}
 
-// ══════════════════════════════════════════════════════
-// RENDER BUILDINGS — ИСПРАВЛЕНО: корректная логика цен
-// ══════════════════════════════════════════════════════
+function bCost(b,n){const disc=G.chDone.pc3?0.85:1;return Math.ceil(b.cost*Math.pow(b.cm,n)*disc*getResVal('r2'))}
+function bBulkCost(b,n,amt){let t=0;for(let i=0;i<amt;i++)t+=bCost(b,n+i);return t}
+
+// 🔧 FIXED: Infinite loop protection
+function bMaxBuy(b,n){
+  const cm=cMod();
+  let a=0,t=0;
+  const lim=Math.min(G.buy===999?999:G.buy,999);
+  let iterations=0;
+  while(a<lim&&iterations<1000){
+    iterations++;
+    const c=bCost(b,n+a)*(cm.costM||1);
+    if(!isFinite(c)||c<=0||t+c>G.sig)break;
+    t+=c;a++;
+  }
+  return a;
+}
+
+// 🔧 FIXED: Use canBuy for MAX button display
 function rBld(){
   const cm=cMod();
   let h='';
   for(const b of BLD){
     const cnt=bc(b.id);
     const canBuy=bMaxBuy(b,cnt);
-    const wantBuy=G.buy;
-    const locked=cnt===0&&G.tot<b.cost*.3;
-    if(locked){
-      h+=`<div class="card lock"><div class="cicon">🔒</div><div class="ci"><div class="cn">${b.name}</div><div class="cd">${b.desc}</div></div><div class="cr"><div class="cc no">???</div></div></div>`;
-      continue;
-    }
-    const singleCost=bCost(b,cnt);
-    const bulkCost=bBulkCost(b,cnt,wantBuy)*(cm.costM||1);
-    const actualCost=canBuy>0?bBulkCost(b,cnt,canBuy)*(cm.costM||1):bulkCost;
-    const sps=b.sps*(Cache.bMult[b.id]||1);
-    const tot=sps*cnt;
-    
+    const wantBuy=G.buy===999?999:G.buy;
+    const actualAmt=G.buy===999?(canBuy>0?canBuy:1):wantBuy;
+    const sc=bCost(b,cnt);
+    const bcost=bBulkCost(b,cnt,actualAmt)*(cm.costM||1);
+    const ac=canBuy>0?bBulkCost(b,cnt,canBuy)*(cm.costM||1):bcost;
+    const sps=b.sps*(Cache.bMult[b.id]||1),tot=sps*cnt;
     let cc;
-    const canAffordFull=G.sig>=Math.ceil(bulkCost);
-    const canAffordSome=G.sig>=Math.ceil(singleCost*(cm.costM||1));
-    if(canAffordFull) cc='cc ok';
-    else if(canAffordSome) cc='cc some';
-    else cc='cc no';
-    
-    const aff=canAffordSome;
-    const showAmt=canBuy>1&&G.buy>1;
-    const displayCost=canAffordFull?fmt(Math.ceil(bulkCost)):canAffordSome?fmt(Math.ceil(actualCost)):fmt(Math.ceil(bulkCost));
-    
-    h+=`<div class="card${aff?' aff':''}" onclick="buyB('${b.id}')">
-      <div class="cicon">${b.ic}</div>
-      <div class="ci"><div class="cn">${b.name}</div><div class="cd">${b.desc}</div><div class="cs">+${fmt(sps)}/с · всего ${fmt(tot)}</div></div>
-      <div class="cr"><div class="${cc}">${displayCost}</div><div class="cct">${cnt}${showAmt?' (×'+canBuy+')':''}</div></div>
-    </div>`;
+    const f=G.sig>=Math.ceil(bcost),s=G.sig>=Math.ceil(sc*(cm.costM||1));
+    if(f)cc='cc ok';else if(s)cc='cc some';else cc='cc no';
+    const aff=s,show=canBuy>1&&wantBuy<999;
+    const disp=f?fmt(Math.ceil(bcost)):s?fmt(Math.ceil(ac)):fmt(Math.ceil(bcost));
+    h+=`<div class="card${aff?' aff':''}" data-bid="${b.id}" onclick="buyB('${b.id}')"><div class="cicon">${b.ic}</div><div class="ci"><div class="cn">${b.name}</div><div class="cd">${b.desc}</div><div class="cs">+${fmt(sps)}/с · всего ${fmt(tot)}</div></div><div class="cr"><div class="${cc}">${disp}</div><div class="cct">${cnt}${show?' (×'+canBuy+')':''}</div></div></div>`;
   }
   document.getElementById('bList').innerHTML=h;
 }
 
-// ══════════════════════════════════════════════════════
-// RENDER UPGRADES — 🔧 FIX #3: исправлено окрашивание цены
-// ══════════════════════════════════════════════════════
+function buyB(id){
+  const b=BLD.find(x=>x.id===id);
+  if(!b)return;
+  const cnt=bc(id),amt=G.buy===999?Math.min(999,bMaxBuy(b,cnt)):bMaxBuy(b,cnt);
+  if(amt<=0)return;
+  const dc=Math.ceil(bBulkCost(b,cnt,amt)*(cMod().costM||1));
+  if(G.sig<dc)return;
+  G.sig-=dc;
+  G.bld[id]=(G.bld[id]||0)+amt;
+  recalc();rBld();rUpg();rRes();animateCard(id);
+}
+
 function rUpg(){
   const avail=[],done=[];
   for(const u of UPG){
     if(G.upg[u.id]){done.push(u);continue}
-    if(!u.req()) continue;
+    if(!u.req())continue;
     const aff=G.sig>=u.cost;
-    // 🔧 FIX: добавлен класс 'ok' для доступных улучшений
-    avail.push(`<div class="card ucard${aff?' aff':''}" onclick="buyU('${u.id}')">
-      <div class="cicon">${u.ic}</div>
-      <div class="ci"><div class="cn">${u.nm}</div><div class="cd">${u.desc}</div></div>
-      <div class="cr"><div class="ucost${aff?' ok':' no'}">${fmt(u.cost)}</div></div>
-    </div>`);
+    avail.push(`<div class="card ucard${aff?' aff':''}" onclick="buyU('${u.id}')"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm}</div><div class="cd">${u.desc}</div></div><div class="cr"><div class="ucost${aff?' ok':' no'}">${fmt(u.cost)}</div></div></div>`);
   }
-  let h=avail.length?avail.join(''):
-    `<div style="text-align:center;color:var(--txt3);padding:24px;font-size:.75rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border)">Нет доступных улучшений</div>`;
+  let h=avail.length?avail.join(''):`<div style="text-align:center;color:var(--txt3);padding:24px;font-size:.75rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border)">Нет доступных улучшений</div>`;
   if(done.length){
     h+=`<div class="slbl" style="margin-top:14px">Куплено (${done.length}/${UPG.length})</div>`;
     h+=done.map(u=>`<div class="card done"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm} ✓</div><div class="cd">${u.desc}</div></div></div>`).join('');
   }
   document.getElementById('uList').innerHTML=h;
 }
+function buyU(id){
+  const u=UPG.find(x=>x.id===id);
+  if(!u||G.upg[id]||G.sig<u.cost||!u.req())return;
+  G.sig-=u.cost;G.upg[id]=true;
+  recalc();rUpg();rBld();rRes();
+  notify('⚡ '+u.nm,u.desc);
+}
 
-// ══════════════════════════════════════════════════════
-// RENDER CHALLENGES — 🔧 FIX #4: исправлен расчёт прогресса
-// ══════════════════════════════════════════════════════
+function rRes(){
+  let h='<div class="slbl">Дерево исследований</div>';
+  const avail=[],done=[];
+  for(const r of RES){
+    if(G.res[r.id]){done.push(r);continue}
+    if(!r.req())continue;
+    const aff=G.sig>=r.cost;
+    avail.push(`<div class="res-card"><div class="res-icon">${r.ic}</div><div class="res-info"><div class="res-name">${r.nm}</div><div class="res-desc">${r.desc}</div><div class="res-cost">💰 ${fmt(r.cost)}</div></div><button class="res-btn"${aff?'':' disabled'} onclick="buyRes('${r.id}')">Изучить</button></div>`);
+  }
+  h+=avail.length?avail.join(''):'<div style="color:var(--txt3);text-align:center;padding:12px;font-size:.7rem">Исследования пока недоступны</div>';
+  if(done.length){
+    h+=`<div class="slbl" style="margin-top:14px">Изучено (${done.length}/${RES.length})</div>`;
+    h+=done.map(r=>`<div class="res-card done"><div class="res-icon">${r.ic}</div><div class="res-info"><div class="res-name">${r.nm} ✓</div><div class="res-desc">${r.desc}</div></div></div>`).join('');
+  }
+  document.getElementById('rList').innerHTML=h;
+}
+function buyRes(id){
+  const r=RES.find(x=>x.id===id);
+  if(!r||G.res[id]||G.sig<r.cost||!r.req())return;
+  G.sig-=r.cost;G.res[id]=true;
+  recalc();rRes();
+  notify('🔬 '+r.nm,r.desc);
+}
+
+// === CHALLENGES & ACHIEVEMENTS ===
 function rChal(){
   const now=Date.now();
   let h='';
-  const activeList=CH.filter(c=>G.chStart[c.id]!==undefined);
-  if(activeList.length){
+  const active=CH.filter(c=>G.chStart[c.id]!==undefined);
+  if(active.length){
     h+=`<div class="slbl">Активные</div>`;
-    for(const ch of activeList){
-      const data=G.chStart[ch.id];
-      const elapsed=(now-data.ts)/1000;
-      const pct=Math.min((elapsed/ch.dur)*100,100);
-      const done=pct>=100;
-      const tl=Math.max(ch.dur-elapsed,0);
-      // 🔧 FIX: правильный расчёт прогресса относительно startSig
-      const earned = G.tot - data.startSig;
-      const sigPct=Math.min(earned/ch.goal*100,100);
-      h+=`<div class="chcard active">
-        <div style="display:flex;justify-content:space-between">
-          <div class="chn">🔥 ${ch.nm}</div>
-          <div style="font-family:'Space Mono',monospace;font-size:.65rem;color:${tl<30?'var(--red)':'var(--txt3)'};">${Math.ceil(tl)}с</div>
-        </div>
-        <div class="chd">${ch.desc}</div>
-        <div style="font-size:.6rem;color:var(--acc);margin:3px 0">Цель: ${fmt(ch.goal)} · Прогресс: ${fmt(Math.max(earned,0))}</div>
-        <div class="pbar"><div class="pfill${done?' done':''}" style="width:${Math.min(sigPct,100)}%"></div></div>
-        <div class="ptxt">Накоплено ${Math.round(Math.min(sigPct,100))}% · ${Math.ceil(tl)}с осталось</div>
-      </div>`;
+    for(const ch of active){
+      const d=G.chStart[ch.id],el=(now-d.ts)/1000,p=Math.min((el/ch.dur)*100,100),done=p>=100,tl=Math.max(ch.dur-el,0),earned=G.tot-d.startSig,sp=Math.min(earned/ch.goal*100,100);
+      h+=`<div class="chcard active"><div style="display:flex;justify-content:space-between"><div class="chn">🔥 ${ch.nm}</div><div style="font-family:'Space Mono',monospace;font-size:.65rem;color:${tl<30?'var(--red)':'var(--txt3)'};">${Math.ceil(tl)}с</div></div><div class="chd">${ch.desc}</div><div style="font-size:.6rem;color:var(--acc);margin:3px 0">Цель: ${fmt(ch.goal)} · Прогресс: ${fmt(Math.max(earned,0))}</div><div class="pbar"><div class="pfill${done?' done':''}" style="width:${Math.min(sp,100)}%"></div></div><div class="ptxt">Накоплено ${Math.round(Math.min(sp,100))}% · ${Math.ceil(tl)}с осталось</div></div>`;
     }
     h+=`<br>`;
   }
   h+=`<div class="slbl">Испытания</div>`;
   for(const ch of CH){
-    const isActive=G.chStart[ch.id]!==undefined;
-    const isDone=G.chDone[ch.rw];
-    const failCount=G.chFailed[ch.id]||0;
-    const canStart=!isActive&&!isDone&&ch.req();
-    h+=`<div class="chcard${isDone?' done':isActive?' active':''}" ${canStart?`onclick="startCh('${ch.id}')"`:''}>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
-        <div class="chn">${ch.nm}${isActive?' 🔥':''}${isDone?' ✓':''}</div>
-        <span style="font-size:.55rem;font-weight:700;color:${ch.dCol||'#ff4757'};padding:2px 8px;border:1px solid ${ch.dCol||'#ff4757'};border-radius:10px;opacity:.85;flex-shrink:0;margin-left:6px">${ch.diff}</span>
-      </div>
-      <div class="chd">${ch.desc}</div>
-      <div class="chr">${isDone?'🎁 ':'Награда: '}${ch.rwD}</div>
-      ${failCount>0&&!isDone?`<div style="font-size:.55rem;color:var(--red);margin-top:3px">❌ Провалено: ${failCount} раз</div>`:''}
-      ${!isDone&&!isActive?`<div style="font-size:.55rem;color:var(--txt3);margin-top:3px">Требуется: ${fmt(ch.reqVal)} сигналов · ${ch.dur}с</div>`:''}
-      ${canStart?`<div style="font-size:.6rem;color:var(--acc3);margin-top:5px;font-weight:600">▶ Нажмите для старта</div>`:''}
-    </div>`;
+    const act=G.chStart[ch.id]!==undefined,done=G.chDone[ch.rw],fail=G.chFailed[ch.id]||0,can=!act&&!done&&ch.req();
+    h+=`<div class="chcard${done?' done':act?' active':''}" ${can?`onclick="startCh('${ch.id}')"`:''}><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px"><div class="chn">${ch.nm}${act?' 🔥':''}${done?' ✓':''}</div><span style="font-size:.55rem;font-weight:700;color:${ch.dCol||'#ff4757'};padding:2px 8px;border:1px solid ${ch.dCol||'#ff4757'};border-radius:10px;opacity:.85;flex-shrink:0;margin-left:6px">${ch.diff}</span></div><div class="chd">${ch.desc}</div><div class="chr">${done?'🎁 ':'Награда: '}${ch.rwD}</div>${fail>0&&!done?`<div style="font-size:.55rem;color:var(--red);margin-top:3px">❌ Провалено: ${fail} раз</div>`:''}${!done&&!act?`<div style="font-size:.55rem;color:var(--txt3);margin-top:3px">Требуется: ${fmt(ch.reqVal)} сигналов · ${ch.dur}с</div>`:''}${can?`<div style="font-size:.6rem;color:var(--acc3);margin-top:5px;font-weight:600">▶ Нажмите для старта</div>`:''}</div>`;
   }
   document.getElementById('cList').innerHTML=h;
 }
+function startCh(id){
+  const ch=CH.find(x=>x.id===id);
+  if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req())return;
+  showConfirm('🔥 '+ch.nm,`${ch.desc}\nЦель: накопить ${fmt(ch.goal)} за ${ch.dur}с\nНаграда: ${ch.rwD}`,()=>{
+    G.chStart[id]={ts:Date.now(),startSig:G.tot};
+    recalc();rChal();
+    notify('🔥 '+ch.nm,ch.desc);
+  });
+}
 
-// ══════════════════════════════════════════════════════
-// RENDER ACHIEVEMENTS
-// ══════════════════════════════════════════════════════
 function rAch(){
-  const unl=ACH.filter(a=>G.ach[a.id]).length;
-  const pw=Math.round(unl/ACH.length*100);
-  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div class="slbl" style="margin:0;border:none;padding:0">Достижения</div>
-    <div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--gold)">${unl}/${ACH.length}</div>
-  </div>
-  <div class="pbar"><div class="pfill${unl>=ACH.length?' done':''}" style="width:${pw}%"></div></div>
-  <div class="ptxt" style="margin-bottom:14px">${pw}% выполнено</div>`;
+  const unl=ACH.filter(a=>G.ach[a.id]).length,pw=Math.round(unl/ACH.length*100);
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="slbl" style="margin:0;border:none;padding:0">Достижения</div><div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--gold)">${unl}/${ACH.length}</div></div><div class="pbar"><div class="pfill${unl>=ACH.length?' done':''}" style="width:${pw}%"></div></div><div class="ptxt" style="margin-bottom:14px">${pw}% выполнено</div>`;
   for(const a of ACH){
     const u=G.ach[a.id];
-    h+=`<div class="card achcard${u?' unl':' lock'}">
-      <div class="achi">${u?a.ic:'🔒'}</div>
-      <div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div>
-    </div>`;
+    h+=`<div class="card achcard${u?' unl':' lock'}"><div class="achi">${u?a.ic:'🔒'}</div><div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div></div>`;
   }
   document.getElementById('aList').innerHTML=h;
 }
 
-// ══════════════════════════════════════════════════════
-// RENDER PRESTIGE
-// ══════════════════════════════════════════════════════
+// === PRESTIGE ===
+function pGain(){let g=G.totAll<5e6?0:Math.floor(Math.pow(G.totAll/5e6,0.5));g*=getResVal('r6');return Math.floor(g)}
+function hGain(){return G.totAll<1e9?0:Math.floor(Math.pow(G.totAll/1e9,0.5))}
 function rPre(){
-  const fg=pGain(), hg=hGain();
-  let h=`<div class="psec">
-    <h3>🔴 Резонанс Частоты</h3>
-    <p>Сброс прогресса → кристаллы частоты<br><span style="font-size:.62rem;opacity:.7">Каждый кристалл: +5% ко всему</span></p>
-    <div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--red);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(fg)}</span></div>
-    <div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.freq} кристаллов (+${G.freq*5}%)</div>
-    <button class="pbtn red" id="preBtn" ${fg<=0?'disabled':''} onclick="doPre()">⚡ Сбросить прогресс</button>
-  </div>`;
-  h+=`<div class="psec">
-    <h3>🔵 Гармоники</h3>
-    <p>Великий сброс → гармоники<br><span style="font-size:.62rem;opacity:.7">Каждая гармоника: +10% ко ВСЕМУ</span></p>
-    <div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--acc);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(hg)}</span></div>
-    <div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.harm} гармоник (+${G.harm*10}%)</div>
-    <button class="pbtn blu" id="harmBtn" ${hg<=0?'disabled':''} onclick="doHarm()">🌌 Великий сброс</button>
-  </div>`;
+  const fg=pGain(),hg=hGain(),cur=getGlobalMult();
+  let h=`<div class="psec"><h3>🔴 Резонанс Частоты</h3><p>Сброс прогресса → кристаллы частоты<br><span style="font-size:.62rem;opacity:.7">Каждый кристалл: +2% (аддитивно)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--red);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(fg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.freq} кристаллов</div><button class="pbtn red" ${fg<=0?'disabled':''} onclick="doPre()">⚡ Сбросить прогресс</button></div>`;
+  h+=`<div class="psec"><h3>🔵 Великий сброс</h3><p>Сброс ВСЕГО → гармоники<br><span style="font-size:.62rem;opacity:.7">Каждая гармоника: +10% (МУЛЬТИПЛИКАТИВНО)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--acc);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(hg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.harm} гармоник</div><button class="pbtn blu" ${hg<=0?'disabled':''} onclick="doHarm()">🌌 Великий сброс</button></div>`;
+  h+=`<div class="psec" style="margin-top:10px;border-color:var(--gold)"><h3>🌐 Синергия</h3><p style="margin:4px 0">Текущий множитель: <span style="color:var(--acc3);font-weight:700">×${cur.toFixed(2)}</span></p><div class="ptxt" style="margin-top:8px">Гармоники умножаются на кристаллы. Чем больше и тех, и других — тем быстрее прогресс.</div></div>`;
   document.getElementById('pList').innerHTML=h;
 }
+function doPre(){
+  const g=pGain();
+  if(g<=0)return;
+  showConfirm('🔴 Резонанс Частоты',`Сбросить прогресс?\nВы получите <b>+${g} кристаллов</b>`,()=>{
+    G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];
+    recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов частоты');save();
+  });
+}
+function doHarm(){
+  const g=hGain();
+  if(g<=0)return;
+  showConfirm('🔵 Великий сброс',`Сбросить ВСЁ включая кристаллы?\nВы получите <b>+${g} гармоник</b>\nИтоговый множитель станет ×${((1+(G.freq*0.02))*(1+g*0.10)).toFixed(2)}`,()=>{
+    G.harm+=g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];
+    recalc();renderAll();notify('🔵 Гармоники','+'+g+' гармоник');save();
+  });
+}
 
-// ══════════════════════════════════════════════════════
-// RENDER AUTO
-// ══════════════════════════════════════════════════════
+// === DAILY REWARDS (FIXED streak logic) ===
+function rDaily(){
+  const now=Date.now(),day=Math.floor(now/864e5),streak=G.daily.streak;
+  // 🔧 FIXED: Correct day calculation
+  const currentDayOfCycle=(streak-1)%7+1;
+  let h=`<div class="slbl">Ежедневные награды</div><div style="text-align:center;margin-bottom:12px">🔥 Серия: ${streak} дней</div><div class="daily-grid" id="dailyGrid">`;
+  for(let d=1;d<=7;d++){
+    const c=G.daily.collected[d],isT=d===currentDayOfCycle&&(!G.daily.collected[d]||day!==G.daily.last);
+    h+=`<div class="d-item${c?' done':isT?' today':''}" data-day="${d}"><div class="d-day">День ${d}</div><div class="d-rw">${d===1?'📻':d===3?'⚡':d===7?'🌟':'💎'}</div><div class="d-claim">${c?'Получено':isT?'Забрать':'🔒'}</div></div>`;
+  }
+  h+=`</div>`;
+  document.getElementById('dList').innerHTML=h;
+  // Event delegation for daily rewards
+  document.getElementById('dailyGrid')?.addEventListener('click',function(e){
+    const item=e.target.closest('.d-item');
+    if(!item)return;
+    const day=parseInt(item.dataset.day);
+    if(item.classList.contains('today'))claimDaily(day);
+  },{once:true});
+}
+function claimDaily(day){
+  const now=Date.now(),dayIdx=Math.floor(now/864e5),expected=(G.daily.streak%7)+1;
+  if(day!==expected)return;
+  G.daily.collected[day]=true;G.daily.last=dayIdx;G.daily.streak++;
+  const rewards=[{sig:1e4},{sp:2},{clk:1},{bld:5},{sig:1e5},{sp:3},{harm:1}];
+  const rw=rewards[day-1];
+  if(rw.sig){G.sig+=rw.sig;G.tot+=rw.sig;G.totAll+=rw.sig}
+  if(rw.sp)G.boosters.e1={ts:now,dur:rw.sp*3600};
+  if(rw.clk)G.boosters.e4={ts:now,dur:1800};
+  if(rw.harm)G.harm+=rw.harm;
+  if(rw.bld){const b=BLD[Math.floor(Math.random()*3)];G.bld[b.id]=(G.bld[b.id]||0)+rw.bld}
+  recalc();rDaily();
+  notify('📅 День '+day+' получен!','Бонус активирован');
+}
+
+// === SETTINGS & SKINS ===
+function togSet(k){G.settings[k]=!G.settings[k];rSettings();save()}
+function setSkin(id){if(!SKINS.find(s=>s.id===id).req?.())return;G.currentSkin=id;applySkin();rSkins();save()}
+function applySkin(){document.body.className=document.body.className.replace(/skin-\w+/g,'').trim();if(G.currentSkin!=='default')document.body.classList.add('skin-'+G.currentSkin);drawTower(gStage())}
+function rSettings(){
+  let h='<div class="slbl">Настройки</div>';
+  h+=`<div class="set-row"><div><div class="set-lbl">🔊 Звуки кликов</div><div class="set-desc">Мелодичный отклик при нажатии</div></div><div class="tgl${G.settings.sound?' on':''}" onclick="togSet('sound')"></div></div>`;
+  h+=`<div class="set-row"><div><div class="set-lbl">📳 Тактильность</div><div class="set-desc">Вибрация в Telegram WebApp</div></div><div class="tgl${G.settings.haptics?' on':''}" onclick="togSet('haptics')"></div></div>`;
+  h+=`<div class="set-row" style="cursor:pointer" onclick="hardReset()"><div><div class="set-lbl">⚠️ Сбросить всё</div><div class="set-desc" style="color:var(--red)">Удалить прогресс безвозвратно</div></div><div style="color:var(--red);font-weight:700">❌</div></div>`;
+  document.getElementById('sList').innerHTML=h;
+}
+function rSkins(){
+  let h='<div class="slbl">Скины башни</div><div class="skin-grid">';
+  for(const s of SKINS){
+    const act=G.currentSkin===s.id;
+    h+=`<div class="skin-card${act?' active':s.req()?'':' lock'}" onclick="${s.req()?`setSkin('${s.id}')`:''}"><div class="skin-preview" style="background:linear-gradient(135deg,${s.colors.acc},${s.colors.bg})"></div><div class="skin-name">${s.nm}</div><div class="skin-req">${act?'✅ Активен':s.req()?'Нажмите':'🔒 Требуется прогресс'}</div></div>`;
+  }
+  h+='</div>';
+  document.getElementById('kList').innerHTML=h;
+}
+
+// === AUTO-PLAY ===
 function rAuto(){
   let h='<div class="slbl">Автоматизация</div>';
   if(G.freq<=0&&G.harm<=0){
     h+=`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:.72rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border);line-height:1.7">🔒 Разблокируется после первого престижа</div>`;
-  } else {
-    h+=`<div class="arow"><div><div class="albl">🏗️ Авто-здания</div><div class="adsc">Покупает лучшие по SPS/цена</div></div><div class="tgl${G.autoB?' on':''}" onclick="togA('b')"></div></div>`;
+  }else{
+    const spd=getResVal('r4')<2?1:0.5;
+    h+=`<div class="arow"><div><div class="albl">🏗️ Авто-здания</div><div class="adsc">Покупает лучшие по SPS/цена (инт: ${spd}с)</div></div><div class="tgl${G.autoB?' on':''}" onclick="togA('b')"></div></div>`;
     h+=`<div class="arow"><div><div class="albl">⚡ Авто-улучшения</div><div class="adsc">Покупает все доступные</div></div><div class="tgl${G.autoU?' on':''}" onclick="togA('u')"></div></div>`;
   }
   document.getElementById('mList').innerHTML=h;
 }
 function togA(t){if(t==='b')G.autoB=!G.autoB;else G.autoU=!G.autoU;rAuto()}
 
-// ══════════════════════════════════════════════════════
-// RENDER STATS
-// ══════════════════════════════════════════════════════
-function rStats(){
-  const rows=[
-    ['💰 Сигналы','',fmt(G.sig)],
-    ['📈 Заработано всего','',fmt(G.totAll)],
-    ['⚡ Сигналов/сек','',fmt(Cache.sps)],
-    ['👆 Сила клика','',fmt(Cache.click)],
-    ['🖱️ Кликов','',G.clicks.toLocaleString('ru')],
-    ['🏗️ Зданий','',tB()+' / '+BLD.length+' видов'],
-    ['⚡ Улучшений','',Object.keys(G.upg).length+'/'+UPG.length],
-    ['🏆 Достижений','',Object.keys(G.ach).length+'/'+ACH.length],
-    ['✅ Испытаний пройдено','',Object.keys(G.chDone).length+'/'+CH.length],
-    ['🔴 Кристаллы частоты','',G.freq],
-    ['🔵 Гармоники','',G.harm],
-    ['⏱️ Время в игре','',fmtT(Date.now()-G.start)],
-  ];
-  document.getElementById('stList').innerHTML=
-    '<div class="slbl">Статистика</div>'+
-    rows.map(([l,,v])=>`<div class="srow"><span class="slb">${l}</span><span class="sv">${v}</span></div>`).join('');
+// === BUFFS & RENDER ===
+function renderBuffs(){
+  const now=Date.now(),tags=[];
+  for(const b in G.boosters){
+    if(!G.boosters[b].dur||now-G.boosters[b].ts>G.boosters[b].dur*1000){delete G.boosters[b];continue}
+    const ev=EVENTS.find(e=>e.id===b);
+    if(ev)tags.push(`<div class="buff" style="border-color:var(--gold);color:var(--gold)">✨ ${ev.nm} ${Math.ceil((G.boosters[b].dur-(now-G.boosters[b].ts)/1000))}с</div>`);
+  }
+  for(const ch of CH){
+    const cs=G.chStart[ch.id];
+    if(cs)tags.push(`<div class="buff" style="border-color:var(--red);color:var(--red)">🔥 ${ch.nm} ${Math.ceil((ch.dur-(now-cs.ts)/1000))}с</div>`);
+  }
+  document.getElementById('buffsBar').innerHTML=tags.join('');
+}
+function renderAll(){
+  upd();rBuyRow();rBld();rUpg();rRes();rAch();rPre();rDaily();rSettings();rSkins();rAuto();rChal();
 }
 
-// ══════════════════════════════════════════════════════
-// RENDER DISPATCH
-// ══════════════════════════════════════════════════════
-function render(){
-  const tab=document.querySelector('.stab.active');
-  if(!tab) return;
-  const tx=(tab.querySelector('.stab-tx')||{}).textContent||'';
-  if(tx.includes('Зд')) rBld();
-  else if(tx.includes('Апг')||tx.includes('Улу')) rUpg();
-  else if(tx.includes('Исп')) rChal();
-  else if(tx.includes('Нагр')) rAch();
-  else if(tx.includes('Пр')) rPre();
-  else if(tx.includes('Авт')) rAuto();
-  else if(tx.includes('Ст')) rStats();
-}
-
-// ══════════════════════════════════════════════════════
-// HUD
-// ══════════════════════════════════════════════════════
+// === UI UPDATE ===
 function upd(){
   document.getElementById('sCount').textContent=fmt(G.sig);
   document.getElementById('hSig').textContent=fmt(G.sig);
@@ -957,196 +794,42 @@ function upd(){
   document.getElementById('hHarm').textContent=G.harm;
   const st=gStage();
   document.getElementById('stageBadge').textContent='Стадия: '+SNAMES[Math.min(st,SNAMES.length-1)];
-  if(st!==lastStage){lastStage=st;drawTower(st);}
-  const now=Date.now();
-  const tags=CH.filter(c=>G.chStart[c.id]!==undefined).map(c=>{
-    const tl=Math.max(c.dur-((now-G.chStart[c.id].ts)/1000),0);
-    return `<div class="ch-tag">🔥 ${c.nm} ${Math.ceil(tl)}с</div>`;
-  });
-  document.getElementById('chBar').innerHTML=tags.join('');
-}
-
-// ══════════════════════════════════════════════════════
-// ACTIONS
-// ══════════════════════════════════════════════════════
-function buyB(id){
-  const b=BLD.find(x=>x.id===id); if(!b) return;
-  const cnt=bc(id), amt=bMaxBuy(b,cnt);
-  if(amt<=0) return;
-  const dc=Math.ceil(bBulkCost(b,cnt,amt)*(cMod().costM||1));
-  if(G.sig<dc) return;
-  G.sig-=dc; G.bld[id]=(G.bld[id]||0)+amt;
-  recalc(); rBld(); rUpg();
-}
-
-function buyU(id){
-  const u=UPG.find(x=>x.id===id);
-  if(!u||G.upg[id]||G.sig<u.cost||!u.req()) return;
-  G.sig-=u.cost; G.upg[id]=true;
-  recalc(); rUpg(); rBld();
-  notify('⚡ '+u.nm, u.desc);
-}
-
-function doPre(){
-  const g=pGain();
-  if(g<=0) return;
-  showConfirm(
-    '🔴 Резонанс Частоты',
-    `Сбросить весь прогресс?\nВы получите <b>+${g} кристаллов</b> (+${g*5}% ко всему)`,
-    ()=>{
-      G.freq+=g; G.sig=0; G.tot=0; G.totAll=0; G.bld={}; G.upg={};
-      recalc(); renderAll(); notify('🔴 Резонанс', '+'+g+' кристаллов частоты'); save();
-    }
-  );
-}
-
-function doHarm(){
-  const g=hGain();
-  if(g<=0) return;
-  showConfirm(
-    '🔵 Великий сброс',
-    `Сбросить ВСЁ включая кристаллы?\nВы получите <b>+${g} гармоник</b> (+${g*10}% ко всему)`,
-    ()=>{
-      G.harm+=g; G.freq=0; G.sig=0; G.tot=0; G.totAll=0; G.bld={}; G.upg={};
-      recalc(); renderAll(); notify('🔵 Гармоники', '+'+g+' гармоник'); save();
-    }
-  );
-}
-
-function startCh(id){
-  const ch=CH.find(x=>x.id===id);
-  if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req()) return;
-  showConfirm(
-    '🔥 '+ch.nm,
-    `${ch.desc}\nЦель: накопить ${fmt(ch.goal)} за ${ch.dur}с\nНаграда: ${ch.rwD}`,
-    ()=>{
-      G.chStart[id]={ts:Date.now(), startSig:G.tot};
-      recalc(); rChal(); notify('🔥 '+ch.nm, ch.desc);
-    }
-  );
-}
-
-// ══════════════════════════════════════════════════════
-// CONFIRM DIALOG — 🔧 FIX #6: безопасный селектор
-// ══════════════════════════════════════════════════════
-function showConfirm(title, msg, onYes){
-  if(TG && TG.showConfirm){
-    TG.showConfirm(msg.replace(/<b>|<\/b>/g,''), ok=>{ if(ok) onYes(); });
-    return;
+  if(st!==lastStage){lastStage=st;drawTower(st)}
+  const cE=document.getElementById('comboTxt');
+  if(G.combo.mult>1){
+    cE.textContent=`⚡ Комбо: ×${G.combo.mult.toFixed(1)}`;
+    cE.style.opacity='1';
+    cE.className=G.combo.mult>=2?'combo-display hot':'combo-display';
+  }else{
+    cE.style.opacity='0';
+    cE.className='combo-display';
   }
+  const pc=document.getElementById('prestigeTxt');
+  const nextP=pGain()<=0?0:Math.ceil(Math.pow((Math.pow(pGain()+0.5,2)*5e6),1/2));
+  if(nextP>0){pc.textContent=`До престижа: ~${fmt(nextP)}`;pc.classList.add('show')}else{pc.classList.remove('show')}
+  renderBuffs();
+}
+
+// === UTILITIES ===
+function showConfirm(title,msg,onYes){
+  if(TG?.showConfirm){TG.showConfirm(msg.replace(/<b>|<\/b>/g,''),ok=>{if(ok)onYes()});return}
   const ov=document.createElement('div');
-  ov.id='confirmOverlay';  // ✅ Добавлен ID для безопасного удаления
-  ov.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(6,13,26,0.9);display:flex;align-items:center;justify-content:center;padding:20px';
-  ov.innerHTML=`<div style="background:var(--c2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;max-width:300px;width:100%;text-align:center">
-    <div style="font-family:'Space Mono',monospace;font-size:.95rem;color:var(--acc);margin-bottom:12px;font-weight:700">${title}</div>
-    <div style="font-size:.75rem;color:var(--txt2);line-height:1.6;margin-bottom:20px">${msg}</div>
-    <div style="display:flex;gap:10px">
-      <button onclick="document.getElementById('confirmOverlay')?.remove()" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--c3);color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Отмена</button>
-      <button id="cfOk" style="flex:1;padding:10px;border:1px solid var(--acc);background:rgba(0,180,255,0.1);color:var(--acc);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Подтвердить</button>
-    </div>
-  </div>`;
+  ov.id='confirmOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:3500;background:rgba(6,13,26,0.9);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML=`<div style="background:var(--c2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;max-width:300px;width:100%;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.95rem;color:var(--acc);margin-bottom:12px;font-weight:700">${title}</div><div style="font-size:.75rem;color:var(--txt2);line-height:1.6;margin-bottom:20px">${msg}</div><div style="display:flex;gap:10px"><button onclick="document.getElementById('confirmOverlay')?.remove()" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--c3);color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Отмена</button><button id="cfOk" style="flex:1;padding:10px;border:1px solid var(--acc);background:rgba(0,180,255,0.1);color:var(--acc);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Подтвердить</button></div></div>`;
   document.body.appendChild(ov);
-  ov.querySelector('#cfOk').onclick=()=>{ ov.remove(); onYes(); };
+  ov.querySelector('#cfOk').onclick=()=>{ov.remove();onYes()};
 }
-
-// ══════════════════════════════════════════════════════
-// GAME LOOP
-// ══════════════════════════════════════════════════════
-function tick(){
-  const dt=(Date.now()-G.last)/1000;
-  G.last=Date.now();
-  const e=Cache.sps*dt;
-  if(e>0){G.sig+=e; G.tot+=e; G.totAll+=e}
-
-  const now=Date.now();
-  for(const ch of CH){
-    const cs=G.chStart[ch.id];
-    if(cs===undefined) continue;
-    const elapsed=(now-cs.ts)/1000;
-    if(elapsed>=ch.dur){
-      const earned=G.tot-cs.startSig;
-      if(earned>=ch.goal){
-        G.chDone[ch.rw]=true;
-        delete G.chStart[ch.id];
-        notify('🎉 Испытание пройдено!',ch.rwD);
-        recalc();
-      } else {
-        G.chFailed[ch.id]=(G.chFailed[ch.id]||0)+1;
-        delete G.chStart[ch.id];
-        notify('❌ Провалено: '+ch.nm,'Заработано: '+fmt(earned)+' из '+fmt(ch.goal)+'. Попробуйте снова!');
-        recalc();
-      }
-    }
-  }
-
-  for(const a of ACH){
-    if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true; notify('🏆 '+a.nm, a.desc);}
-  }
-  upd();
+function hardReset(){
+  showConfirm('⚠️ Удалить прогресс?','Это действие нельзя отменить. Все данные будут стерты.',()=>{
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  });
 }
-
-function autoTick(){
-  if(G.autoB){
-    const cm=cMod();
-    let best=null,bv=0;
-    for(const b of BLD){
-      const cnt=bc(b.id);
-      const cost=bCost(b,cnt)*(cm.costM||1);
-      const sg=b.sps*(Cache.bMult[b.id]||1);
-      const v=cost>0?sg/cost:0;
-      if(v>bv&&G.sig>=cost){bv=v;best=b}
-    }
-    if(best){
-      const cnt=bc(best.id);
-      const amt=Math.min(G.buy,bMaxBuy(best,cnt));  // ✅ Теперь bMaxBuy учитывает costM
-      if(amt>0){
-        const cost=Math.ceil(bBulkCost(best,cnt,amt)*(cMod().costM||1));
-        if(G.sig>=cost){G.sig-=cost;G.bld[best.id]=(G.bld[best.id]||0)+amt;recalc();}
-      }
-    }
-  }
-  if(G.autoU){
-    for(const u of UPG){
-      if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost){
-        G.sig-=u.cost; G.upg[u.id]=true;
-        notify('⚡ '+u.nm, u.desc); recalc();
-      }
-    }
-  }
+function animateCard(id){
+  const card=document.querySelector(`.card[data-bid="${id}"]`);
+  if(card){card.classList.add('pop-anim');setTimeout(()=>card.classList.remove('pop-anim'),300)}
 }
-
-// ══════════════════════════════════════════════════════
-// CLICK
-// ══════════════════════════════════════════════════════
-document.getElementById('clickZone').addEventListener('click',function(e){
-  const pow=Cache.click;
-  G.sig+=pow; G.tot+=pow; G.totAll+=pow; G.clicks++;
-  const area=document.getElementById('towerOuter');
-  const rect=area.getBoundingClientRect();
-  const x=e.clientX-rect.left, y=e.clientY-rect.top;
-  const f=document.createElement('div');
-  f.className='float';
-  f.textContent='+'+fmt(pow);
-  f.style.cssText=`left:${x}px;top:${y-20}px;color:${pow>1000?'var(--gold)':pow>50?'var(--acc3)':'var(--acc)'}`;
-  area.appendChild(f);
-  setTimeout(()=>f.remove(),900);
-  const cols=['#00d4ff','#00ffaa','#ffd700','#ff4757','#fff'];
-  for(let i=0;i<5;i++){
-    const p=document.createElement('div');
-    p.className='burst-p';
-    const a=Math.random()*Math.PI*2, d=25+Math.random()*50, sz=3+Math.random()*5;
-    p.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${cols[i%cols.length]};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px`;
-    area.appendChild(p);
-    setTimeout(()=>p.remove(),600);
-  }
-  document.getElementById('sCount').classList.add('pop');
-  setTimeout(()=>document.getElementById('sCount').classList.remove('pop'),100);
-  upd();
-});
-
-// ══════════════════════════════════════════════════════
-// NOTIFY
-// ══════════════════════════════════════════════════════
 function notify(t,m){
   const n=document.createElement('div');
   n.className='notif';
@@ -1155,101 +838,307 @@ function notify(t,m){
   setTimeout(()=>n.remove(),2900);
 }
 
-// ══════════════════════════════════════════════════════
-// THEME
-// ══════════════════════════════════════════════════════
-function toggleTheme(){
-  G.theme=G.theme==='dark'?'light':'dark';
-  document.body.classList.toggle('light',G.theme==='light');
-  drawTower(gStage());
-  save();
+// === CLICK HANDLER ===
+document.getElementById('clickZone').addEventListener('click',function(e){
+  initAudio(); // 🔧 Audio on user gesture
+  if(!G.tutorial.done&&!tutorialActive)startTut();
+  
+  const now=Date.now();
+  // 🔧 Combo reset after 2s inactivity
+  if(now-G.combo.last>2000)G.combo={count:0,last:0,mult:1};
+  if(now-G.combo.last<300)G.combo.count++;else G.combo.count=1;
+  G.combo.last=now;
+  G.combo.mult=Math.min(1+G.combo.count*0.05,3);
+  
+  const pow=Cache.click*G.combo.mult;
+  G.sig+=pow;G.tot+=pow;G.totAll+=pow;G.clicks++;
+  
+  playClick();triggerHaptic();
+  
+  const area=document.getElementById('towerOuter'),rect=area.getBoundingClientRect();
+  const x=e.clientX-rect.left,y=e.clientY-rect.top;
+  
+  const f=document.createElement('div');
+  f.className='float';
+  f.textContent='+'+fmt(pow);
+  f.style.cssText=`left:${x}px;top:${y-20}px;color:${pow>1000?'var(--gold)':pow>50?'var(--acc3)':'var(--acc)'}`;
+  area.appendChild(f);
+  setTimeout(()=>f.remove(),900);
+  
+  const cols=['#00d4ff','#00ffaa','#ffd700','#ff4757','#fff'];
+  for(let i=0;i<5;i++){
+    const p=document.createElement('div');
+    p.className='burst-p';
+    const a=Math.random()*Math.PI*2,d=25+Math.random()*50,sz=3+Math.random()*5;
+    p.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${cols[i%cols.length]};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px`;
+    area.appendChild(p);
+    setTimeout(()=>p.remove(),600);
+  }
+  
+  document.getElementById('sCount').classList.add('pop');
+  setTimeout(()=>document.getElementById('sCount').classList.remove('pop'),100);
+  upd();
+});
+
+// === CANVAS DRAWING ===
+function drawTower(stage){
+  const cv=document.getElementById('towerCanvas');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const isDark=!document.body.classList.contains('light');
+  const skin=SKINS.find(s=>s.id===G.currentSkin)||SKINS[0];
+  const acc=isDark?skin.colors.acc:'#0077aa';
+  const steel=isDark?'#2a4a7a':'#4a7aaa';
+  const steelLight=isDark?'#3a6aaa':'#6a9acc';
+  const steelDark=isDark?'#1a2f50':'#2a5080';
+  const red=isDark?'#ff4757':'#cc2233';
+  
+  function glow(x,y,r,rgbBase,alpha=0.6){
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,`rgba(${rgbBase},${alpha})`);
+    g.addColorStop(1,`rgba(${rgbBase},0)`);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+  function drawGround(){
+    const g=ctx.createLinearGradient(0,H-20,0,H);
+    g.addColorStop(0,steelDark);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.fillRect(20,H-22,W-40,20);
+    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(20,H-22,W-40,20);
+  }
+  function drawLeg(x1,y1,x2,y2){
+    const g=ctx.createLinearGradient(x1,y1,x2,y2);
+    g.addColorStop(0,steelLight);g.addColorStop(1,steelDark);
+    ctx.strokeStyle=g;ctx.lineWidth=6;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  }
+  function drawDish(cx,cy,rx,ry,angle){
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);
+    const g=ctx.createLinearGradient(-rx,0,rx,0);
+    g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);
+    ctx.fillStyle=g;ctx.strokeStyle=acc;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle=`rgba(${isDark?'0,212,255':'0,100,180'},0.15)`;
+    ctx.beginPath();ctx.ellipse(0,0,rx*.7,ry*.7,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=steel;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-ry*1.4);ctx.stroke();
+    ctx.fillStyle=acc;ctx.beginPath();ctx.arc(0,-ry*1.4,4,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  function drawAntenna(cx,baseY,topY){
+    const g=ctx.createLinearGradient(cx-4,0,cx+4,0);
+    g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);
+    ctx.fillStyle=g;ctx.fillRect(cx-4,topY,8,baseY-topY);
+    const steps=Math.floor((baseY-topY)/40);
+    for(let i=0;i<=steps;i++){
+      const y=baseY-i*(baseY-topY)/steps;
+      const w=8+i*3;
+      ctx.fillStyle=steelLight;ctx.fillRect(cx-w,y-2,w*2,4);
+      ctx.fillStyle=steelLight;ctx.beginPath();ctx.arc(cx-w+4,y,3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(cx+w-4,y,3,0,Math.PI*2);ctx.fill();
+    }
+    glow(cx,topY,18,isDark?'255,71,87':'200,30,50',0.6);
+    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,topY,5,0,Math.PI*2);ctx.fill();
+  }
+  
+  if(stage===0){
+    drawGround();
+    const cx=W/2,base=H-22,top=50;
+    ctx.fillStyle=steelDark;ctx.fillRect(cx-30,base-8,60,8);
+    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-30,base-8,60,8);
+    const mg=ctx.createLinearGradient(cx-5,0,cx+5,0);
+    mg.addColorStop(0,steelDark);mg.addColorStop(.5,steelLight);mg.addColorStop(1,steelDark);
+    ctx.fillStyle=mg;ctx.fillRect(cx-5,top+30,10,base-top-38);
+    glow(cx,top+30,30,isDark?'0,212,255':'0,150,200',0.3);
+    ctx.strokeStyle=acc;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx-40,top+30);ctx.lineTo(cx+40,top+30);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-28,top+20);ctx.lineTo(cx+28,top+20);ctx.stroke();
+    ctx.strokeStyle=steel;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(cx,top+8);ctx.lineTo(cx,top+30);ctx.stroke();
+    glow(cx,top,16,isDark?'255,71,87':'200,30,50',0.7);
+    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,top,4,0,Math.PI*2);ctx.fill();
+  }else if(stage===1){
+    drawGround();
+    const cx=W/2,base=H-30,top=35,bot=base-10;
+    drawLeg(cx-70,bot,cx-10,top+60);drawLeg(cx+70,bot,cx+10,top+60);
+    for(let i=0;i<4;i++){
+      const t=i/4,t2=(i+1)/4;
+      const lx=cx-(70*(1-t)+10*t),rx=cx+(70*(1-t)+10*t),y=bot*(1-t)+(top+60)*t;
+      ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(cx-(70*(1-t2)+10*t2),y-(bot-(top+60))/4);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(rx,y);ctx.lineTo(cx+(70*(1-t2)+10*t2),y-(bot-(top+60))/4);ctx.stroke();
+      ctx.setLineDash([]);ctx.strokeStyle=steelLight;ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
+    }
+    ctx.fillStyle=steelDark;ctx.fillRect(cx-20,top+55,40,8);
+    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-20,top+55,40,8);
+    drawAntenna(cx,top+56,top);
+  }else if(stage===2){
+    drawGround();
+    const cx=W/2,base=H-30,top=25,mid=base-60;
+    drawLeg(cx-80,base-10,cx-35,mid);drawLeg(cx+80,base-10,cx+35,mid);drawLeg(cx,base-10,cx,mid);
+    for(let i=0;i<3;i++){
+      const t=i/3;
+      const lx=cx-(80*(1-t)+35*t),rx=cx+(80*(1-t)+35*t),y=base-10+(mid-base+10)*t;
+      ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
+    }
+    drawLeg(cx-35,mid,cx-8,top+70);drawLeg(cx+35,mid,cx+8,top+70);
+    for(let i=0;i<2;i++){
+      const t=i/2;
+      const lx=cx-(35*(1-t)+8*t),rx=cx+(35*(1-t)+8*t),y=mid+(top+70-mid)*t;
+      ctx.strokeStyle=steelLight;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
+    }
+    ctx.fillStyle=steelDark;ctx.fillRect(cx-22,top+65,44,10);
+    ctx.strokeStyle=acc;ctx.lineWidth=1;ctx.strokeRect(cx-22,top+65,44,10);
+    drawAntenna(cx,top+66,top);
+    drawDish(cx-50,mid+20,20,10,-Math.PI/6);drawDish(cx+50,mid+20,20,10,Math.PI/6);
+    glow(cx-50,mid+20,25,isDark?'0,212,255':'0,150,200',0.2);
+    glow(cx+50,mid+20,25,isDark?'0,212,255':'0,150,200',0.2);
+  }else{
+    drawGround();
+    const cx=W/2,base=H-25,twH=base-80;
+    const lw=28;
+    for(let i=0;i<6;i++){
+      const y=base-10-i*twH/6,yn=base-10-(i+1)*twH/6;
+      const scale=1-i*0.05;
+      ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();
+      ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([3,4]);
+      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();
+      ctx.setLineDash([]);ctx.strokeStyle=steelLight;ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,y);ctx.stroke();
+    }
+    const dishY=base-twH-10;
+    glow(cx,dishY,50,isDark?'0,212,255':'0,150,200',0.25);
+    drawDish(cx,dishY,55,14,0);
+    ctx.fillStyle=steelDark;ctx.fillRect(cx-35,dishY+12,70,10);
+    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-35,dishY+12,70,10);
+    drawDish(cx-65,base-50,30,9,-0.3);
+    glow(cx-65,base-50,35,isDark?'0,212,255':'0,150,200',0.15);
+    ctx.strokeStyle=acc;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx,dishY-2);ctx.lineTo(cx,dishY-30);ctx.stroke();
+    glow(cx,dishY-30,14,isDark?'255,71,87':'200,30,50',0.8);
+    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,dishY-30,4,0,Math.PI*2);ctx.fill();
+  }
 }
 
-// ══════════════════════════════════════════════════════
-// SAVE / LOAD
-// ══════════════════════════════════════════════════════
-function save(){
-  G.last=Date.now();
-  cloudSave(G);
+// === SAVE/LOAD ===
+async function cloudSave(data){
+  const str=JSON.stringify(data);
+  if(TG?.CloudStorage)return new Promise(r=>TG.CloudStorage.setItem(SAVE_KEY,str,()=>r()));
+  try{localStorage.setItem(SAVE_KEY,str)}catch(e){}
 }
-
+async function cloudLoad(){
+  if(TG?.CloudStorage)return new Promise(r=>TG.CloudStorage.getItem(SAVE_KEY,(err,val)=>r(err?localStorage.getItem(SAVE_KEY):val)));
+  try{return localStorage.getItem(SAVE_KEY)}catch(e){return null}
+}
+function save(){G.last=Date.now();cloudSave(G)}
 async function loadSave(){
   const raw=await cloudLoad();
-  if(!raw) return;
+  if(!raw)return;
   try{
     const d=JSON.parse(raw);
     const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps'];
-    const bools=['autoB','autoU'];
-    const strs=['theme'];
-    const objs=['bld','upg','ach','chDone','chFailed','chStart'];
-    for(const k of nums) if(typeof d[k]==='number') G[k]=d[k];
-    for(const k of bools) if(typeof d[k]==='boolean') G[k]=d[k];
-    for(const k of strs) if(typeof d[k]==='string') G[k]=d[k];
-    for(const k of objs) if(d[k]&&typeof d[k]==='object') Object.assign(G[k],d[k]);
-    if(typeof d.start==='number') G.start=d.start;
-    if(G.theme==='light') document.body.classList.add('light');
-    recalc();
+    const bools=['autoB','autoU','settings.sound','settings.haptics'];
+    const strs=['theme','currentSkin'];
+    const objs=['bld','upg','ach','res','skins','chDone','chFailed','chStart','combo','daily','boosters','tutorial'];
+    for(const k of nums)if(typeof d[k]==='number')G[k]=d[k];
+    for(const k of bools){
+      const path=k.split('.');
+      if(path.length===1){if(typeof d[k]==='boolean')G[k]=d[k]}
+      else{if(d[path[0]]&&typeof d[path[0]][path[1]]==='boolean')G[path[0]][path[1]]=d[path[0]][path[1]]}
+    }
+    for(const k of strs)if(typeof d[k]==='string')G[k]=d[k];
+    for(const k of objs)if(d[k]&&typeof d[k]==='object')Object.assign(G[k],d[k]);
+    if(typeof d.start==='number')G.start=d.start;
+    if(G.theme==='light')document.body.classList.add('light');
+    applySkin();recalc();
     const off=(Date.now()-(d.last||Date.now()))/1000;
     if(off>15&&Cache.sps>0){
       const gain=Cache.sps*off*0.5;
-      G.sig+=gain; G.tot+=gain; G.totAll+=gain;
+      G.sig+=gain;G.tot+=gain;G.totAll+=gain;
       setTimeout(()=>showOfflineModal(gain,off),400);
     }
+    checkDaily();
   }catch(e){console.error('Load error',e)}
 }
-
+function checkDaily(){
+  const now=Date.now(),day=Math.floor(now/864e5);
+  if(G.daily.last!==day){
+    G.daily.streak=G.daily.last===day-1?G.daily.streak:0;
+    G.daily.collected={};
+    rDaily();
+  }else if(G.daily.streak===0)G.daily.streak=1;
+}
 function showOfflineModal(gain,secs){
   const ov=document.createElement('div');
   ov.className='off-ov';
-  ov.innerHTML=`<div class="off-card">
-    <h2>📡 С возвращением!</h2>
-    <p>Пока вас не было<br><b>${fmtT(secs*1000)}</b></p>
-    <div style="font-family:'Space Mono',monospace;font-size:2rem;color:var(--acc);margin:10px 0">${fmt(gain)}</div>
-    <p style="font-size:.65rem;color:var(--txt3);margin-bottom:18px">сигналов (50% от дохода)</p>
-    <button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button>
-  </div>`;
+  ov.innerHTML=`<div class="off-card"><h2>📡 С возвращением!</h2><p>Пока вас не было<br><b>${fmtT(secs*1000)}</b></p><div style="font-family:'Space Mono',monospace;font-size:2rem;color:var(--acc);margin:10px 0">${fmt(gain)}</div><p style="font-size:.65rem;color:var(--txt3);margin-bottom:18px">сигналов (50% от дохода)</p><button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button></div>`;
   document.body.appendChild(ov);
 }
 
-// ══════════════════════════════════════════════════════
-// LOGO
-// ══════════════════════════════════════════════════════
-(function(){
-  const img=document.getElementById('logoImg');
-  const txt=document.getElementById('logoTxt');
-  const urls=['https://rtrs.ru/favicon.ico','https://rtrs.ru/logo.png','https://rtrs.ru/img/logo.png'];
-  let idx=0;
-  function tryNext(){
-    if(idx>=urls.length){img.style.display='none';txt.style.display='block';return}
-    img.onerror=()=>{idx++;tryNext()};
-    img.src=urls[idx];
-    img.style.display='block';
-    idx++;
+// === GAME LOOP ===
+function tick(){
+  const dt=(Date.now()-G.last)/1000;
+  G.last=Date.now();
+  if(Cache.sps&&isFinite(Cache.sps)&&dt>0){
+    const e=Cache.sps*dt;
+    if(isFinite(e)&&e>0){G.sig+=e;G.tot+=e;G.totAll+=e}
   }
-  tryNext();
-})();
-
-// ══════════════════════════════════════════════════════
-// RENDER ALL
-// ══════════════════════════════════════════════════════
-function renderAll(){
-  upd(); rBuyRow(); rBld(); rUpg(); rAch(); rPre(); rChal(); rAuto(); rStats();
+  const now=Date.now();
+  for(const ch of CH){
+    const cs=G.chStart[ch.id];
+    if(cs===undefined)continue;
+    const el=(now-cs.ts)/1000;
+    if(el>=ch.dur){
+      const earned=G.tot-cs.startSig;
+      if(earned>=ch.goal){
+        G.chDone[ch.rw]=true;
+        delete G.chStart[ch.id];
+        notify('🎉 Испытание пройдено!',ch.rwD);
+      }else{
+        G.chFailed[ch.id]=(G.chFailed[ch.id]||0)+1;
+        delete G.chStart[ch.id];
+        notify('❌ Провалено: '+ch.nm,'Заработано: '+fmt(earned)+' из '+fmt(ch.goal));
+      }
+      recalc();
+    }
+  }
+  for(const a of ACH)if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true;notify('🏆 '+a.nm,a.desc)}
+  if(Math.random()<0.0008)triggerRandomEvent();
+  upd();
+}
+function triggerRandomEvent(){
+  if(G.events.length>2||G.tot<1e4)return;
+  const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  G.events.push(ev.id);ev.apply();
+  const banner=document.createElement('div');
+  banner.className='event-banner';
+  banner.innerHTML=`<h3>${ev.nm}</h3><p>${ev.desc}</p><button class="pbtn blu" onclick="this.parentElement.remove();const idx=G.events.indexOf('${ev.id}');if(idx>-1)G.events.splice(idx,1)">Отлично!</button>`;
+  document.body.appendChild(banner);
+  setTimeout(()=>banner.remove(),5000);
+  recalc();
+}
+function autoTick(){
+  if(G.autoB){
+    const cm=cMod();
+    let best=null,bestRatio=0;
+    for(const b of BLD){
+      const cnt=bc(b.id);
+      const cost=bCost(b,cnt)*(cm.costM||1);
+      if(G.sig<cost)continue;
+      const sps=b.sps*(Cache.bMult[b.id]||1);
+      const ratio=cost>0?sps/cost:0;
+      if(ratio>bestRatio){bestRatio=ratio;best=b}
+    }
+    if(best)buyB(best.id);
+  }
+  if(G.autoU)for(const u of UPG)if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost)buyU(u.id);
 }
 
-// ══════════════════════════════════════════════════════
-// TELEGRAM INIT
-// ══════════════════════════════════════════════════════
-if(TG){
-  TG.expand(); TG.ready();
-  if(TG.colorScheme==='light'){G.theme='light';document.body.classList.add('light');}
-  TG.MainButton.setText('💾 Сохранить прогресс');
-  TG.MainButton.onClick(()=>{save();TG.showAlert('✅ Прогресс сохранён в облаке!');});
-  TG.MainButton.show();
-}
-
-// ══════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════
+// === INIT ===
 G.last=Date.now();
 (async()=>{
   await loadSave();
@@ -1257,10 +1146,21 @@ G.last=Date.now();
   renderAll();
   drawTower(gStage());
   lastStage=gStage();
+  
   setInterval(tick,50);
-  setInterval(render,1000);
+  setInterval(renderAll,1000); // 🔧 FIXED: was render()
   setInterval(autoTick,1000);
   setInterval(save,30000);
+  
+  if(!G.tutorial.done&&!tutorialActive)setTimeout(()=>startTut(),500);
+  
+  if(TG){
+    TG.expand();TG.ready();
+    if(TG.colorScheme==='light'){G.theme='light';document.body.classList.add('light')}
+    TG.MainButton.setText('💾 Сохранить');
+    TG.MainButton.onClick(()=>{save();TG.showAlert('✅ Сохранено!')});
+    TG.MainButton.show();
+  }
 })();
 </script>
 </body>
