@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>📡 RTRS Clicker v7.1 DESIGN+MECHANICS</title>
+<title>📡 RTRS Clicker</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* ═══════════════════════════════════════
+   ДИЗАЙН — из ДИЗАЙН_ТУТ.html (полностью)
+   ═══════════════════════════════════════ */
 :root{
   --c0:#060d1a;--c1:#0a1628;--c2:#0e1f3d;--c3:#142852;--c4:#1a3366;
   --acc:#00d4ff;--acc2:#0099cc;--acc3:#00ffaa;
@@ -191,6 +194,7 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 </style>
 </head>
 <body>
+
 <!-- HEADER -->
 <div class="hdr">
   <a class="logo" href="https://rtrs.ru" target="_blank" rel="noopener">
@@ -209,9 +213,8 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 <!-- BUFFS BAR -->
 <div class="buffs" id="buffsBar"></div>
 
-<!-- MAIN WRAPPER -->
+<!-- MAIN -->
 <div class="wrap">
-  <!-- CLICK PANEL -->
   <div class="cpanel" id="cpanel">
     <div class="sig-box">
       <div class="sig-n" id="sCount">0</div>
@@ -230,7 +233,6 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
     <div class="clk-pw">Клик: <span id="cpVal">1</span> сигнал</div>
   </div>
 
-  <!-- SHOP PANEL -->
   <div class="shop">
     <div class="shop-tabs">
       <button class="stab active" data-tab="b" onclick="openTab(this,'b')"><span class="stab-em">🏗️</span><span class="stab-tx">Здания</span></button>
@@ -259,7 +261,7 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
   </div>
 </div>
 
-<!-- TUTORIAL OVERLAY -->
+<!-- TUTORIAL -->
 <div class="tut-ov" id="tutOv" onclick="if(event.target===this)closeTut()">
   <div class="tut-card" id="tutCard">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -275,14 +277,37 @@ body.light .hdr{background:rgba(240,244,248,0.94)}
 </div>
 
 <script>
-// === CORE CONFIG ===
+// ══════════════════════════════════════════════════════
+// КОНФИГ — ключ сохранения из РАБОТАЮЩИЙ_КОД
+// ══════════════════════════════════════════════════════
 const TG = window.Telegram?.WebApp || null;
-const SAVE_KEY = 'rtrs_v7_design';
-let G = {sig:0,tot:0,totAll:0,clicks:0,freq:0,harm:0,buy:1,bld:{},upg:{},ach:{},res:{},skins:{},chDone:{},chFailed:{},chStart:{},combo:{count:0,last:0,mult:1},events:[],boosters:{},daily:{last:0,streak:0,collected:{}},currentSkin:'default',settings:{sound:false,haptics:true},tutorial:{step:0,done:false},autoB:false,autoU:false,theme:'dark',start:Date.now(),last:Date.now(),sps:0,v:2};
-let Cache = {sps:0,click:1,bMult:{}};
-let lastStage=-1, audioCtx=null, audioStarted=false, tutorialActive=false;
+const SAVE_KEY = 'rtrs_v2'; // совместимость с сохранениями из РАБОТАЮЩИЙ_КОД
 
-// === GAME DATA (все видимы сразу) ===
+// ══════════════════════════════════════════════════════
+// STATE — расширенный из ДИЗАЙН_ТУТ
+// ══════════════════════════════════════════════════════
+let G = {
+  sig:0,tot:0,totAll:0,clicks:0,
+  freq:0,harm:0,buy:1,
+  bld:{},upg:{},ach:{},res:{},skins:{},
+  chDone:{},chFailed:{},chStart:{},
+  combo:{count:0,last:0,mult:1},
+  events:[],boosters:{},
+  daily:{last:0,streak:0,collected:{}},
+  currentSkin:'default',
+  settings:{sound:false,haptics:true},
+  tutorial:{step:0,done:false},
+  autoB:false,autoU:false,
+  theme:'dark',
+  start:Date.now(),last:Date.now(),sps:0,v:2
+};
+let Cache = {sps:0,click:1,bMult:{}};
+let lastStage = -1;
+let audioCtx = null, audioStarted = false, tutorialActive = false;
+
+// ══════════════════════════════════════════════════════
+// ДАННЫЕ — из ДИЗАЙН_ТУТ (полный набор)
+// ══════════════════════════════════════════════════════
 const BLD=[
   {id:'ant',name:'Антенна',ic:'📻',desc:'Базовая FM-антенна',cost:100,sps:2.5,cm:1.28},
   {id:'twr',name:'Радиовышка',ic:'🗼',desc:'Стальная конструкция',cost:800,sps:12,cm:1.28},
@@ -319,12 +344,12 @@ const UPG=[
 ];
 
 const RES=[
-  {id:'r1',nm:'Цифр. обработка',ic:'📊',desc:'Клик +15%',cost:5e4,type:'clk',val:1.15,req:()=>true},
-  {id:'r2',nm:'Адаптив. антенна',ic:'📡',desc:'Здания -8% стоимости',cost:1.5e5,type:'cost',val:0.92,req:()=>true},
-  {id:'r3',nm:'Синхронизация',ic:'⚡',desc:'SPS +20%',cost:1e6,type:'sps',val:1.20,req:()=>true},
-  {id:'r4',nm:'Квант. сеть',ic:'🌐',desc:'Автопокупка ×2 скорость',cost:5e7,type:'auto',val:2,req:()=>true},
-  {id:'r5',nm:'Изоляция помех',ic:'🛡️',desc:'Испытания +15% награды',cost:2e8,type:'ch',val:1.15,req:()=>true},
-  {id:'r6',nm:'Мета-резонанс',ic:'🔮',desc:'Престиж +20% кристаллов',cost:5e9,type:'pre',val:1.20,req:()=>true}
+  {id:'r1',nm:'Цифр. обработка',ic:'📊',desc:'Клик +15%',cost:5e4,val:1.15,req:()=>true},
+  {id:'r2',nm:'Адаптив. антенна',ic:'📡',desc:'Здания -8% стоимости',cost:1.5e5,val:0.92,req:()=>true},
+  {id:'r3',nm:'Синхронизация',ic:'⚡',desc:'SPS +20%',cost:1e6,val:1.20,req:()=>true},
+  {id:'r4',nm:'Квант. сеть',ic:'🌐',desc:'Автопокупка ×2 скорость',cost:5e7,val:2,req:()=>true},
+  {id:'r5',nm:'Изоляция помех',ic:'🛡️',desc:'Испытания +15% награды',cost:2e8,val:1.15,req:()=>true},
+  {id:'r6',nm:'Мета-резонанс',ic:'🔮',desc:'Престиж +20% кристаллов',cost:5e9,val:1.20,req:()=>true}
 ];
 
 const CH=[
@@ -355,14 +380,14 @@ const ACH=[
 ];
 
 const EVENTS=[
-  {id:'e1',nm:'Ионосферный всплеск!',desc:'+200% SPS на 45 секунд',dur:45,apply:()=>G.boosters.e1={ts:Date.now(),dur:45}},
+  {id:'e1',nm:'Ионосферный всплеск!',desc:'+200% SPS на 45 секунд',dur:45,apply:()=>{G.boosters.e1={ts:Date.now(),dur:45}}},
   {id:'e2',nm:'Спонсор эфира',desc:'+15% от текущего баланса',dur:0,apply:()=>{const g=G.sig*0.15;G.sig+=g;G.tot+=g;G.totAll+=g}},
-  {id:'e3',nm:'Техобслуживание',desc:'Здания -50% SPS, но +50% клика на 60с',dur:60,apply:()=>G.boosters.e3={ts:Date.now(),dur:60}},
-  {id:'e4',nm:'Радужный сигнал',desc:'×2 клик на 30 секунд',dur:30,apply:()=>G.boosters.e4={ts:Date.now(),dur:30}}
+  {id:'e3',nm:'Техобслуживание',desc:'SPS -50%, клик ×1.5 на 60с',dur:60,apply:()=>{G.boosters.e3={ts:Date.now(),dur:60}}},
+  {id:'e4',nm:'Радужный сигнал',desc:'Клик ×2 на 30 секунд',dur:30,apply:()=>{G.boosters.e4={ts:Date.now(),dur:30}}}
 ];
 
 const SKINS=[
-  {id:'default',nm:'Стандарт',req:null,colors:{acc:'#00d4ff',bg:'#060d1a'}},
+  {id:'default',nm:'Стандарт',req:()=>true,colors:{acc:'#00d4ff',bg:'#060d1a'}},
   {id:'neon',nm:'Неон',req:()=>true,colors:{acc:'#ff00ff',bg:'#0a0014'}},
   {id:'gold',nm:'Золото',req:()=>true,colors:{acc:'#ffd700',bg:'#141000'}},
   {id:'matrix',nm:'Матрица',req:()=>true,colors:{acc:'#00ff00',bg:'#001100'}}
@@ -373,12 +398,14 @@ const TUTORIAL=[
   {t:'Автоматизация',txt:'🏗️ Купите антенну. Она приносит сигналы автоматически.',el:'#tb'},
   {t:'Улучшения и Наука',txt:'⚡ Апгрейды усиливают клик. 🔬 Наука даёт постоянные пассивные бонусы.',el:'#tu'},
   {t:'Ежедневные награды',txt:'📅 Заходите каждый день. Серия сбрасывается при пропуске.',el:'#td'},
-  {t:'Удачи в эфире!',txt:'📡 Игра сохраняется автоматически. Включите звук/вибрацию в настройках.',el:'#ts'}
+  {t:'Удачи в эфире!',txt:'📡 Игра сохраняется автоматически. Настройки звука и вибрации — во вкладке Настр.',el:'#ts'}
 ];
 
 const SNAMES=['Антенна','Радиовышка','Телебашня','Спутниковая','Квантовая'];
 
-// === UTILS ===
+// ══════════════════════════════════════════════════════
+// УТИЛИТЫ
+// ══════════════════════════════════════════════════════
 function gStage(){if(G.totAll>=5e12)return 4;if(G.totAll>=5e9)return 3;if(G.totAll>=5e6)return 2;if(G.totAll>=5e4)return 1;return 0}
 function bc(id){return G.bld[id]||0}
 function tB(){return Object.values(G.bld).reduce((a,b)=>a+b,0)}
@@ -387,27 +414,31 @@ function fmtT(ms){let s=Math.floor(ms/1e3),m=Math.floor(s/60);s%=60;let h=Math.f
 function getResVal(id){const r=RES.find(x=>x.id===id);return r&&G.res[id]?r.val:1}
 function getGlobalMult(){const f=G.upg['p1']?1.5:1;const h=G.upg['p2']?1.5:1;return(1+(G.freq*0.02*f))*(1+(G.harm*0.10*h))}
 
-// === CORE CALCULATION ===
+// ══════════════════════════════════════════════════════
+// РАСЧЁТ — защищённый из РАБОТАЮЩИЙ_КОД + логика ДИЗАЙН
+// ══════════════════════════════════════════════════════
 function recalc(){
   try{
     const cm=cMod();
-    // Click power
+    // Click
     let cp=1;
     for(const u of UPG)if(G.upg[u.id]&&u.tp==='clk')cp*=u.m;
-    cp*=cm.clkM*getBoostMult('clk')*getResVal('r1')*(G.chDone.pc1?1.08:1)*(G.chDone.pc5?1.25:1)*(G.chDone.pc7?1.5:1)*getGlobalMult();
+    cp*=cm.clkM*getBoostMult('clk')*getResVal('r1')
+       *(G.chDone.pc1?1.08:1)*(G.chDone.pc5?1.25:1)*(G.chDone.pc7?1.5:1)
+       *getGlobalMult();
     Cache.click=Math.max(1,isFinite(cp)?cp:1);
-    
-    // Global SPS multiplier
+    // SPS
     let glb=1;
     for(const u of UPG)if(G.upg[u.id]&&u.tp==='glb')glb*=u.m;
     glb*=cm.prodM*getResVal('r3')*getGlobalMult();
-    
-    // Boosters
     const now=Date.now();
-    if(G.boosters.e1&&now-G.boosters.e1.ts<G.boosters.e1.dur*1000)glb*=3;
+    if(G.boosters.e1&&G.boosters.e1.dur&&now-G.boosters.e1.ts<G.boosters.e1.dur*1000)glb*=3;
     if(G.boosters.e3&&G.boosters.e3.dur&&now-G.boosters.e3.ts<G.boosters.e3.dur*1000)glb*=0.5;
-    
-    // Buildings SPS
+    // Rewards from challenges
+    if(G.chDone.pc2)glb*=1.12;
+    if(G.chDone.pc4)glb*=1.20;
+    if(G.chDone.pc6)glb*=1.30;
+    // Buildings
     let tsps=0;Cache.bMult={};
     for(const b of BLD){
       let bm=glb;
@@ -423,80 +454,58 @@ function recalc(){
 
 function cMod(){
   let m={spsM:1,clkM:1,prodM:1,costM:1};
-  for(const ch of CH){
-    const cs=G.chStart[ch.id];
-    if(cs)for(const k in ch.mod)m[k]*=ch.mod[k];
-  }
+  for(const ch of CH){const cs=G.chStart[ch.id];if(cs)for(const k in ch.mod)m[k]*=ch.mod[k]}
   return m;
 }
 
-// 🔧 FIXED: Safe boosters cleanup
+// Защищённая очистка бустов из РАБОТАЮЩИЙ_КОД
 function getBoostMult(type,base=1){
-  const now=Date.now();
-  let mult=base;
-  const toDelete=[];
+  const now=Date.now();let mult=base;
+  const toDel=[];
   for(const b in G.boosters){
     const boost=G.boosters[b];
     if(boost.dur&&now-boost.ts<boost.dur*1000){
       if((b==='e1'&&type==='sps')||(b==='e4'&&type==='clk'))mult*=2;
       if(b==='e3'&&type==='clk')mult*=1.5;
-    }else{
-      toDelete.push(b);
-    }
+    }else{toDel.push(b)}
   }
-  toDelete.forEach(b=>delete G.boosters[b]);
+  toDel.forEach(b=>delete G.boosters[b]);
   return mult;
 }
 
-// === AUDIO ===
+// ══════════════════════════════════════════════════════
+// AUDIO — инициализируется по жесту (фикс из ДИЗАЙН)
+// ══════════════════════════════════════════════════════
 function initAudio(){
   if(audioCtx||!G.settings.sound)return;
-  try{
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    audioStarted=true;
-  }catch(e){console.warn('Audio init failed',e)}
+  try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();audioStarted=true}catch(e){}
 }
 function playClick(){
   if(!G.settings.sound||!audioCtx)return;
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.type='sine';
-  o.frequency.setValueAtTime(400,audioCtx.currentTime);
+  o.type='sine';o.frequency.setValueAtTime(400,audioCtx.currentTime);
   o.frequency.exponentialRampToValueAtTime(800,audioCtx.currentTime+0.1);
   g.gain.setValueAtTime(0.15,audioCtx.currentTime);
   g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.15);
-  o.connect(g);g.connect(audioCtx.destination);
-  o.start();o.stop(audioCtx.currentTime+0.15);
+  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.15);
 }
-function triggerHaptic(){
-  if(!G.settings.haptics||!TG?.HapticFeedback)return;
-  TG.HapticFeedback.impactOccurred('light');
-}
+function triggerHaptic(){if(!G.settings.haptics||!TG?.HapticFeedback)return;TG.HapticFeedback.impactOccurred('light')}
 
-// === UI FUNCTIONS ===
+// ══════════════════════════════════════════════════════
+// UI
+// ══════════════════════════════════════════════════════
 function openTab(btn,t){
   document.querySelectorAll('.stab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.tcont').forEach(e=>e.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('t'+t).classList.add('active');
-  renderAll(); // 🔧 FIXED: was render()
+  renderAll();
 }
-function toggleTheme(){
-  G.theme=G.theme==='dark'?'light':'dark';
-  document.body.classList.toggle('light',G.theme==='light');
-  drawTower(gStage());
-  save();
-}
-function closeTut(){
-  tutorialActive=false;
-  G.tutorial.done=true;
-  G.tutorial.step=0;
-  document.getElementById('tutOv').style.display='none';
-  save();
-}
+function toggleTheme(){G.theme=G.theme==='dark'?'light':'dark';document.body.classList.toggle('light',G.theme==='light');drawTower(gStage());save()}
+function closeTut(){tutorialActive=false;G.tutorial.done=true;G.tutorial.step=0;document.getElementById('tutOv').style.display='none';save()}
 function nextTut(){G.tutorial.step++;showTutStep()}
 function showTutStep(){
-  const step=TUTORIAL[G.tutorial.step];
-  if(!step){closeTut();return}
+  const step=TUTORIAL[G.tutorial.step];if(!step){closeTut();return}
   tutorialActive=true;
   document.getElementById('tutTitle').textContent=step.t;
   document.getElementById('tutText').textContent=step.txt;
@@ -505,38 +514,38 @@ function showTutStep(){
   setTimeout(()=>{
     const target=document.querySelector(step.el);
     const card=document.getElementById('tutCard');
-    if(target){
-      const r=target.getBoundingClientRect();
-      card.style.top=Math.max(10,Math.min(r.bottom+10,window.innerHeight-150))+'px';
-      card.style.left=Math.max(10,Math.min(r.left,window.innerWidth-280))+'px';
-      card.style.transform='none';
-    }else{
-      card.style.top='50%';card.style.left='50%';card.style.transform='translate(-50%,-50%)';
-    }
+    if(target){const r=target.getBoundingClientRect();card.style.top=Math.max(10,Math.min(r.bottom+10,window.innerHeight-150))+'px';card.style.left=Math.max(10,Math.min(r.left,window.innerWidth-280))+'px';card.style.transform='none'}
+    else{card.style.top='50%';card.style.left='50%';card.style.transform='translate(-50%,-50%)'}
     document.getElementById('tutOv').style.display='block';
     document.getElementById('tutNextBtn').textContent=G.tutorial.step===TUTORIAL.length-1?'Готово!':'Далее';
   },50);
 }
 function startTut(){if(G.tutorial.done||tutorialActive)return;G.tutorial.step=0;showTutStep()}
 
-// === SHOP RENDERING ===
+// ══════════════════════════════════════════════════════
+// МАГАЗИН — BUY ROW
+// ══════════════════════════════════════════════════════
 function rBuyRow(){
-  document.getElementById('buyRow').innerHTML=`<button class="bbtn${G.buy===1?' active':''}" onclick="setBuy(1)">×1</button><button class="bbtn${G.buy===10?' active':''}" onclick="setBuy(10)">×10</button><button class="bbtn${G.buy===100?' active':''}" onclick="setBuy(100)">×100</button><button class="bbtn max" onclick="buyMax()">МАКС</button>`;
+  document.getElementById('buyRow').innerHTML=
+    `<button class="bbtn${G.buy===1?' active':''}" onclick="setBuy(1)">×1</button>
+     <button class="bbtn${G.buy===10?' active':''}" onclick="setBuy(10)">×10</button>
+     <button class="bbtn${G.buy===100?' active':''}" onclick="setBuy(100)">×100</button>
+     <button class="bbtn max" onclick="buyMax()">МАКС</button>`;
 }
 function setBuy(n){G.buy=n;rBuyRow();rBld()}
 function buyMax(){G.buy=999;rBuyRow();rBld()}
 
+// Цена с учётом исследования r2 + скидки за испытание pc3 (из ДИЗАЙН)
 function bCost(b,n){const disc=G.chDone.pc3?0.85:1;return Math.ceil(b.cost*Math.pow(b.cm,n)*disc*getResVal('r2'))}
 function bBulkCost(b,n,amt){let t=0;for(let i=0;i<amt;i++)t+=bCost(b,n+i);return t}
 
-// 🔧 FIXED: Infinite loop protection
+// Защита от бесконечного цикла — счётчик итераций из РАБОТАЮЩИЙ_КОД
 function bMaxBuy(b,n){
-  const cm=cMod();
-  let a=0,t=0;
+  const cm=cMod();let a=0,t=0;
   const lim=Math.min(G.buy===999?999:G.buy,999);
-  let iterations=0;
-  while(a<lim&&iterations<1000){
-    iterations++;
+  let iter=0;
+  while(a<lim&&iter<1000){
+    iter++;
     const c=bCost(b,n+a)*(cm.costM||1);
     if(!isFinite(c)||c<=0||t+c>G.sig)break;
     t+=c;a++;
@@ -544,38 +553,34 @@ function bMaxBuy(b,n){
   return a;
 }
 
-// 🔧 FIXED: Use canBuy for MAX button display
+// ══════════════════════════════════════════════════════
+// РЕНДЕР ЗДАНИЙ — цвет зелёный/жёлтый/красный
+// ══════════════════════════════════════════════════════
 function rBld(){
-  const cm=cMod();
-  let h='';
+  const cm=cMod();let h='';
   for(const b of BLD){
-    const cnt=bc(b.id);
-    const canBuy=bMaxBuy(b,cnt);
-    const wantBuy=G.buy===999?999:G.buy;
+    const cnt=bc(b.id),canBuy=bMaxBuy(b,cnt),wantBuy=G.buy===999?999:G.buy;
     const actualAmt=G.buy===999?(canBuy>0?canBuy:1):wantBuy;
     const sc=bCost(b,cnt);
     const bcost=bBulkCost(b,cnt,actualAmt)*(cm.costM||1);
     const ac=canBuy>0?bBulkCost(b,cnt,canBuy)*(cm.costM||1):bcost;
     const sps=b.sps*(Cache.bMult[b.id]||1),tot=sps*cnt;
-    let cc;
+    // GREEN = хватает на полное wantBuy; YELLOW = хватает хоть на 1; RED = нет
     const f=G.sig>=Math.ceil(bcost),s=G.sig>=Math.ceil(sc*(cm.costM||1));
-    if(f)cc='cc ok';else if(s)cc='cc some';else cc='cc no';
+    let cc;if(f)cc='cc ok';else if(s)cc='cc some';else cc='cc no';
     const aff=s,show=canBuy>1&&wantBuy<999;
     const disp=f?fmt(Math.ceil(bcost)):s?fmt(Math.ceil(ac)):fmt(Math.ceil(bcost));
     h+=`<div class="card${aff?' aff':''}" data-bid="${b.id}" onclick="buyB('${b.id}')"><div class="cicon">${b.ic}</div><div class="ci"><div class="cn">${b.name}</div><div class="cd">${b.desc}</div><div class="cs">+${fmt(sps)}/с · всего ${fmt(tot)}</div></div><div class="cr"><div class="${cc}">${disp}</div><div class="cct">${cnt}${show?' (×'+canBuy+')':''}</div></div></div>`;
   }
   document.getElementById('bList').innerHTML=h;
 }
-
 function buyB(id){
-  const b=BLD.find(x=>x.id===id);
-  if(!b)return;
+  const b=BLD.find(x=>x.id===id);if(!b)return;
   const cnt=bc(id),amt=G.buy===999?Math.min(999,bMaxBuy(b,cnt)):bMaxBuy(b,cnt);
   if(amt<=0)return;
   const dc=Math.ceil(bBulkCost(b,cnt,amt)*(cMod().costM||1));
   if(G.sig<dc)return;
-  G.sig-=dc;
-  G.bld[id]=(G.bld[id]||0)+amt;
+  G.sig-=dc;G.bld[id]=(G.bld[id]||0)+amt;
   recalc();rBld();rUpg();rRes();animateCard(id);
 }
 
@@ -588,18 +593,12 @@ function rUpg(){
     avail.push(`<div class="card ucard${aff?' aff':''}" onclick="buyU('${u.id}')"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm}</div><div class="cd">${u.desc}</div></div><div class="cr"><div class="ucost${aff?' ok':' no'}">${fmt(u.cost)}</div></div></div>`);
   }
   let h=avail.length?avail.join(''):`<div style="text-align:center;color:var(--txt3);padding:24px;font-size:.75rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border)">Нет доступных улучшений</div>`;
-  if(done.length){
-    h+=`<div class="slbl" style="margin-top:14px">Куплено (${done.length}/${UPG.length})</div>`;
-    h+=done.map(u=>`<div class="card done"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm} ✓</div><div class="cd">${u.desc}</div></div></div>`).join('');
-  }
+  if(done.length){h+=`<div class="slbl" style="margin-top:14px">Куплено (${done.length}/${UPG.length})</div>`;h+=done.map(u=>`<div class="card done"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm} ✓</div><div class="cd">${u.desc}</div></div></div>`).join('')}
   document.getElementById('uList').innerHTML=h;
 }
 function buyU(id){
-  const u=UPG.find(x=>x.id===id);
-  if(!u||G.upg[id]||G.sig<u.cost||!u.req())return;
-  G.sig-=u.cost;G.upg[id]=true;
-  recalc();rUpg();rBld();rRes();
-  notify('⚡ '+u.nm,u.desc);
+  const u=UPG.find(x=>x.id===id);if(!u||G.upg[id]||G.sig<u.cost||!u.req())return;
+  G.sig-=u.cost;G.upg[id]=true;recalc();rUpg();rBld();rRes();notify('⚡ '+u.nm,u.desc);
 }
 
 function rRes(){
@@ -611,38 +610,34 @@ function rRes(){
     const aff=G.sig>=r.cost;
     avail.push(`<div class="res-card"><div class="res-icon">${r.ic}</div><div class="res-info"><div class="res-name">${r.nm}</div><div class="res-desc">${r.desc}</div><div class="res-cost">💰 ${fmt(r.cost)}</div></div><button class="res-btn"${aff?'':' disabled'} onclick="buyRes('${r.id}')">Изучить</button></div>`);
   }
-  h+=avail.length?avail.join(''):'<div style="color:var(--txt3);text-align:center;padding:12px;font-size:.7rem">Исследования пока недоступны</div>';
-  if(done.length){
-    h+=`<div class="slbl" style="margin-top:14px">Изучено (${done.length}/${RES.length})</div>`;
-    h+=done.map(r=>`<div class="res-card done"><div class="res-icon">${r.ic}</div><div class="res-info"><div class="res-name">${r.nm} ✓</div><div class="res-desc">${r.desc}</div></div></div>`).join('');
-  }
+  h+=avail.length?avail.join(''):`<div style="color:var(--txt3);text-align:center;padding:12px;font-size:.7rem">Исследований пока нет</div>`;
+  if(done.length){h+=`<div class="slbl" style="margin-top:14px">Изучено (${done.length}/${RES.length})</div>`;h+=done.map(r=>`<div class="res-card done"><div class="res-icon">${r.ic}</div><div class="res-info"><div class="res-name">${r.nm} ✓</div><div class="res-desc">${r.desc}</div></div></div>`).join('')}
   document.getElementById('rList').innerHTML=h;
 }
 function buyRes(id){
-  const r=RES.find(x=>x.id===id);
-  if(!r||G.res[id]||G.sig<r.cost||!r.req())return;
-  G.sig-=r.cost;G.res[id]=true;
-  recalc();rRes();
-  notify('🔬 '+r.nm,r.desc);
+  const r=RES.find(x=>x.id===id);if(!r||G.res[id]||G.sig<r.cost||!r.req())return;
+  G.sig-=r.cost;G.res[id]=true;recalc();rRes();notify('🔬 '+r.nm,r.desc);
 }
 
-// === CHALLENGES & ACHIEVEMENTS ===
+// ══════════════════════════════════════════════════════
+// ИСПЫТАНИЯ — провал/победа из РАБОТАЮЩИЙ_КОД
+// ══════════════════════════════════════════════════════
 function rChal(){
-  const now=Date.now();
-  let h='';
+  const now=Date.now();let h='';
   const active=CH.filter(c=>G.chStart[c.id]!==undefined);
   if(active.length){
     h+=`<div class="slbl">Активные</div>`;
     for(const ch of active){
-      const d=G.chStart[ch.id],el=(now-d.ts)/1000,p=Math.min((el/ch.dur)*100,100),done=p>=100,tl=Math.max(ch.dur-el,0),earned=G.tot-d.startSig,sp=Math.min(earned/ch.goal*100,100);
-      h+=`<div class="chcard active"><div style="display:flex;justify-content:space-between"><div class="chn">🔥 ${ch.nm}</div><div style="font-family:'Space Mono',monospace;font-size:.65rem;color:${tl<30?'var(--red)':'var(--txt3)'};">${Math.ceil(tl)}с</div></div><div class="chd">${ch.desc}</div><div style="font-size:.6rem;color:var(--acc);margin:3px 0">Цель: ${fmt(ch.goal)} · Прогресс: ${fmt(Math.max(earned,0))}</div><div class="pbar"><div class="pfill${done?' done':''}" style="width:${Math.min(sp,100)}%"></div></div><div class="ptxt">Накоплено ${Math.round(Math.min(sp,100))}% · ${Math.ceil(tl)}с осталось</div></div>`;
+      const d=G.chStart[ch.id],el=(now-d.ts)/1000,p=Math.min((el/ch.dur)*100,100),done=p>=100;
+      const tl=Math.max(ch.dur-el,0),earned=Math.max(G.tot-d.startSig,0),sp=Math.min(earned/ch.goal*100,100);
+      h+=`<div class="chcard active"><div style="display:flex;justify-content:space-between"><div class="chn">🔥 ${ch.nm}</div><div style="font-family:'Space Mono',monospace;font-size:.65rem;color:${tl<30?'var(--red)':'var(--txt3)'};">${Math.ceil(tl)}с</div></div><div class="chd">${ch.desc}</div><div style="font-size:.6rem;color:var(--acc);margin:3px 0">Цель: ${fmt(ch.goal)} · Прогресс: ${fmt(earned)}</div><div class="pbar"><div class="pfill${done?' done':''}" style="width:${Math.min(sp,100)}%"></div></div><div class="ptxt">Накоплено ${Math.round(Math.min(sp,100))}% · ${Math.ceil(tl)}с осталось</div></div>`;
     }
     h+=`<br>`;
   }
   h+=`<div class="slbl">Испытания</div>`;
   for(const ch of CH){
     const act=G.chStart[ch.id]!==undefined,done=G.chDone[ch.rw],fail=G.chFailed[ch.id]||0,can=!act&&!done&&ch.req();
-    h+=`<div class="chcard${done?' done':act?' active':''}" ${can?`onclick="startCh('${ch.id}')"`:''}><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px"><div class="chn">${ch.nm}${act?' 🔥':''}${done?' ✓':''}</div><span style="font-size:.55rem;font-weight:700;color:${ch.dCol||'#ff4757'};padding:2px 8px;border:1px solid ${ch.dCol||'#ff4757'};border-radius:10px;opacity:.85;flex-shrink:0;margin-left:6px">${ch.diff}</span></div><div class="chd">${ch.desc}</div><div class="chr">${done?'🎁 ':'Награда: '}${ch.rwD}</div>${fail>0&&!done?`<div style="font-size:.55rem;color:var(--red);margin-top:3px">❌ Провалено: ${fail} раз</div>`:''}${!done&&!act?`<div style="font-size:.55rem;color:var(--txt3);margin-top:3px">Требуется: ${fmt(ch.reqVal)} сигналов · ${ch.dur}с</div>`:''}${can?`<div style="font-size:.6rem;color:var(--acc3);margin-top:5px;font-weight:600">▶ Нажмите для старта</div>`:''}</div>`;
+    h+=`<div class="chcard${done?' done':act?' active':''}" ${can?`onclick="startCh('${ch.id}')"`:''}><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px"><div class="chn">${ch.nm}${act?' 🔥':''}${done?' ✓':''}</div><span style="font-size:.55rem;font-weight:700;color:${ch.dCol};padding:2px 8px;border:1px solid ${ch.dCol};border-radius:10px;opacity:.85;flex-shrink:0;margin-left:6px">${ch.diff}</span></div><div class="chd">${ch.desc}</div><div class="chr">${done?'🎁 ':'Награда: '}${ch.rwD}</div>${fail>0&&!done?`<div style="font-size:.55rem;color:var(--red);margin-top:3px">❌ Провалено: ${fail} раз</div>`:''}${!done&&!act?`<div style="font-size:.55rem;color:var(--txt3);margin-top:3px">Цель: ${fmt(ch.goal)} сигналов · ${ch.dur}с</div>`:''}${can?`<div style="font-size:.6rem;color:var(--acc3);margin-top:5px;font-weight:600">▶ Нажмите для старта</div>`:''}</div>`;
   }
   document.getElementById('cList').innerHTML=h;
 }
@@ -650,67 +645,70 @@ function startCh(id){
   const ch=CH.find(x=>x.id===id);
   if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req())return;
   showConfirm('🔥 '+ch.nm,`${ch.desc}\nЦель: накопить ${fmt(ch.goal)} за ${ch.dur}с\nНаграда: ${ch.rwD}`,()=>{
-    G.chStart[id]={ts:Date.now(),startSig:G.tot};
-    recalc();rChal();
-    notify('🔥 '+ch.nm,ch.desc);
+    G.chStart[id]={ts:Date.now(),startSig:G.tot};recalc();rChal();notify('🔥 '+ch.nm,ch.desc);
   });
 }
 
+// ══════════════════════════════════════════════════════
+// ДОСТИЖЕНИЯ
+// ══════════════════════════════════════════════════════
 function rAch(){
   const unl=ACH.filter(a=>G.ach[a.id]).length,pw=Math.round(unl/ACH.length*100);
   let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="slbl" style="margin:0;border:none;padding:0">Достижения</div><div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--gold)">${unl}/${ACH.length}</div></div><div class="pbar"><div class="pfill${unl>=ACH.length?' done':''}" style="width:${pw}%"></div></div><div class="ptxt" style="margin-bottom:14px">${pw}% выполнено</div>`;
-  for(const a of ACH){
-    const u=G.ach[a.id];
-    h+=`<div class="card achcard${u?' unl':' lock'}"><div class="achi">${u?a.ic:'🔒'}</div><div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div></div>`;
-  }
+  for(const a of ACH){const u=G.ach[a.id];h+=`<div class="card achcard${u?' unl':' lock'}"><div class="achi">${u?a.ic:'🔒'}</div><div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div></div>`}
   document.getElementById('aList').innerHTML=h;
 }
 
-// === PRESTIGE ===
+// ══════════════════════════════════════════════════════
+// ПРЕСТИЖ — showConfirm без window.confirm
+// ══════════════════════════════════════════════════════
 function pGain(){let g=G.totAll<5e6?0:Math.floor(Math.pow(G.totAll/5e6,0.5));g*=getResVal('r6');return Math.floor(g)}
 function hGain(){return G.totAll<1e9?0:Math.floor(Math.pow(G.totAll/1e9,0.5))}
 function rPre(){
   const fg=pGain(),hg=hGain(),cur=getGlobalMult();
   let h=`<div class="psec"><h3>🔴 Резонанс Частоты</h3><p>Сброс прогресса → кристаллы частоты<br><span style="font-size:.62rem;opacity:.7">Каждый кристалл: +2% (аддитивно)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--red);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(fg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.freq} кристаллов</div><button class="pbtn red" ${fg<=0?'disabled':''} onclick="doPre()">⚡ Сбросить прогресс</button></div>`;
-  h+=`<div class="psec"><h3>🔵 Великий сброс</h3><p>Сброс ВСЕГО → гармоники<br><span style="font-size:.62rem;opacity:.7">Каждая гармоника: +10% (МУЛЬТИПЛИКАТИВНО)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--acc);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(hg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.harm} гармоник</div><button class="pbtn blu" ${hg<=0?'disabled':''} onclick="doHarm()">🌌 Великий сброс</button></div>`;
-  h+=`<div class="psec" style="margin-top:10px;border-color:var(--gold)"><h3>🌐 Синергия</h3><p style="margin:4px 0">Текущий множитель: <span style="color:var(--acc3);font-weight:700">×${cur.toFixed(2)}</span></p><div class="ptxt" style="margin-top:8px">Гармоники умножаются на кристаллы. Чем больше и тех, и других — тем быстрее прогресс.</div></div>`;
+  h+=`<div class="psec"><h3>🔵 Великий сброс</h3><p>Сброс ВСЕГО → гармоники<br><span style="font-size:.62rem;opacity:.7">Каждая гармоника: +10% (мультипликативно)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--acc);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(hg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.harm} гармоник</div><button class="pbtn blu" ${hg<=0?'disabled':''} onclick="doHarm()">🌌 Великий сброс</button></div>`;
+  h+=`<div class="psec" style="border-color:var(--gold)"><h3>🌐 Синергия</h3><p>Текущий множитель: <span style="color:var(--acc3);font-weight:700">×${cur.toFixed(2)}</span></p></div>`;
   document.getElementById('pList').innerHTML=h;
 }
 function doPre(){
-  const g=pGain();
-  if(g<=0)return;
-  showConfirm('🔴 Резонанс Частоты',`Сбросить прогресс?\nВы получите <b>+${g} кристаллов</b>`,()=>{
+  const g=pGain();if(g<=0)return;
+  showConfirm('🔴 Резонанс Частоты',`Сбросить прогресс?\nВы получите +${g} кристаллов`,()=>{
     G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];
-    recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов частоты');save();
+    recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов');save();
   });
 }
 function doHarm(){
-  const g=hGain();
-  if(g<=0)return;
-  showConfirm('🔵 Великий сброс',`Сбросить ВСЁ включая кристаллы?\nВы получите <b>+${g} гармоник</b>\nИтоговый множитель станет ×${((1+(G.freq*0.02))*(1+g*0.10)).toFixed(2)}`,()=>{
+  const g=hGain();if(g<=0)return;
+  showConfirm('🔵 Великий сброс',`Сбросить ВСЁ?\nВы получите +${g} гармоник`,()=>{
     G.harm+=g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];
     recalc();renderAll();notify('🔵 Гармоники','+'+g+' гармоник');save();
   });
 }
 
-// === DAILY REWARDS (FIXED streak logic) ===
+// ══════════════════════════════════════════════════════
+// ЕЖЕДНЕВНЫЕ НАГРАДЫ — исправленный счётчик дней
+// ══════════════════════════════════════════════════════
+function checkDaily(){
+  const now=Date.now(),day=Math.floor(now/864e5);
+  if(G.daily.last!==day){
+    G.daily.streak=G.daily.last===day-1?G.daily.streak:0;
+    G.daily.collected={};rDaily();
+  }else if(G.daily.streak===0)G.daily.streak=1;
+}
 function rDaily(){
   const now=Date.now(),day=Math.floor(now/864e5),streak=G.daily.streak;
-  // 🔧 FIXED: Correct day calculation
-  const currentDayOfCycle=(streak-1)%7+1;
+  const currentDayOfCycle=streak===0?1:((streak-1)%7+1);
   let h=`<div class="slbl">Ежедневные награды</div><div style="text-align:center;margin-bottom:12px">🔥 Серия: ${streak} дней</div><div class="daily-grid" id="dailyGrid">`;
   for(let d=1;d<=7;d++){
-    const c=G.daily.collected[d],isT=d===currentDayOfCycle&&(!G.daily.collected[d]||day!==G.daily.last);
+    const c=G.daily.collected[d],isT=d===currentDayOfCycle&&!G.daily.collected[d]&&G.daily.last!==day;
     h+=`<div class="d-item${c?' done':isT?' today':''}" data-day="${d}"><div class="d-day">День ${d}</div><div class="d-rw">${d===1?'📻':d===3?'⚡':d===7?'🌟':'💎'}</div><div class="d-claim">${c?'Получено':isT?'Забрать':'🔒'}</div></div>`;
   }
   h+=`</div>`;
   document.getElementById('dList').innerHTML=h;
-  // Event delegation for daily rewards
   document.getElementById('dailyGrid')?.addEventListener('click',function(e){
     const item=e.target.closest('.d-item');
-    if(!item)return;
-    const day=parseInt(item.dataset.day);
-    if(item.classList.contains('today'))claimDaily(day);
+    if(item&&item.classList.contains('today'))claimDaily(parseInt(item.dataset.day));
   },{once:true});
 }
 function claimDaily(day){
@@ -724,46 +722,42 @@ function claimDaily(day){
   if(rw.clk)G.boosters.e4={ts:now,dur:1800};
   if(rw.harm)G.harm+=rw.harm;
   if(rw.bld){const b=BLD[Math.floor(Math.random()*3)];G.bld[b.id]=(G.bld[b.id]||0)+rw.bld}
-  recalc();rDaily();
-  notify('📅 День '+day+' получен!','Бонус активирован');
+  recalc();rDaily();notify('📅 День '+day+' получен!','Бонус активирован');
 }
 
-// === SETTINGS & SKINS ===
+// ══════════════════════════════════════════════════════
+// НАСТРОЙКИ, СКИНЫ, АВТО
+// ══════════════════════════════════════════════════════
 function togSet(k){G.settings[k]=!G.settings[k];rSettings();save()}
-function setSkin(id){if(!SKINS.find(s=>s.id===id).req?.())return;G.currentSkin=id;applySkin();rSkins();save()}
-function applySkin(){document.body.className=document.body.className.replace(/skin-\w+/g,'').trim();if(G.currentSkin!=='default')document.body.classList.add('skin-'+G.currentSkin);drawTower(gStage())}
 function rSettings(){
   let h='<div class="slbl">Настройки</div>';
   h+=`<div class="set-row"><div><div class="set-lbl">🔊 Звуки кликов</div><div class="set-desc">Мелодичный отклик при нажатии</div></div><div class="tgl${G.settings.sound?' on':''}" onclick="togSet('sound')"></div></div>`;
   h+=`<div class="set-row"><div><div class="set-lbl">📳 Тактильность</div><div class="set-desc">Вибрация в Telegram WebApp</div></div><div class="tgl${G.settings.haptics?' on':''}" onclick="togSet('haptics')"></div></div>`;
+  h+=`<div class="set-row"><div><div class="set-lbl">🌓 Тема</div><div class="set-desc">Светлая / тёмная</div></div><div class="tgl${G.theme==='light'?' on':''}" onclick="toggleTheme()"></div></div>`;
   h+=`<div class="set-row" style="cursor:pointer" onclick="hardReset()"><div><div class="set-lbl">⚠️ Сбросить всё</div><div class="set-desc" style="color:var(--red)">Удалить прогресс безвозвратно</div></div><div style="color:var(--red);font-weight:700">❌</div></div>`;
   document.getElementById('sList').innerHTML=h;
 }
+function setSkin(id){const s=SKINS.find(x=>x.id===id);if(!s||!s.req())return;G.currentSkin=id;applySkin();rSkins();save()}
+function applySkin(){document.body.className=document.body.className.replace(/skin-\w+/g,'').trim();if(G.currentSkin!=='default')document.body.classList.add('skin-'+G.currentSkin);drawTower(gStage())}
 function rSkins(){
   let h='<div class="slbl">Скины башни</div><div class="skin-grid">';
-  for(const s of SKINS){
-    const act=G.currentSkin===s.id;
-    h+=`<div class="skin-card${act?' active':s.req()?'':' lock'}" onclick="${s.req()?`setSkin('${s.id}')`:''}"><div class="skin-preview" style="background:linear-gradient(135deg,${s.colors.acc},${s.colors.bg})"></div><div class="skin-name">${s.nm}</div><div class="skin-req">${act?'✅ Активен':s.req()?'Нажмите':'🔒 Требуется прогресс'}</div></div>`;
-  }
-  h+='</div>';
-  document.getElementById('kList').innerHTML=h;
+  for(const s of SKINS){const act=G.currentSkin===s.id;h+=`<div class="skin-card${act?' active':s.req()?'':' lock'}" onclick="setSkin('${s.id}')"><div class="skin-preview" style="background:linear-gradient(135deg,${s.colors.acc},${s.colors.bg})"></div><div class="skin-name">${s.nm}</div><div class="skin-req">${act?'✅ Активен':'Нажмите'}</div></div>`}
+  h+='</div>';document.getElementById('kList').innerHTML=h;
 }
-
-// === AUTO-PLAY ===
 function rAuto(){
   let h='<div class="slbl">Автоматизация</div>';
-  if(G.freq<=0&&G.harm<=0){
-    h+=`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:.72rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border);line-height:1.7">🔒 Разблокируется после первого престижа</div>`;
-  }else{
-    const spd=getResVal('r4')<2?1:0.5;
-    h+=`<div class="arow"><div><div class="albl">🏗️ Авто-здания</div><div class="adsc">Покупает лучшие по SPS/цена (инт: ${spd}с)</div></div><div class="tgl${G.autoB?' on':''}" onclick="togA('b')"></div></div>`;
+  if(G.freq<=0&&G.harm<=0){h+=`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:.72rem;background:var(--c2);border-radius:var(--r2);border:1px solid var(--border);line-height:1.7">🔒 Разблокируется после первого престижа</div>`}
+  else{
+    h+=`<div class="arow"><div><div class="albl">🏗️ Авто-здания</div><div class="adsc">Покупает лучшие по SPS/цена</div></div><div class="tgl${G.autoB?' on':''}" onclick="togA('b')"></div></div>`;
     h+=`<div class="arow"><div><div class="albl">⚡ Авто-улучшения</div><div class="adsc">Покупает все доступные</div></div><div class="tgl${G.autoU?' on':''}" onclick="togA('u')"></div></div>`;
   }
   document.getElementById('mList').innerHTML=h;
 }
 function togA(t){if(t==='b')G.autoB=!G.autoB;else G.autoU=!G.autoU;rAuto()}
 
-// === BUFFS & RENDER ===
+// ══════════════════════════════════════════════════════
+// HUD + BUFFS
+// ══════════════════════════════════════════════════════
 function renderBuffs(){
   const now=Date.now(),tags=[];
   for(const b in G.boosters){
@@ -771,17 +765,10 @@ function renderBuffs(){
     const ev=EVENTS.find(e=>e.id===b);
     if(ev)tags.push(`<div class="buff" style="border-color:var(--gold);color:var(--gold)">✨ ${ev.nm} ${Math.ceil((G.boosters[b].dur-(now-G.boosters[b].ts)/1000))}с</div>`);
   }
-  for(const ch of CH){
-    const cs=G.chStart[ch.id];
-    if(cs)tags.push(`<div class="buff" style="border-color:var(--red);color:var(--red)">🔥 ${ch.nm} ${Math.ceil((ch.dur-(now-cs.ts)/1000))}с</div>`);
-  }
+  for(const ch of CH){const cs=G.chStart[ch.id];if(cs)tags.push(`<div class="buff" style="border-color:var(--red);color:var(--red)">🔥 ${ch.nm} ${Math.ceil((ch.dur-(now-cs.ts)/1000))}с</div>`)}
   document.getElementById('buffsBar').innerHTML=tags.join('');
 }
-function renderAll(){
-  upd();rBuyRow();rBld();rUpg();rRes();rAch();rPre();rDaily();rSettings();rSkins();rAuto();rChal();
-}
 
-// === UI UPDATE ===
 function upd(){
   document.getElementById('sCount').textContent=fmt(G.sig);
   document.getElementById('hSig').textContent=fmt(G.sig);
@@ -796,97 +783,69 @@ function upd(){
   document.getElementById('stageBadge').textContent='Стадия: '+SNAMES[Math.min(st,SNAMES.length-1)];
   if(st!==lastStage){lastStage=st;drawTower(st)}
   const cE=document.getElementById('comboTxt');
-  if(G.combo.mult>1){
-    cE.textContent=`⚡ Комбо: ×${G.combo.mult.toFixed(1)}`;
-    cE.style.opacity='1';
-    cE.className=G.combo.mult>=2?'combo-display hot':'combo-display';
-  }else{
-    cE.style.opacity='0';
-    cE.className='combo-display';
-  }
+  if(G.combo.mult>1){cE.textContent=`⚡ Комбо: ×${G.combo.mult.toFixed(1)}`;cE.style.opacity='1';cE.className=G.combo.mult>=2?'combo-display hot':'combo-display'}
+  else{cE.style.opacity='0';cE.className='combo-display'}
   const pc=document.getElementById('prestigeTxt');
-  const nextP=pGain()<=0?0:Math.ceil(Math.pow((Math.pow(pGain()+0.5,2)*5e6),1/2));
-  if(nextP>0){pc.textContent=`До престижа: ~${fmt(nextP)}`;pc.classList.add('show')}else{pc.classList.remove('show')}
+  const nextP=pGain()<=0?0:Math.ceil(Math.sqrt((pGain()+1)*5e6));
+  if(nextP>0){pc.textContent=`До престижа: ~${fmt(nextP)}`;pc.classList.add('show')}else pc.classList.remove('show');
   renderBuffs();
 }
 
-// === UTILITIES ===
+function renderAll(){upd();rBuyRow();rBld();rUpg();rRes();rAch();rPre();rChal();rDaily();rSettings();rSkins();rAuto()}
+
+// ══════════════════════════════════════════════════════
+// ВСПОМОГАТЕЛЬНЫЕ
+// ══════════════════════════════════════════════════════
 function showConfirm(title,msg,onYes){
   if(TG?.showConfirm){TG.showConfirm(msg.replace(/<b>|<\/b>/g,''),ok=>{if(ok)onYes()});return}
-  const ov=document.createElement('div');
-  ov.id='confirmOverlay';
+  const ov=document.createElement('div');ov.id='confirmOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:3500;background:rgba(6,13,26,0.9);display:flex;align-items:center;justify-content:center;padding:20px';
   ov.innerHTML=`<div style="background:var(--c2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;max-width:300px;width:100%;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.95rem;color:var(--acc);margin-bottom:12px;font-weight:700">${title}</div><div style="font-size:.75rem;color:var(--txt2);line-height:1.6;margin-bottom:20px">${msg}</div><div style="display:flex;gap:10px"><button onclick="document.getElementById('confirmOverlay')?.remove()" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--c3);color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Отмена</button><button id="cfOk" style="flex:1;padding:10px;border:1px solid var(--acc);background:rgba(0,180,255,0.1);color:var(--acc);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Подтвердить</button></div></div>`;
-  document.body.appendChild(ov);
-  ov.querySelector('#cfOk').onclick=()=>{ov.remove();onYes()};
+  document.body.appendChild(ov);ov.querySelector('#cfOk').onclick=()=>{ov.remove();onYes()};
 }
-function hardReset(){
-  showConfirm('⚠️ Удалить прогресс?','Это действие нельзя отменить. Все данные будут стерты.',()=>{
-    localStorage.removeItem(SAVE_KEY);
-    location.reload();
-  });
-}
-function animateCard(id){
-  const card=document.querySelector(`.card[data-bid="${id}"]`);
-  if(card){card.classList.add('pop-anim');setTimeout(()=>card.classList.remove('pop-anim'),300)}
-}
-function notify(t,m){
-  const n=document.createElement('div');
-  n.className='notif';
-  n.innerHTML=`<div class="nt">${t}</div><div class="nb">${m}</div>`;
-  document.body.appendChild(n);
-  setTimeout(()=>n.remove(),2900);
-}
+function hardReset(){showConfirm('⚠️ Удалить прогресс?','Это действие нельзя отменить.',()=>{localStorage.removeItem(SAVE_KEY);location.reload()})}
+function animateCard(id){const card=document.querySelector(`.card[data-bid="${id}"]`);if(card){card.classList.add('pop-anim');setTimeout(()=>card.classList.remove('pop-anim'),300)}}
+function notify(t,m){const n=document.createElement('div');n.className='notif';n.innerHTML=`<div class="nt">${t}</div><div class="nb">${m}</div>`;document.body.appendChild(n);setTimeout(()=>n.remove(),2900)}
 
-// === CLICK HANDLER ===
+// ══════════════════════════════════════════════════════
+// КЛИК — комбо + частицы + звук (из ДИЗАЙН)
+// ══════════════════════════════════════════════════════
 document.getElementById('clickZone').addEventListener('click',function(e){
-  initAudio(); // 🔧 Audio on user gesture
+  initAudio();
   if(!G.tutorial.done&&!tutorialActive)startTut();
-  
   const now=Date.now();
-  // 🔧 Combo reset after 2s inactivity
+  // Сброс комбо после 2с паузы
   if(now-G.combo.last>2000)G.combo={count:0,last:0,mult:1};
   if(now-G.combo.last<300)G.combo.count++;else G.combo.count=1;
   G.combo.last=now;
   G.combo.mult=Math.min(1+G.combo.count*0.05,3);
-  
   const pow=Cache.click*G.combo.mult;
   G.sig+=pow;G.tot+=pow;G.totAll+=pow;G.clicks++;
-  
   playClick();triggerHaptic();
-  
   const area=document.getElementById('towerOuter'),rect=area.getBoundingClientRect();
   const x=e.clientX-rect.left,y=e.clientY-rect.top;
-  
-  const f=document.createElement('div');
-  f.className='float';
+  const f=document.createElement('div');f.className='float';
   f.textContent='+'+fmt(pow);
   f.style.cssText=`left:${x}px;top:${y-20}px;color:${pow>1000?'var(--gold)':pow>50?'var(--acc3)':'var(--acc)'}`;
-  area.appendChild(f);
-  setTimeout(()=>f.remove(),900);
-  
+  area.appendChild(f);setTimeout(()=>f.remove(),900);
   const cols=['#00d4ff','#00ffaa','#ffd700','#ff4757','#fff'];
   for(let i=0;i<5;i++){
-    const p=document.createElement('div');
-    p.className='burst-p';
+    const p=document.createElement('div');p.className='burst-p';
     const a=Math.random()*Math.PI*2,d=25+Math.random()*50,sz=3+Math.random()*5;
     p.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${cols[i%cols.length]};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px`;
-    area.appendChild(p);
-    setTimeout(()=>p.remove(),600);
+    area.appendChild(p);setTimeout(()=>p.remove(),600);
   }
-  
   document.getElementById('sCount').classList.add('pop');
   setTimeout(()=>document.getElementById('sCount').classList.remove('pop'),100);
   upd();
 });
 
-// === CANVAS DRAWING ===
+// ══════════════════════════════════════════════════════
+// CANVAS БАШНЯ — полностью из ДИЗАЙН_ТУТ
+// ══════════════════════════════════════════════════════
 function drawTower(stage){
-  const cv=document.getElementById('towerCanvas');
-  if(!cv)return;
-  const ctx=cv.getContext('2d');
-  const W=cv.width,H=cv.height;
-  ctx.clearRect(0,0,W,H);
+  const cv=document.getElementById('towerCanvas');if(!cv)return;
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
   const isDark=!document.body.classList.contains('light');
   const skin=SKINS.find(s=>s.id===G.currentSkin)||SKINS[0];
   const acc=isDark?skin.colors.acc:'#0077aa';
@@ -894,266 +853,138 @@ function drawTower(stage){
   const steelLight=isDark?'#3a6aaa':'#6a9acc';
   const steelDark=isDark?'#1a2f50':'#2a5080';
   const red=isDark?'#ff4757':'#cc2233';
-  
-  function glow(x,y,r,rgbBase,alpha=0.6){
-    const g=ctx.createRadialGradient(x,y,0,x,y,r);
-    g.addColorStop(0,`rgba(${rgbBase},${alpha})`);
-    g.addColorStop(1,`rgba(${rgbBase},0)`);
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-  }
-  function drawGround(){
-    const g=ctx.createLinearGradient(0,H-20,0,H);
-    g.addColorStop(0,steelDark);g.addColorStop(1,'transparent');
-    ctx.fillStyle=g;ctx.fillRect(20,H-22,W-40,20);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(20,H-22,W-40,20);
-  }
-  function drawLeg(x1,y1,x2,y2){
-    const g=ctx.createLinearGradient(x1,y1,x2,y2);
-    g.addColorStop(0,steelLight);g.addColorStop(1,steelDark);
-    ctx.strokeStyle=g;ctx.lineWidth=6;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-  }
-  function drawDish(cx,cy,rx,ry,angle){
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);
-    const g=ctx.createLinearGradient(-rx,0,rx,0);
-    g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);
-    ctx.fillStyle=g;ctx.strokeStyle=acc;ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle=`rgba(${isDark?'0,212,255':'0,100,180'},0.15)`;
-    ctx.beginPath();ctx.ellipse(0,0,rx*.7,ry*.7,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle=steel;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-ry*1.4);ctx.stroke();
-    ctx.fillStyle=acc;ctx.beginPath();ctx.arc(0,-ry*1.4,4,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-  }
-  function drawAntenna(cx,baseY,topY){
-    const g=ctx.createLinearGradient(cx-4,0,cx+4,0);
-    g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);
-    ctx.fillStyle=g;ctx.fillRect(cx-4,topY,8,baseY-topY);
-    const steps=Math.floor((baseY-topY)/40);
-    for(let i=0;i<=steps;i++){
-      const y=baseY-i*(baseY-topY)/steps;
-      const w=8+i*3;
-      ctx.fillStyle=steelLight;ctx.fillRect(cx-w,y-2,w*2,4);
-      ctx.fillStyle=steelLight;ctx.beginPath();ctx.arc(cx-w+4,y,3,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(cx+w-4,y,3,0,Math.PI*2);ctx.fill();
-    }
-    glow(cx,topY,18,isDark?'255,71,87':'200,30,50',0.6);
-    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,topY,5,0,Math.PI*2);ctx.fill();
-  }
-  
-  if(stage===0){
-    drawGround();
-    const cx=W/2,base=H-22,top=50;
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-30,base-8,60,8);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-30,base-8,60,8);
-    const mg=ctx.createLinearGradient(cx-5,0,cx+5,0);
-    mg.addColorStop(0,steelDark);mg.addColorStop(.5,steelLight);mg.addColorStop(1,steelDark);
-    ctx.fillStyle=mg;ctx.fillRect(cx-5,top+30,10,base-top-38);
-    glow(cx,top+30,30,isDark?'0,212,255':'0,150,200',0.3);
-    ctx.strokeStyle=acc;ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(cx-40,top+30);ctx.lineTo(cx+40,top+30);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-28,top+20);ctx.lineTo(cx+28,top+20);ctx.stroke();
-    ctx.strokeStyle=steel;ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(cx,top+8);ctx.lineTo(cx,top+30);ctx.stroke();
-    glow(cx,top,16,isDark?'255,71,87':'200,30,50',0.7);
-    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,top,4,0,Math.PI*2);ctx.fill();
-  }else if(stage===1){
-    drawGround();
-    const cx=W/2,base=H-30,top=35,bot=base-10;
-    drawLeg(cx-70,bot,cx-10,top+60);drawLeg(cx+70,bot,cx+10,top+60);
-    for(let i=0;i<4;i++){
-      const t=i/4,t2=(i+1)/4;
-      const lx=cx-(70*(1-t)+10*t),rx=cx+(70*(1-t)+10*t),y=bot*(1-t)+(top+60)*t;
-      ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([4,4]);
-      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(cx-(70*(1-t2)+10*t2),y-(bot-(top+60))/4);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(rx,y);ctx.lineTo(cx+(70*(1-t2)+10*t2),y-(bot-(top+60))/4);ctx.stroke();
-      ctx.setLineDash([]);ctx.strokeStyle=steelLight;ctx.lineWidth=3;
-      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-    }
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-20,top+55,40,8);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-20,top+55,40,8);
-    drawAntenna(cx,top+56,top);
-  }else if(stage===2){
-    drawGround();
-    const cx=W/2,base=H-30,top=25,mid=base-60;
-    drawLeg(cx-80,base-10,cx-35,mid);drawLeg(cx+80,base-10,cx+35,mid);drawLeg(cx,base-10,cx,mid);
-    for(let i=0;i<3;i++){
-      const t=i/3;
-      const lx=cx-(80*(1-t)+35*t),rx=cx+(80*(1-t)+35*t),y=base-10+(mid-base+10)*t;
-      ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-    }
-    drawLeg(cx-35,mid,cx-8,top+70);drawLeg(cx+35,mid,cx+8,top+70);
-    for(let i=0;i<2;i++){
-      const t=i/2;
-      const lx=cx-(35*(1-t)+8*t),rx=cx+(35*(1-t)+8*t),y=mid+(top+70-mid)*t;
-      ctx.strokeStyle=steelLight;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke();
-    }
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-22,top+65,44,10);
-    ctx.strokeStyle=acc;ctx.lineWidth=1;ctx.strokeRect(cx-22,top+65,44,10);
-    drawAntenna(cx,top+66,top);
-    drawDish(cx-50,mid+20,20,10,-Math.PI/6);drawDish(cx+50,mid+20,20,10,Math.PI/6);
-    glow(cx-50,mid+20,25,isDark?'0,212,255':'0,150,200',0.2);
-    glow(cx+50,mid+20,25,isDark?'0,212,255':'0,150,200',0.2);
-  }else{
-    drawGround();
-    const cx=W/2,base=H-25,twH=base-80;
-    const lw=28;
-    for(let i=0;i<6;i++){
-      const y=base-10-i*twH/6,yn=base-10-(i+1)*twH/6;
-      const scale=1-i*0.05;
-      ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();
-      ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([3,4]);
-      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();
-      ctx.setLineDash([]);ctx.strokeStyle=steelLight;ctx.lineWidth=3;
-      ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,y);ctx.stroke();
-    }
-    const dishY=base-twH-10;
-    glow(cx,dishY,50,isDark?'0,212,255':'0,150,200',0.25);
-    drawDish(cx,dishY,55,14,0);
-    ctx.fillStyle=steelDark;ctx.fillRect(cx-35,dishY+12,70,10);
-    ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-35,dishY+12,70,10);
-    drawDish(cx-65,base-50,30,9,-0.3);
-    glow(cx-65,base-50,35,isDark?'0,212,255':'0,150,200',0.15);
-    ctx.strokeStyle=acc;ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(cx,dishY-2);ctx.lineTo(cx,dishY-30);ctx.stroke();
-    glow(cx,dishY-30,14,isDark?'255,71,87':'200,30,50',0.8);
-    ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,dishY-30,4,0,Math.PI*2);ctx.fill();
-  }
+  function glow(x,y,r,rgbBase,alpha=0.6){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgbBase},${alpha})`);g.addColorStop(1,`rgba(${rgbBase},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
+  function drawGround(){const g=ctx.createLinearGradient(0,H-20,0,H);g.addColorStop(0,steelDark);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(20,H-22,W-40,20);ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(20,H-22,W-40,20)}
+  function drawLeg(x1,y1,x2,y2){const g=ctx.createLinearGradient(x1,y1,x2,y2);g.addColorStop(0,steelLight);g.addColorStop(1,steelDark);ctx.strokeStyle=g;ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+  function drawDish(cx,cy,rx,ry,angle){ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);const g=ctx.createLinearGradient(-rx,0,rx,0);g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);ctx.fillStyle=g;ctx.strokeStyle=acc;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=`rgba(${isDark?'0,212,255':'0,100,180'},0.15)`;ctx.beginPath();ctx.ellipse(0,0,rx*.7,ry*.7,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=steel;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-ry*1.4);ctx.stroke();ctx.fillStyle=acc;ctx.beginPath();ctx.arc(0,-ry*1.4,4,0,Math.PI*2);ctx.fill();ctx.restore()}
+  function drawAntenna(cx,baseY,topY){const g=ctx.createLinearGradient(cx-4,0,cx+4,0);g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);ctx.fillStyle=g;ctx.fillRect(cx-4,topY,8,baseY-topY);const steps=Math.floor((baseY-topY)/40);for(let i=0;i<=steps;i++){const y=baseY-i*(baseY-topY)/steps;const w=8+i*3;ctx.fillStyle=steelLight;ctx.fillRect(cx-w,y-2,w*2,4);ctx.fillStyle=steelLight;ctx.beginPath();ctx.arc(cx-w+4,y,3,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+w-4,y,3,0,Math.PI*2);ctx.fill()}glow(cx,topY,18,isDark?'255,71,87':'200,30,50',0.6);ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,topY,5,0,Math.PI*2);ctx.fill()}
+  if(stage===0){drawGround();const cx=W/2,base=H-22,top=50;ctx.fillStyle=steelDark;ctx.fillRect(cx-30,base-8,60,8);ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-30,base-8,60,8);const mg=ctx.createLinearGradient(cx-5,0,cx+5,0);mg.addColorStop(0,steelDark);mg.addColorStop(.5,steelLight);mg.addColorStop(1,steelDark);ctx.fillStyle=mg;ctx.fillRect(cx-5,top+30,10,base-top-38);glow(cx,top+30,30,isDark?'0,212,255':'0,150,200',0.3);ctx.strokeStyle=acc;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-40,top+30);ctx.lineTo(cx+40,top+30);ctx.stroke();ctx.beginPath();ctx.moveTo(cx-28,top+20);ctx.lineTo(cx+28,top+20);ctx.stroke();ctx.strokeStyle=steel;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx,top+8);ctx.lineTo(cx,top+30);ctx.stroke();glow(cx,top,16,isDark?'255,71,87':'200,30,50',0.7);ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,top,4,0,Math.PI*2);ctx.fill()}
+  else if(stage===1){drawGround();const cx=W/2,base=H-30,top=35,bot=base-10;drawLeg(cx-70,bot,cx-10,top+60);drawLeg(cx+70,bot,cx+10,top+60);for(let i=0;i<4;i++){const t=i/4,t2=(i+1)/4;const lx=cx-(70*(1-t)+10*t),rx=cx+(70*(1-t)+10*t),y=bot*(1-t)+(top+60)*t;ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(cx-(70*(1-t2)+10*t2),y-(bot-(top+60))/4);ctx.stroke();ctx.beginPath();ctx.moveTo(rx,y);ctx.lineTo(cx+(70*(1-t2)+10*t2),y-(bot-(top+60))/4);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke()}ctx.fillStyle=steelDark;ctx.fillRect(cx-20,top+55,40,8);ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-20,top+55,40,8);drawAntenna(cx,top+56,top)}
+  else if(stage===2){drawGround();const cx=W/2,base=H-30,top=25,mid=base-60;drawLeg(cx-80,base-10,cx-35,mid);drawLeg(cx+80,base-10,cx+35,mid);drawLeg(cx,base-10,cx,mid);for(let i=0;i<3;i++){const t=i/3;const lx=cx-(80*(1-t)+35*t),rx=cx+(80*(1-t)+35*t),y=base-10+(mid-base+10)*t;ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke()}drawLeg(cx-35,mid,cx-8,top+70);drawLeg(cx+35,mid,cx+8,top+70);for(let i=0;i<2;i++){const t=i/2;const lx=cx-(35*(1-t)+8*t),rx=cx+(35*(1-t)+8*t),y=mid+(top+70-mid)*t;ctx.strokeStyle=steelLight;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(rx,y);ctx.stroke()}ctx.fillStyle=steelDark;ctx.fillRect(cx-22,top+65,44,10);ctx.strokeStyle=acc;ctx.lineWidth=1;ctx.strokeRect(cx-22,top+65,44,10);drawAntenna(cx,top+66,top);drawDish(cx-50,mid+20,20,10,-Math.PI/6);drawDish(cx+50,mid+20,20,10,Math.PI/6);glow(cx-50,mid+20,25,isDark?'0,212,255':'0,150,200',0.2);glow(cx+50,mid+20,25,isDark?'0,212,255':'0,150,200',0.2)}
+  else{drawGround();const cx=W/2,base=H-25,twH=base-80;const lw=28;for(let i=0;i<6;i++){const y=base-10-i*twH/6,yn=base-10-(i+1)*twH/6;const scale=1-i*0.05;ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();ctx.strokeStyle=steelDark;ctx.lineWidth=2;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,yn);ctx.stroke();ctx.beginPath();ctx.moveTo(cx+lw*scale,y);ctx.lineTo(cx-lw*scale,yn);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle=steelLight;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-lw*scale,y);ctx.lineTo(cx+lw*scale,y);ctx.stroke()}const dishY=base-twH-10;glow(cx,dishY,50,isDark?'0,212,255':'0,150,200',0.25);drawDish(cx,dishY,55,14,0);ctx.fillStyle=steelDark;ctx.fillRect(cx-35,dishY+12,70,10);ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(cx-35,dishY+12,70,10);drawDish(cx-65,base-50,30,9,-0.3);glow(cx-65,base-50,35,isDark?'0,212,255':'0,150,200',0.15);ctx.strokeStyle=acc;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,dishY-2);ctx.lineTo(cx,dishY-30);ctx.stroke();glow(cx,dishY-30,14,isDark?'255,71,87':'200,30,50',0.8);ctx.fillStyle=red;ctx.beginPath();ctx.arc(cx,dishY-30,4,0,Math.PI*2);ctx.fill()}
 }
 
-// === SAVE/LOAD ===
-async function cloudSave(data){
-  const str=JSON.stringify(data);
-  if(TG?.CloudStorage)return new Promise(r=>TG.CloudStorage.setItem(SAVE_KEY,str,()=>r()));
-  try{localStorage.setItem(SAVE_KEY,str)}catch(e){}
-}
-async function cloudLoad(){
-  if(TG?.CloudStorage)return new Promise(r=>TG.CloudStorage.getItem(SAVE_KEY,(err,val)=>r(err?localStorage.getItem(SAVE_KEY):val)));
-  try{return localStorage.getItem(SAVE_KEY)}catch(e){return null}
-}
-function save(){G.last=Date.now();cloudSave(G)}
-async function loadSave(){
-  const raw=await cloudLoad();
-  if(!raw)return;
-  try{
-    const d=JSON.parse(raw);
-    const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps'];
-    const bools=['autoB','autoU','settings.sound','settings.haptics'];
-    const strs=['theme','currentSkin'];
-    const objs=['bld','upg','ach','res','skins','chDone','chFailed','chStart','combo','daily','boosters','tutorial'];
-    for(const k of nums)if(typeof d[k]==='number')G[k]=d[k];
-    for(const k of bools){
-      const path=k.split('.');
-      if(path.length===1){if(typeof d[k]==='boolean')G[k]=d[k]}
-      else{if(d[path[0]]&&typeof d[path[0]][path[1]]==='boolean')G[path[0]][path[1]]=d[path[0]][path[1]]}
-    }
-    for(const k of strs)if(typeof d[k]==='string')G[k]=d[k];
-    for(const k of objs)if(d[k]&&typeof d[k]==='object')Object.assign(G[k],d[k]);
-    if(typeof d.start==='number')G.start=d.start;
-    if(G.theme==='light')document.body.classList.add('light');
-    applySkin();recalc();
-    const off=(Date.now()-(d.last||Date.now()))/1000;
-    if(off>15&&Cache.sps>0){
-      const gain=Cache.sps*off*0.5;
-      G.sig+=gain;G.tot+=gain;G.totAll+=gain;
-      setTimeout(()=>showOfflineModal(gain,off),400);
-    }
-    checkDaily();
-  }catch(e){console.error('Load error',e)}
-}
-function checkDaily(){
-  const now=Date.now(),day=Math.floor(now/864e5);
-  if(G.daily.last!==day){
-    G.daily.streak=G.daily.last===day-1?G.daily.streak:0;
-    G.daily.collected={};
-    rDaily();
-  }else if(G.daily.streak===0)G.daily.streak=1;
-}
-function showOfflineModal(gain,secs){
-  const ov=document.createElement('div');
-  ov.className='off-ov';
-  ov.innerHTML=`<div class="off-card"><h2>📡 С возвращением!</h2><p>Пока вас не было<br><b>${fmtT(secs*1000)}</b></p><div style="font-family:'Space Mono',monospace;font-size:2rem;color:var(--acc);margin:10px 0">${fmt(gain)}</div><p style="font-size:.65rem;color:var(--txt3);margin-bottom:18px">сигналов (50% от дохода)</p><button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button></div>`;
-  document.body.appendChild(ov);
-}
-
-// === GAME LOOP ===
-function tick(){
-  const dt=(Date.now()-G.last)/1000;
+// ══════════════════════════════════════════════════════
+// SAVE / LOAD — защищённый загрузчик из РАБОТАЮЩИЙ_КОД
+// + Telegram CloudStorage из ДИЗАЙН_ТУТ
+// ══════════════════════════════════════════════════════
+function save(){
   G.last=Date.now();
-  if(Cache.sps&&isFinite(Cache.sps)&&dt>0){
-    const e=Cache.sps*dt;
-    if(isFinite(e)&&e>0){G.sig+=e;G.tot+=e;G.totAll+=e}
-  }
+  const str=JSON.stringify(G);
+  try{localStorage.setItem(SAVE_KEY,str)}catch(e){}
+  if(TG?.CloudStorage){try{TG.CloudStorage.setItem(SAVE_KEY,str,()=>{})}catch(e){}}
+}
+
+function loadSave(){
+  return new Promise(resolve=>{
+    let done=false;
+    const finish=()=>{if(!done){done=true;resolve()}};
+    const applyData=raw=>{
+      if(!raw){finish();return}
+      try{
+        const d=JSON.parse(raw);
+        const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps'];
+        const bools=['autoB','autoU'];
+        const strs=['theme','currentSkin'];
+        const objs=['bld','upg','ach','res','chDone','chFailed','chStart','combo','daily','boosters','tutorial','settings'];
+        for(const k of nums)if(typeof d[k]==='number')G[k]=d[k];
+        for(const k of bools)if(typeof d[k]==='boolean')G[k]=d[k];
+        for(const k of strs)if(typeof d[k]==='string')G[k]=d[k];
+        for(const k of objs)if(d[k]&&typeof d[k]==='object')Object.assign(G[k],d[k]);
+        if(typeof d.start==='number')G.start=d.start;
+      }catch(e){console.error('Parse error',e)}
+      finish();
+    };
+    // Таймаут-предохранитель 600мс (из РАБОТАЮЩИЙ_КОД)
+    const timeout=setTimeout(()=>applyData(localStorage.getItem(SAVE_KEY)),600);
+    if(TG?.CloudStorage){
+      try{
+        TG.CloudStorage.getItem(SAVE_KEY,(err,val)=>{
+          clearTimeout(timeout);
+          applyData(!err&&val?val:localStorage.getItem(SAVE_KEY));
+        });
+      }catch(e){clearTimeout(timeout);applyData(localStorage.getItem(SAVE_KEY))}
+    }else{clearTimeout(timeout);applyData(localStorage.getItem(SAVE_KEY))}
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// GAME LOOP — из РАБОТАЮЩИЙ_КОД (надёжный)
+// ══════════════════════════════════════════════════════
+function tick(){
+  const dt=(Date.now()-G.last)/1000;G.last=Date.now();
+  if(Cache.sps&&isFinite(Cache.sps)&&dt>0){const e=Cache.sps*dt;if(isFinite(e)&&e>0){G.sig+=e;G.tot+=e;G.totAll+=e}}
   const now=Date.now();
+  // Проверка испытаний: победа или провал
   for(const ch of CH){
-    const cs=G.chStart[ch.id];
-    if(cs===undefined)continue;
+    const cs=G.chStart[ch.id];if(cs===undefined)continue;
     const el=(now-cs.ts)/1000;
     if(el>=ch.dur){
       const earned=G.tot-cs.startSig;
-      if(earned>=ch.goal){
-        G.chDone[ch.rw]=true;
-        delete G.chStart[ch.id];
-        notify('🎉 Испытание пройдено!',ch.rwD);
-      }else{
-        G.chFailed[ch.id]=(G.chFailed[ch.id]||0)+1;
-        delete G.chStart[ch.id];
-        notify('❌ Провалено: '+ch.nm,'Заработано: '+fmt(earned)+' из '+fmt(ch.goal));
-      }
+      if(earned>=ch.goal){G.chDone[ch.rw]=true;delete G.chStart[ch.id];notify('🎉 Пройдено!',ch.rwD)}
+      else{G.chFailed[ch.id]=(G.chFailed[ch.id]||0)+1;delete G.chStart[ch.id];notify('❌ Провалено: '+ch.nm,'Заработано: '+fmt(earned)+' из '+fmt(ch.goal))}
       recalc();
     }
   }
+  // Достижения
   for(const a of ACH)if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true;notify('🏆 '+a.nm,a.desc)}
+  // Случайные события
   if(Math.random()<0.0008)triggerRandomEvent();
   upd();
 }
+
 function triggerRandomEvent(){
   if(G.events.length>2||G.tot<1e4)return;
   const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
   G.events.push(ev.id);ev.apply();
-  const banner=document.createElement('div');
-  banner.className='event-banner';
+  const banner=document.createElement('div');banner.className='event-banner';
   banner.innerHTML=`<h3>${ev.nm}</h3><p>${ev.desc}</p><button class="pbtn blu" onclick="this.parentElement.remove();const idx=G.events.indexOf('${ev.id}');if(idx>-1)G.events.splice(idx,1)">Отлично!</button>`;
-  document.body.appendChild(banner);
-  setTimeout(()=>banner.remove(),5000);
+  document.body.appendChild(banner);setTimeout(()=>{if(banner.parentNode)banner.remove()},5000);
   recalc();
 }
+
 function autoTick(){
   if(G.autoB){
-    const cm=cMod();
-    let best=null,bestRatio=0;
-    for(const b of BLD){
-      const cnt=bc(b.id);
-      const cost=bCost(b,cnt)*(cm.costM||1);
-      if(G.sig<cost)continue;
-      const sps=b.sps*(Cache.bMult[b.id]||1);
-      const ratio=cost>0?sps/cost:0;
-      if(ratio>bestRatio){bestRatio=ratio;best=b}
-    }
+    const cm=cMod();let best=null,br=0;
+    for(const b of BLD){const cnt=bc(b.id);const cost=bCost(b,cnt)*(cm.costM||1);if(G.sig<cost)continue;const ratio=(b.sps*(Cache.bMult[b.id]||1))/cost;if(ratio>br){br=ratio;best=b}}
     if(best)buyB(best.id);
   }
   if(G.autoU)for(const u of UPG)if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost)buyU(u.id);
 }
 
-// === INIT ===
+// ══════════════════════════════════════════════════════
+// INIT — async запуск с offline доходом
+// ══════════════════════════════════════════════════════
 G.last=Date.now();
 (async()=>{
   await loadSave();
+  if(G.theme==='light')document.body.classList.add('light');
+  applySkin();
   recalc();
   renderAll();
   drawTower(gStage());
   lastStage=gStage();
-  
+  checkDaily();
+
+  // Offline доход
+  const off=(Date.now()-G.last)/1000;
+  if(off>15&&Cache.sps>0){
+    const gain=Cache.sps*off*0.5;
+    G.sig+=gain;G.tot+=gain;G.totAll+=gain;
+    setTimeout(()=>{
+      const ov=document.createElement('div');ov.className='off-ov';
+      ov.innerHTML=`<div class="off-card"><h2>📡 С возвращением!</h2><p>Пока вас не было<br><b>${fmtT(off*1000)}</b></p><div style="font-family:'Space Mono',monospace;font-size:2rem;color:var(--acc);margin:10px 0">${fmt(gain)}</div><p style="font-size:.65rem;color:var(--txt3);margin-bottom:18px">сигналов (50% от дохода)</p><button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button></div>`;
+      document.body.appendChild(ov);
+    },400);
+  }
+
   setInterval(tick,50);
-  setInterval(renderAll,1000); // 🔧 FIXED: was render()
+  setInterval(renderAll,1000);
   setInterval(autoTick,1000);
-  setInterval(save,30000);
-  
-  if(!G.tutorial.done&&!tutorialActive)setTimeout(()=>startTut(),500);
-  
+  setInterval(save,15000);
+
+  if(!G.tutorial.done&&!tutorialActive)setTimeout(()=>startTut(),600);
+
   if(TG){
     TG.expand();TG.ready();
     if(TG.colorScheme==='light'){G.theme='light';document.body.classList.add('light')}
@@ -1161,6 +992,16 @@ G.last=Date.now();
     TG.MainButton.onClick(()=>{save();TG.showAlert('✅ Сохранено!')});
     TG.MainButton.show();
   }
+
+  // Логотип с сайта
+  const img=document.getElementById('logoImg');
+  const urls=['https://rtrs.ru/favicon.ico','https://rtrs.ru/logo.png'];
+  let idx=0;
+  const tryNext=()=>{
+    if(idx>=urls.length){img.style.display='none';document.getElementById('logoTxt').style.display='block';return}
+    img.onerror=()=>{idx++;tryNext()};img.src=urls[idx++];img.style.display='block';
+  };
+  tryNext();
 })();
 </script>
 </body>
