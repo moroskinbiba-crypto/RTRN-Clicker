@@ -934,6 +934,17 @@ function drawTower(stage){
   const steelDark=isDark?'#1a2f50':'#2a5080';
   const red=isDark?'#ff4757':'#cc2233';
   function glow(x,y,r,rgbBase,alpha=0.6){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgbBase},${alpha})`);g.addColorStop(1,`rgba(${rgbBase},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
+  // Stable starfield and faint orbital guides add depth without external assets.
+  const hash=n=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v)};
+  ctx.save();
+  for(let i=0;i<42;i++){
+    const x=8+hash(i+1)*(W-16),y=8+hash(i+97)*(H-42),r=0.45+hash(i+171)*1.15;
+    ctx.fillStyle=isDark?'rgba(135,215,255,'+(0.12+hash(i+241)*0.42)+')':'rgba(0,100,160,'+(0.08+hash(i+241)*0.22)+')';
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+  ctx.strokeStyle=isDark?'rgba(0,212,255,0.09)':'rgba(0,100,180,0.08)';ctx.lineWidth=1;
+  for(let i=0;i<5;i++){const y=H-42+i*4;ctx.beginPath();ctx.moveTo(22,y);ctx.lineTo(W-22,y);ctx.stroke()}
+  ctx.restore();
   function drawGround(){const g=ctx.createLinearGradient(0,H-20,0,H);g.addColorStop(0,steelDark);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(20,H-22,W-40,20);ctx.strokeStyle=steelLight;ctx.lineWidth=1;ctx.strokeRect(20,H-22,W-40,20)}
   function drawLeg(x1,y1,x2,y2){const g=ctx.createLinearGradient(x1,y1,x2,y2);g.addColorStop(0,steelLight);g.addColorStop(1,steelDark);ctx.strokeStyle=g;ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
   function drawDish(cx,cy,rx,ry,angle){ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);const g=ctx.createLinearGradient(-rx,0,rx,0);g.addColorStop(0,steelDark);g.addColorStop(.5,steelLight);g.addColorStop(1,steelDark);ctx.fillStyle=g;ctx.strokeStyle=acc;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=`rgba(${isDark?'0,212,255':'0,100,180'},0.15)`;ctx.beginPath();ctx.ellipse(0,0,rx*.7,ry*.7,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=steel;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-ry*1.4);ctx.stroke();ctx.fillStyle=acc;ctx.beginPath();ctx.arc(0,-ry*1.4,4,0,Math.PI*2);ctx.fill();ctx.restore()}
