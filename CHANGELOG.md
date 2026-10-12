@@ -17,3 +17,16 @@
 ## Verification
 
 Run `node tests/validate.mjs` from the repository root. It parses both scripts and runs smoke tests for migration, multipliers, stock accounting, golden signals, and the garden.
+
+
+## Full audit: visual polish, balance and save reliability
+
+- Added a restrained sci-fi observatory background, a stable procedural starfield, a softly illuminated tower capsule, and clearer type hierarchy without adding external image dependencies.
+- Improved responsive behavior for desktop and narrow phones, safer mobile-area padding, keyboard focus and tower activation, zoom support, and reduced-motion preferences.
+- Fixed the daily reward rotation so the visible day and claimable reward stay in sync. The seventh-day reward is now a time-limited production boost rather than a permanent prestige currency grant.
+- Capped offline earnings at eight hours, clarified the actual payout percentage and cap, and saved the payout immediately to prevent repeat claims after a fast reload.
+- Hardened Telegram CloudStorage loading against malformed saves and slow callbacks; a newer local save is preferred. Full reset removes the local save and Telegram CloudStorage entry.
+- Fixed random-event banners leaving stale event IDs after their timeout, which could block future random events.
+- Added immediate saves for manual building/upgrades/research purchases, daily rewards and challenge state changes while avoiding unnecessary saves per automatic purchase.
+- Rebalanced challenge one and added production/click-power requirements for higher-difficulty challenges, with the requirements visible in the UI.
+- Added regression tests for daily rotation, offline caps and rates, event cleanup, accessibility, save-race protection, and CI action versions.
