@@ -98,6 +98,7 @@ function ensureSystemsState() {
   if (!Number.isFinite(G.gardenHarvests)) G.gardenHarvests = 0;
   if (!Number.isFinite(G.modulatorLevel)) G.modulatorLevel = 0;
   if (!Number.isFinite(G.legacyTokens)) G.legacyTokens = 0;
+  if (!Number.isFinite(G.freqTotal)) G.freqTotal = Math.max(0, Number(G.freq) || 0);
   if (!Number.isFinite(G.wrinklerNext)) G.wrinklerNext = 0;
   if (!Number.isFinite(G.goldenNext)) G.goldenNext = 0;
   if (!Number.isFinite(G.goldenUntil)) G.goldenUntil = 0;
