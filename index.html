@@ -703,8 +703,8 @@ function rChal(){
   }
   h+=`<div class="slbl">Испытания</div>`;
   for(const ch of CH){
-    const act=G.chStart[ch.id]!==undefined,done=G.chDone[ch.rw],fail=G.chFailed[ch.id]||0,can=!act&&!done&&ch.req();
-    h+=`<div class="chcard${done?' done':act?' active':''}" ${can?`onclick="startCh('${ch.id}')"`:''}><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px"><div class="chn">${ch.nm}${act?' 🔥':''}${done?' ✓':''}</div><span style="font-size:.55rem;font-weight:700;color:${ch.dCol};padding:2px 8px;border:1px solid ${ch.dCol};border-radius:10px;opacity:.85;flex-shrink:0;margin-left:6px">${ch.diff}</span></div><div class="chd">${ch.desc}</div><div class="chr">${done?'🎁 ':'Награда: '}${ch.rwD}</div>${fail>0&&!done?`<div style="font-size:.55rem;color:var(--red);margin-top:3px">❌ Провалено: ${fail} раз</div>`:''}${!done&&!act?`<div style="font-size:.55rem;color:var(--txt3);margin-top:3px">Цель: ${fmt(ch.goal)} сигналов · ${ch.dur}с</div>`:''}${can?`<div style="font-size:.6rem;color:var(--acc3);margin-top:5px;font-weight:600">▶ Нажмите для старта</div>`:''}</div>`;
+    const act=G.chStart[ch.id]!==undefined,done=G.chDone[ch.rw],fail=G.chFailed[ch.id]||0,unlocked=ch.req(),can=!act&&!done&&unlocked;
+    h+=`<div class="chcard${done?' done':act?' active':!unlocked?' lock':''}" ${can?`onclick="startCh('${ch.id}')"`:''}><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px"><div class="chn">${ch.nm}${act?' 🔥':''}${done?' ✓':''}</div><span style="font-size:.55rem;font-weight:700;color:${ch.dCol};padding:2px 8px;border:1px solid ${ch.dCol};border-radius:10px;opacity:.85;flex-shrink:0;margin-left:6px">${ch.diff}</span></div><div class="chd">${ch.desc}</div><div class="chr">${done?'🎁 ':'Награда: '}${ch.rwD}</div>${fail>0&&!done?`<div style="font-size:.55rem;color:var(--red);margin-top:3px">❌ Провалено: ${fail} раз</div>`:''}${!done&&!act?`<div style="font-size:.55rem;color:${unlocked?'var(--txt3)':'var(--gold)'};margin-top:3px">${unlocked?'Цель: '+fmt(ch.goal)+' сигналов · '+ch.dur+'с':'🔒 '+(ch.reqText||'Требования не выполнены')}</div>`:''}${can?`<div style="font-size:.6rem;color:var(--acc3);margin-top:5px;font-weight:600">▶ Нажмите для старта</div>`:''}</div>`;
   }
   document.getElementById('cList').innerHTML=h;
 }
@@ -876,7 +876,18 @@ function showConfirm(title,msg,onYes){
   ov.innerHTML=`<div style="background:var(--c2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;max-width:300px;width:100%;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.95rem;color:var(--acc);margin-bottom:12px;font-weight:700">${title}</div><div style="font-size:.75rem;color:var(--txt2);line-height:1.6;margin-bottom:20px">${msg}</div><div style="display:flex;gap:10px"><button onclick="document.getElementById('confirmOverlay')?.remove()" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--c3);color:var(--txt3);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Отмена</button><button id="cfOk" style="flex:1;padding:10px;border:1px solid var(--acc);background:rgba(0,180,255,0.1);color:var(--acc);border-radius:var(--r3);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem">Подтвердить</button></div></div>`;
   document.body.appendChild(ov);ov.querySelector('#cfOk').onclick=()=>{ov.remove();onYes()};
 }
-function hardReset(){showConfirm('⚠️ Удалить прогресс?','Это действие нельзя отменить.',()=>{localStorage.removeItem(SAVE_KEY);location.reload()})}
+function hardReset(){
+  showConfirm('⚠️ Удалить прогресс?','Это действие нельзя отменить.',()=>{
+    try{localStorage.removeItem(SAVE_KEY)}catch(e){}
+    if(TG?.CloudStorage&&typeof TG.CloudStorage.removeItem==='function'){
+      let reloaded=false;
+      const reloadOnce=()=>{if(reloaded)return;reloaded=true;location.reload()};
+      const fallback=setTimeout(reloadOnce,1200);
+      try{TG.CloudStorage.removeItem(SAVE_KEY,()=>{clearTimeout(fallback);reloadOnce()})}
+      catch(e){clearTimeout(fallback);reloadOnce()}
+    }else location.reload();
+  })
+}
 function animateCard(id){const card=document.querySelector(`.card[data-bid="${id}"]`);if(card){card.classList.add('pop-anim');setTimeout(()=>card.classList.remove('pop-anim'),300)}}
 function notify(t,m){const n=document.createElement('div');n.className='notif';n.innerHTML=`<div class="nt">${t}</div><div class="nb">${m}</div>`;document.body.appendChild(n);setTimeout(()=>n.remove(),2900)}
 
@@ -970,34 +981,56 @@ function loadSave(){
   return new Promise(resolve=>{
     let done=false;
     const finish=()=>{if(!done){done=true;resolve()}};
+    const readLocal=()=>{try{return localStorage.getItem(SAVE_KEY)}catch(e){return null}};
     const applyData=raw=>{
-      if(!raw){finish();return}
-      try{
-        const d=JSON.parse(raw);
-        const nums=['sig','tot','totAll','clicks','freq','freqTotal','harm','buy','sps','last','goldenNext','goldenUntil','goldenClicks','wrinklerNext','wrinklersPopped','sugarLumps','lumpNext','modulatorLevel','legacyTokens','stockLast','gardenHarvests'];
-        const bools=['autoB','autoU','themeSet','goldenUnlocked','goldenWrath','elderAwake','lumpReady','stockUnlocked','seasonReward'];
-        const strs=['theme','currentSkin'];
-        const objs=['bld','upg','ach','res','chDone','chFailed','chStart','combo','daily','boosters','tutorial','settings','legacyUpgrades','stockOwned','stockPrices','seasonDrops'];
-        const arrays=['wrinklers','gardenPlots'];
-        for(const k of arrays)if(Array.isArray(d[k]))G[k]=d[k];
-        for(const k of nums)if(typeof d[k]==='number')G[k]=d[k];
-        for(const k of bools)if(typeof d[k]==='boolean')G[k]=d[k];
-        for(const k of strs)if(typeof d[k]==='string')G[k]=d[k];
-        for(const k of objs)if(d[k]&&typeof d[k]==='object')Object.assign(G[k],d[k]);
-        if(typeof d.start==='number')G.start=d.start;
-      }catch(e){console.error('Parse error',e)}
+      if(done)return; // Ignore late CloudStorage callbacks after fallback initialization.
+      const localRaw=readLocal();
+      let d=null;
+      if(raw){
+        try{
+          d=JSON.parse(raw);
+          if(!d||typeof d!=='object'||Array.isArray(d))throw new Error('Save is not an object');
+        }catch(e){
+          console.warn('Сохранение Telegram повреждено; проверяю локальную копию.',e);
+          if(localRaw&&localRaw!==raw){applyData(localRaw);return}
+          finish();return;
+        }
+      }else if(localRaw){
+        try{
+          d=JSON.parse(localRaw);
+          if(!d||typeof d!=='object'||Array.isArray(d))throw new Error('Save is not an object');
+        }catch(e){console.warn('Локальное сохранение повреждено; начата новая игра.',e);finish();return}
+      }else{finish();return}
+      if(raw&&localRaw&&raw!==localRaw){
+        try{
+          const localData=JSON.parse(localRaw);
+          if(localData&&typeof localData==='object'&&Number(localData.last)>Number(d.last))d=localData;
+        }catch(e){}
+      }
+      const nums=['sig','tot','totAll','clicks','freq','freqTotal','harm','buy','sps','last','goldenNext','goldenUntil','goldenClicks','wrinklerNext','wrinklersPopped','sugarLumps','lumpNext','modulatorLevel','legacyTokens','stockLast','gardenHarvests'];
+      const bools=['autoB','autoU','themeSet','goldenUnlocked','goldenWrath','elderAwake','lumpReady','stockUnlocked','seasonReward'];
+      const strs=['theme','currentSkin'];
+      const objs=['bld','upg','ach','res','chDone','chFailed','chStart','combo','daily','boosters','tutorial','settings','legacyUpgrades','stockOwned','stockPrices','seasonDrops'];
+      const arrays=['wrinklers','gardenPlots'];
+      for(const k of arrays)if(Array.isArray(d[k]))G[k]=d[k];
+      for(const k of nums)if(typeof d[k]==='number'&&Number.isFinite(d[k]))G[k]=d[k];
+      for(const k of bools)if(typeof d[k]==='boolean')G[k]=d[k];
+      for(const k of strs)if(typeof d[k]==='string')G[k]=d[k];
+      for(const k of objs)if(d[k]&&typeof d[k]==='object'&&!Array.isArray(d[k]))Object.assign(G[k],d[k]);
+      if(typeof d.start==='number'&&Number.isFinite(d.start))G.start=d.start;
       finish();
     };
-    // Таймаут-предохранитель 600мс (из РАБОТАЮЩИЙ_КОД)
-    const timeout=setTimeout(()=>applyData(localStorage.getItem(SAVE_KEY)),600);
+    // CloudStorage may respond slowly or fail; always retain a local fallback.
+    const timeout=setTimeout(()=>applyData(readLocal()),900);
     if(TG?.CloudStorage){
       try{
         TG.CloudStorage.getItem(SAVE_KEY,(err,val)=>{
           clearTimeout(timeout);
-          applyData(!err&&val?val:localStorage.getItem(SAVE_KEY));
+          if(done)return;
+          applyData(!err&&val?val:readLocal());
         });
-      }catch(e){clearTimeout(timeout);applyData(localStorage.getItem(SAVE_KEY))}
-    }else{clearTimeout(timeout);applyData(localStorage.getItem(SAVE_KEY))}
+      }catch(e){clearTimeout(timeout);applyData(readLocal())}
+    }else{clearTimeout(timeout);applyData(readLocal())}
   });
 }
 
@@ -1029,13 +1062,17 @@ function tick(){
   upd();
 }
 
+function dismissRandomEvent(eventId,banner){
+  removeActiveEvent(G.events,eventId);
+  if(banner&&banner.parentNode)banner.remove();
+}
 function triggerRandomEvent(){
   if(G.events.length>2||G.tot<1e4)return;
   const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
   G.events.push(ev.id);ev.apply();
   const banner=document.createElement('div');banner.className='event-banner';
-  banner.innerHTML=`<h3>${ev.nm}</h3><p>${ev.desc}</p><button class="pbtn blu" onclick="this.parentElement.remove();const idx=G.events.indexOf('${ev.id}');if(idx>-1)G.events.splice(idx,1)">Отлично!</button>`;
-  document.body.appendChild(banner);setTimeout(()=>{if(banner.parentNode)banner.remove()},5000);
+  banner.innerHTML=`<h3>${ev.nm}</h3><p>${ev.desc}</p><button class="pbtn blu" onclick="dismissRandomEvent('${ev.id}',this.parentElement)">Отлично!</button>`;
+  document.body.appendChild(banner);setTimeout(()=>dismissRandomEvent(ev.id,banner),5000);
   recalc();
 }
 
@@ -1065,17 +1102,19 @@ G.last=Date.now();
   lastStage=gStage();
   checkDaily();
 
-  // Offline доход
-  const off=(Date.now()-G.last)/1000;
-  if(off>15&&Cache.sps>0){
-    const gain=Cache.sps*off*(G.legacyUpgrades&&G.legacyUpgrades.offline?0.75:0.5);
+  // Offline доход: ограничиваем награду и сразу сохраняем её, чтобы нельзя было повторить быстрым перезапуском.
+  const offlineReward=calculateOfflineReward(Cache.sps,(Date.now()-G.last)/1000,!!(G.legacyUpgrades&&G.legacyUpgrades.offline));
+  if(offlineReward.rawSeconds>15&&Cache.sps>0){
+    const off=offlineReward.seconds,gain=offlineReward.gain;
     G.sig+=gain;G.tot+=gain;G.totAll+=gain;
+    save();
     setTimeout(()=>{
       const ov=document.createElement('div');ov.className='off-ov';
-      ov.innerHTML=`<div class="off-card"><h2>📡 С возвращением!</h2><p>Пока вас не было<br><b>${fmtT(off*1000)}</b></p><div style="font-family:'Space Mono',monospace;font-size:2rem;color:var(--acc);margin:10px 0">${fmt(gain)}</div><p style="font-size:.65rem;color:var(--txt3);margin-bottom:18px">сигналов (50% от дохода)</p><button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button></div>`;
+      ov.innerHTML=`<div class="off-card"><h2>📡 С возвращением!</h2><p>Пока вас не было<br><b>${fmtT(off*1000)}</b></p><div style="font-family:'Space Mono',monospace;font-size:2rem;color:var(--acc);margin:10px 0">${fmt(gain)}</div><p style="font-size:.65rem;color:var(--txt3);margin-bottom:18px">сигналов (${Math.round(offlineReward.rate*100)}% дохода${offlineReward.capped?' · лимит 8 ч':''})</p><button class="pbtn blu" onclick="this.closest('.off-ov').remove()">Принять</button></div>`;
       document.body.appendChild(ov);
     },400);
   }
+  save(); // Consume the prior timestamp even when no offline payout was due.
 
   if(typeof document.addEventListener==='function')document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
   if(typeof window.addEventListener==='function')window.addEventListener('pagehide',save);
