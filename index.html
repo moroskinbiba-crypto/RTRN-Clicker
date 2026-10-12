@@ -293,7 +293,7 @@ const SAVE_KEY = 'rtrs_v2'; // совместимость с сохранени�
 // ══════════════════════════════════════════════════════
 let G = {
   sig:0,tot:0,totAll:0,clicks:0,
-  freq:0,harm:0,buy:1,
+  freq:0,freqTotal:0,harm:0,buy:1,
   bld:{},upg:{},ach:{},res:{},skins:{},
   chDone:{},chFailed:{},chStart:{},
   combo:{count:0,last:0,mult:1},
@@ -681,7 +681,7 @@ function rAch(){
 // ══════════════════════════════════════════════════════
 // ПРЕСТИЖ — showConfirm без window.confirm
 // ══════════════════════════════════════════════════════
-function pGain(){const total=Math.floor(Math.sqrt(Math.max(0,G.totAll)/5e6)*getResVal('r6'));return Math.max(0,total-Math.max(0,G.freq))}
+function pGain(){const total=Math.floor(Math.sqrt(Math.max(0,G.totAll)/5e6)*getResVal('r6'));return Math.max(0,total-Math.max(0,Number.isFinite(G.freqTotal)?G.freqTotal:G.freq))}
 function hGain(){const total=Math.floor(Math.sqrt(Math.max(0,G.totAll)/1e9));return Math.max(0,total-Math.max(0,G.harm))}
 function rPre(){
   const fg=pGain(),hg=hGain(),cur=getGlobalMult();
@@ -694,7 +694,7 @@ function rPre(){
 function doPre(){
   const g=pGain();if(g<=0)return;
   showConfirm('🔴 Резонанс Частоты',`Сбросить прогресс?\nВы получите +${g} кристаллов`,()=>{
-    G.freq+=g;G.sig=0;G.tot=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
+    G.freq+=g;G.freqTotal=(Number.isFinite(G.freqTotal)?G.freqTotal:G.freq-g)+g;G.sig=0;G.tot=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
     recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов');save();
   });
 }
@@ -807,8 +807,12 @@ function upd(){
   if(G.combo.mult>1){cE.textContent=`⚡ Комбо: ×${G.combo.mult.toFixed(1)}`;cE.style.opacity='1';cE.className=G.combo.mult>=2?'combo-display hot':'combo-display'}
   else{cE.style.opacity='0';cE.className='combo-display'}
   const pc=document.getElementById('prestigeTxt');
-  const nextP=pGain()<=0?0:Math.ceil(Math.sqrt((pGain()+1)*5e6));
-  if(nextP>0){pc.textContent=`До престижа: ~${fmt(nextP)}`;pc.classList.add('show')}else pc.classList.remove('show');
+  const availablePrestige=pGain();
+  const claimedPrestige=Math.max(0,Number.isFinite(G.freqTotal)?G.freqTotal:G.freq);
+  const nextPrestigeTarget=Math.ceil(Math.pow((claimedPrestige+1)/Math.max(0.01,getResVal('r6')),2)*5e6);
+  if(availablePrestige>0){pc.textContent=`Престиж доступен: +${fmt(availablePrestige)}`;pc.classList.add('show')}
+  else if(nextPrestigeTarget>G.totAll){pc.textContent=`До престижа: ${fmt(nextPrestigeTarget-G.totAll)} сигналов`;pc.classList.add('show')}
+  else pc.classList.remove('show');
   renderBuffs();
 }
 
@@ -904,7 +908,7 @@ function loadSave(){
       if(!raw){finish();return}
       try{
         const d=JSON.parse(raw);
-        const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps','last','goldenNext','goldenUntil','goldenClicks','wrinklerNext','wrinklersPopped','sugarLumps','lumpNext','modulatorLevel','legacyTokens','stockLast','gardenHarvests'];
+        const nums=['sig','tot','totAll','clicks','freq','freqTotal','harm','buy','sps','last','goldenNext','goldenUntil','goldenClicks','wrinklerNext','wrinklersPopped','sugarLumps','lumpNext','modulatorLevel','legacyTokens','stockLast','gardenHarvests'];
         const bools=['autoB','autoU','goldenUnlocked','goldenWrath','elderAwake','lumpReady','stockUnlocked','seasonReward'];
         const strs=['theme','currentSkin'];
         const objs=['bld','upg','ach','res','chDone','chFailed','chStart','combo','daily','boosters','tutorial','settings','legacyUpgrades','stockOwned','stockPrices','seasonDrops'];
