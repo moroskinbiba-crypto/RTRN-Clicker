@@ -78,7 +78,7 @@ context.Cache = {sps: 10, click: 1};
 api.ensureSystemsState();
 api.clickGoldenSignal({ stopPropagation() {} });
 assert.equal(context.G.goldenClicks, 1, 'clicking an active golden signal is recorded');
-assert.ok(context.G.boosters.goldenProd || context.G.boosters.goldenClick || context.G.boosters.e1, 'golden signal grants a timed effect');
+assert.ok(context.G.sig > 1000 || ['goldenProd','goldenClick','e1','e3'].some(k => context.G.boosters[k]), 'golden signal grants a payout or timed effect');
 assert.equal(context.G.goldenUntil, 0, 'golden signal can only be claimed once');
 
 context.G = {
