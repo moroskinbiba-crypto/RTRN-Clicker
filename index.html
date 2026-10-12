@@ -681,8 +681,8 @@ function rAch(){
 // ══════════════════════════════════════════════════════
 // ПРЕСТИЖ — showConfirm без window.confirm
 // ══════════════════════════════════════════════════════
-function pGain(){let g=G.totAll<5e6?0:Math.floor(Math.pow(G.totAll/5e6,0.5));g*=getResVal('r6');return Math.floor(g)}
-function hGain(){return G.totAll<1e9?0:Math.floor(Math.pow(G.totAll/1e9,0.5))}
+function pGain(){const total=Math.floor(Math.sqrt(Math.max(0,G.totAll)/5e6)*getResVal('r6'));return Math.max(0,total-Math.max(0,G.freq))}
+function hGain(){const total=Math.floor(Math.sqrt(Math.max(0,G.totAll)/1e9));return Math.max(0,total-Math.max(0,G.harm))}
 function rPre(){
   const fg=pGain(),hg=hGain(),cur=getGlobalMult();
   let h=`<div class="psec"><h3>🔴 Резонанс Частоты</h3><p>Сброс прогресса → кристаллы частоты<br><span style="font-size:.62rem;opacity:.7">Каждый кристалл: +2% (аддитивно)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--red);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(fg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.freq} кристаллов</div><button class="pbtn red" ${fg<=0?'disabled':''} onclick="doPre()">⚡ Сбросить прогресс</button></div>`;
@@ -694,14 +694,14 @@ function rPre(){
 function doPre(){
   const g=pGain();if(g<=0)return;
   showConfirm('🔴 Резонанс Частоты',`Сбросить прогресс?\nВы получите +${g} кристаллов`,()=>{
-    G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
+    G.freq+=g;G.sig=0;G.tot=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
     recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов');save();
   });
 }
 function doHarm(){
   const g=hGain();if(g<=0)return;
   showConfirm('🔵 Великий сброс',`Сбросить ВСЁ?\nВы получите +${g} гармоник`,()=>{
-    G.harm+=g;G.legacyTokens=(G.legacyTokens||0)+g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
+    G.harm+=g;G.legacyTokens=(G.legacyTokens||0)+g;G.freq=0;G.sig=0;G.tot=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
     recalc();renderAll();notify('🔵 Гармоники','+'+g+' гармоник');save();
   });
 }
@@ -939,7 +939,6 @@ function tick(){
   if(Cache.sps&&isFinite(Cache.sps)&&dt>0){const e=Cache.sps*dt;if(isFinite(e)&&e>0){const count=Array.isArray(G.wrinklers)?G.wrinklers.length:0;const stolen=e*Math.min(0.4,count*0.05);G.sig+=e-stolen;G.tot+=e;G.totAll+=e;if(count)G.wrinklers.forEach(w=>{w.stored=(Number(w.stored)||0)+e*0.05;});}}
   const now=Date.now();
   tickSpecialSystems(now,dt);
-  renderWrinklers();
   // Проверка испытаний: победа или провал
   for(const ch of CH){
     const cs=G.chStart[ch.id];if(cs===undefined)continue;
