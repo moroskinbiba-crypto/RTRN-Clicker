@@ -435,17 +435,15 @@ function recalc(){
     // Click
     let cp=1;
     for(const u of UPG)if(G.upg[u.id]&&u.tp==='clk')cp*=u.m;
-    cp*=cm.clkM*getBoostMult('clk')*getResVal('r1')
+    cp*=cm.clkM*getBoostMult('clk')*getResVal('r1')*systemClickMultiplier()
        *(G.chDone.pc1?1.08:1)*(G.chDone.pc5?1.25:1)*(G.chDone.pc7?1.5:1)
        *getGlobalMult();
     Cache.click=Math.max(1,isFinite(cp)?cp:1);
     // SPS
     let glb=1;
     for(const u of UPG)if(G.upg[u.id]&&u.tp==='glb')glb*=u.m;
-    glb*=cm.prodM*getResVal('r3')*getGlobalMult();
+    glb*=cm.prodM*getResVal('r3')*getGlobalMult()*systemProductionMultiplier()*getBoostMult('sps');
     const now=Date.now();
-    if(G.boosters.e1&&G.boosters.e1.dur&&now-G.boosters.e1.ts<G.boosters.e1.dur*1000)glb*=3;
-    if(G.boosters.e3&&G.boosters.e3.dur&&now-G.boosters.e3.ts<G.boosters.e3.dur*1000)glb*=0.5;
     // Rewards from challenges
     if(G.chDone.pc2)glb*=1.12;
     if(G.chDone.pc4)glb*=1.20;
@@ -476,9 +474,18 @@ function getBoostMult(type,base=1){
   const toDel=[];
   for(const b in G.boosters){
     const boost=G.boosters[b];
-    if(boost.dur&&now-boost.ts<boost.dur*1000){
-      if((b==='e1'&&type==='sps')||(b==='e4'&&type==='clk'))mult*=2;
-      if(b==='e3'&&type==='clk')mult*=1.5;
+    if(boost&&boost.dur&&now-boost.ts<boost.dur*1000){
+      if(type==='sps'){
+        if(b==='e1')mult*=3;
+        if(b==='e3')mult*=0.5;
+        if(b==='goldenProd')mult*=7;
+        if(b==='gardenProd')mult*=1.5;
+      }
+      if(type==='clk'){
+        if(b==='e4')mult*=2;
+        if(b==='e3')mult*=1.5;
+        if(b==='goldenClick')mult*=777;
+      }
     }else{toDel.push(b)}
   }
   toDel.forEach(b=>delete G.boosters[b]);
@@ -776,7 +783,8 @@ function renderBuffs(){
   for(const b in G.boosters){
     if(!G.boosters[b].dur||now-G.boosters[b].ts>G.boosters[b].dur*1000){delete G.boosters[b];continue}
     const ev=EVENTS.find(e=>e.id===b);
-    if(ev)tags.push(`<div class="buff" style="border-color:var(--gold);color:var(--gold)">✨ ${ev.nm} ${Math.ceil((G.boosters[b].dur-(now-G.boosters[b].ts)/1000))}с</div>`);
+    const label=SYSTEM_BUFF_LABELS[b]||(ev&&ev.nm);
+    if(label)tags.push(`<div class="buff" style="border-color:var(--gold);color:var(--gold)">✨ ${label} ${Math.ceil((G.boosters[b].dur-(now-G.boosters[b].ts)/1000))}с</div>`);
   }
   for(const ch of CH){const cs=G.chStart[ch.id];if(cs)tags.push(`<div class="buff" style="border-color:var(--red);color:var(--red)">🔥 ${ch.nm} ${Math.ceil((ch.dur-(now-cs.ts)/1000))}с</div>`)}
   document.getElementById('buffsBar').innerHTML=tags.join('');
@@ -928,8 +936,10 @@ function loadSave(){
 // ══════════════════════════════════════════════════════
 function tick(){
   const dt=(Date.now()-G.last)/1000;G.last=Date.now();
-  if(Cache.sps&&isFinite(Cache.sps)&&dt>0){const e=Cache.sps*dt;if(isFinite(e)&&e>0){G.sig+=e;G.tot+=e;G.totAll+=e}}
+  if(Cache.sps&&isFinite(Cache.sps)&&dt>0){const e=Cache.sps*dt;if(isFinite(e)&&e>0){const count=Array.isArray(G.wrinklers)?G.wrinklers.length:0;const stolen=e*Math.min(0.4,count*0.05);G.sig+=e-stolen;G.tot+=e;G.totAll+=e;if(count)G.wrinklers.forEach(w=>{w.stored=(Number(w.stored)||0)+e*0.05;});}}
   const now=Date.now();
+  tickSpecialSystems(now,dt);
+  renderWrinklers();
   // Проверка испытаний: победа или провал
   for(const ch of CH){
     const cs=G.chStart[ch.id];if(cs===undefined)continue;
@@ -942,7 +952,9 @@ function tick(){
     }
   }
   // Достижения
-  for(const a of ACH)if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true;notify('🏆 '+a.nm,a.desc)}
+  let achievementUnlocked=false;
+  for(const a of allAchievements())if(!G.ach[a.id]&&a.ck()){G.ach[a.id]=true;notify('🏆 '+a.nm,a.desc);achievementUnlocked=true}
+  if(achievementUnlocked)recalc();
   // Случайные события
   if(Math.random()<0.0008)triggerRandomEvent();
   upd();
@@ -985,7 +997,7 @@ G.last=Date.now();
   // Offline доход
   const off=(Date.now()-G.last)/1000;
   if(off>15&&Cache.sps>0){
-    const gain=Cache.sps*off*0.5;
+    const gain=Cache.sps*off*(G.legacyUpgrades&&G.legacyUpgrades.offline?0.75:0.5);
     G.sig+=gain;G.tot+=gain;G.totAll+=gain;
     setTimeout(()=>{
       const ov=document.createElement('div');ov.className='off-ov';
@@ -998,6 +1010,7 @@ G.last=Date.now();
   setInterval(renderAll,1000);
   setInterval(autoTick,1000);
   setInterval(save,15000);
+  cycleRadioNews();setInterval(cycleRadioNews,28000);
 
   if(!G.tutorial.done&&!tutorialActive)setTimeout(()=>startTut(),600);
 
