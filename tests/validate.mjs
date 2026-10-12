@@ -17,6 +17,7 @@ new vm.Script(systemsSource, { filename: 'systems.js' });
 
 assert.ok(html.includes('<script src="./systems.js"></script>'), 'systems script is loaded');
 assert.ok(!/user-scalable=no|maximum-scale=1/.test(html), 'mobile zoom is not disabled');
+assert.ok(/<meta name="viewport" content="width=device-width, initial-scale=1\.0, viewport-fit=cover">/.test(html), 'viewport metadata remains valid HTML');
 assert.ok(html.includes('role="button" tabindex="0" aria-label="Передать сигнал"'), 'main click target can be activated from the keyboard');
 assert.ok(html.includes('@media(prefers-reduced-motion:reduce)'), 'reduced-motion preference is supported');
 assert.ok(html.includes('body.skin-matrix{'), 'Matrix skin has its own palette');
