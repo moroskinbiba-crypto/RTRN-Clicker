@@ -304,7 +304,14 @@ let G = {
   tutorial:{step:0,done:false},
   autoB:false,autoU:false,
   theme:'dark',
-  start:Date.now(),last:Date.now(),sps:0,v:2
+  goldenUnlocked:false,goldenNext:0,goldenUntil:0,goldenClicks:0,goldenWrath:false,
+  elderAwake:false,wrinklers:[],wrinklersPopped:0,wrinklerNext:0,
+  sugarLumps:0,lumpNext:0,lumpReady:false,modulatorLevel:0,
+  legacyTokens:0,legacyUpgrades:{},
+  stockUnlocked:false,stockLast:0,stockPrices:{},stockOwned:{},
+  gardenPlots:[null,null,null],gardenHarvests:0,
+  seasonDrops:{winter:0,spring:0,summer:0,autumn:0},seasonReward:false,
+  start:Date.now(),last:Date.now(),sps:0,v:3
 };
 let Cache = {sps:0,click:1,bMult:{}};
 let lastStage = -1;
@@ -658,9 +665,9 @@ function startCh(id){
 // ДОСТИЖЕНИЯ
 // ══════════════════════════════════════════════════════
 function rAch(){
-  const unl=ACH.filter(a=>G.ach[a.id]).length,pw=Math.round(unl/ACH.length*100);
+  const achievements=allAchievements();const unl=achievements.filter(a=>G.ach[a.id]).length,pw=Math.round(unl/achievements.length*100);
   let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="slbl" style="margin:0;border:none;padding:0">Достижения</div><div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--gold)">${unl}/${ACH.length}</div></div><div class="pbar"><div class="pfill${unl>=ACH.length?' done':''}" style="width:${pw}%"></div></div><div class="ptxt" style="margin-bottom:14px">${pw}% выполнено</div>`;
-  for(const a of ACH){const u=G.ach[a.id];h+=`<div class="card achcard${u?' unl':' lock'}"><div class="achi">${u?a.ic:'🔒'}</div><div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div></div>`}
+  for(const a of achievements){const u=G.ach[a.id];h+=`<div class="card achcard${u?' unl':' lock'}"><div class="achi">${u?a.ic:'🔒'}</div><div class="ci"><div class="achn">${u?a.nm:'???'}</div><div class="cd">${a.desc}</div></div></div>`}
   document.getElementById('aList').innerHTML=h;
 }
 
@@ -674,19 +681,20 @@ function rPre(){
   let h=`<div class="psec"><h3>🔴 Резонанс Частоты</h3><p>Сброс прогресса → кристаллы частоты<br><span style="font-size:.62rem;opacity:.7">Каждый кристалл: +2% (аддитивно)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--red);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(fg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.freq} кристаллов</div><button class="pbtn red" ${fg<=0?'disabled':''} onclick="doPre()">⚡ Сбросить прогресс</button></div>`;
   h+=`<div class="psec"><h3>🔵 Великий сброс</h3><p>Сброс ВСЕГО → гармоники<br><span style="font-size:.62rem;opacity:.7">Каждая гармоника: +10% (мультипликативно)</span></p><div style="font-size:.7rem;color:var(--txt3);margin-bottom:4px">Получите: <span style="color:var(--acc);font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700">+${fmt(hg)}</span></div><div style="font-size:.6rem;color:var(--txt3);margin-bottom:12px">Уже есть: ${G.harm} гармоник</div><button class="pbtn blu" ${hg<=0?'disabled':''} onclick="doHarm()">🌌 Великий сброс</button></div>`;
   h+=`<div class="psec" style="border-color:var(--gold)"><h3>🌐 Синергия</h3><p>Текущий множитель: <span style="color:var(--acc3);font-weight:700">×${cur.toFixed(2)}</span></p></div>`;
+  h+=renderLegacySection();
   document.getElementById('pList').innerHTML=h;
 }
 function doPre(){
   const g=pGain();if(g<=0)return;
   showConfirm('🔴 Резонанс Частоты',`Сбросить прогресс?\nВы получите +${g} кристаллов`,()=>{
-    G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];
+    G.freq+=g;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
     recalc();renderAll();notify('🔴 Резонанс','+'+g+' кристаллов');save();
   });
 }
 function doHarm(){
   const g=hGain();if(g<=0)return;
   showConfirm('🔵 Великий сброс',`Сбросить ВСЁ?\nВы получите +${g} гармоник`,()=>{
-    G.harm+=g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];
+    G.harm+=g;G.legacyTokens=(G.legacyTokens||0)+g;G.freq=0;G.sig=0;G.tot=0;G.totAll=0;G.bld={};G.upg={};G.res={};G.chDone={};G.chFailed={};G.chStart={};G.boosters={};G.events=[];G.wrinklers=[];G.goldenUntil=0;G.goldenNext=Date.now()+12000;G.wrinklerNext=Date.now()+18000;if(G.legacyUpgrades&&G.legacyUpgrades.starter){G.sig=10000;G.tot=10000;G.totAll=10000;}
     recalc();renderAll();notify('🔵 Гармоники','+'+g+' гармоник');save();
   });
 }
@@ -796,7 +804,7 @@ function upd(){
   renderBuffs();
 }
 
-function renderAll(){upd();rBuyRow();rBld();rUpg();rRes();rAch();rPre();rChal();rDaily();rSettings();rSkins();rAuto()}
+function renderAll(){upd();rBuyRow();rBld();rUpg();rRes();rAch();rPre();rChal();rDaily();rSettings();rSkins();rAuto();renderSystems();renderWrinklers()}
 
 // ══════════════════════════════════════════════════════
 // ВСПОМОГАТЕЛЬНЫЕ
@@ -888,10 +896,12 @@ function loadSave(){
       if(!raw){finish();return}
       try{
         const d=JSON.parse(raw);
-        const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps'];
-        const bools=['autoB','autoU'];
+        const nums=['sig','tot','totAll','clicks','freq','harm','buy','sps','last','goldenNext','goldenUntil','goldenClicks','wrinklerNext','wrinklersPopped','sugarLumps','lumpNext','modulatorLevel','legacyTokens','stockLast','gardenHarvests'];
+        const bools=['autoB','autoU','goldenUnlocked','goldenWrath','elderAwake','lumpReady','stockUnlocked','seasonReward'];
         const strs=['theme','currentSkin'];
-        const objs=['bld','upg','ach','res','chDone','chFailed','chStart','combo','daily','boosters','tutorial','settings'];
+        const objs=['bld','upg','ach','res','chDone','chFailed','chStart','combo','daily','boosters','tutorial','settings','legacyUpgrades','stockOwned','stockPrices','seasonDrops'];
+        const arrays=['wrinklers','gardenPlots'];
+        for(const k of arrays)if(Array.isArray(d[k]))G[k]=d[k];
         for(const k of nums)if(typeof d[k]==='number')G[k]=d[k];
         for(const k of bools)if(typeof d[k]==='boolean')G[k]=d[k];
         for(const k of strs)if(typeof d[k]==='string')G[k]=d[k];
@@ -963,6 +973,7 @@ function autoTick(){
 G.last=Date.now();
 (async()=>{
   await loadSave();
+  ensureSystemsState();
   if(G.theme==='light')document.body.classList.add('light');
   applySkin();
   recalc();
