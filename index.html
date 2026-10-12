@@ -413,13 +413,13 @@ const RES=[
 ];
 
 const CH=[
-  {id:'cc1',nm:'Радиомолчание',desc:'SPS=0, только клики. Накопи 5М за 120с',mod:{spsM:0,clkM:8},goal:5e6,rw:'pc1',rwD:'+8% клика',req:()=>true,reqVal:0,dur:120,diff:'Средний',dCol:'#ffd700'},
-  {id:'cc2',nm:'Помехи',desc:'Производство −60%. Накопи 20М за 90с',mod:{prodM:.4},goal:2e7,rw:'pc2',rwD:'+12% производства',req:()=>true,reqVal:0,dur:90,diff:'Сложный',dCol:'#ff8800'},
-  {id:'cc3',nm:'Золотой эфир',desc:'Здания ×4 дороже. Накопи 50М за 90с',mod:{costM:4},goal:5e7,rw:'pc3',rwD:'Здания −15%',req:()=>true,reqVal:0,dur:90,diff:'Сложный',dCol:'#ff8800'},
-  {id:'cc4',nm:'Хардкор',desc:'Клик ×0.3, SPS ×4. Накопи 300М за 120с',mod:{clkM:.3,spsM:4},goal:3e8,rw:'pc4',rwD:'+20% ко всему',req:()=>true,reqVal:0,dur:120,diff:'Экстрим',dCol:'#ff3300'},
-  {id:'cc5',nm:'Баланс',desc:'Клик ×6, SPS ×0.2. Накопи 200М за 120с',mod:{clkM:6,spsM:.2},goal:2e8,rw:'pc5',rwD:'+25% к клику',req:()=>true,reqVal:0,dur:120,diff:'Экстрим',dCol:'#ff3300'},
-  {id:'cc6',nm:'Марафон',desc:'Всё ×0.6. Накопи 2Б за 180с',mod:{prodM:.6,clkM:.6},goal:2e9,rw:'pc6',rwD:'+30% ко всему',req:()=>true,reqVal:0,dur:180,diff:'Легенд.',dCol:'#cc00ff'},
-  {id:'cc7',nm:'Буря',desc:'SPS ×0.1, Клик ×15. Накопи 10Б за 150с',mod:{spsM:.1,clkM:15},goal:1e10,rw:'pc7',rwD:'+50% к клику',req:()=>true,reqVal:0,dur:150,diff:'Безум.',dCol:'#ff0099'}
+  {id:'cc1',nm:'Радиомолчание',desc:'SPS=0, только клики. Накопи 1М за 180с',mod:{spsM:0,clkM:8},goal:1e6,rw:'pc1',rwD:'+8% клика',req:()=>Cache.click>=40,reqVal:40,reqText:'Сила клика ≥ 40',dur:180,diff:'Средний',dCol:'#ffd700'},
+  {id:'cc2',nm:'Помехи',desc:'Производство −60%. Накопи 20М за 90с',mod:{prodM:.4},goal:2e7,rw:'pc2',rwD:'+12% производства',req:()=>G.sps>=6e5,reqVal:6e5,reqText:'Производство ≥ 600 тыс./с',dur:90,diff:'Сложный',dCol:'#ff8800'},
+  {id:'cc3',nm:'Золотой эфир',desc:'Здания ×4 дороже. Накопи 50М за 90с',mod:{costM:4},goal:5e7,rw:'pc3',rwD:'Здания −15%',req:()=>G.sps>=6e5,reqVal:6e5,reqText:'Производство ≥ 600 тыс./с',dur:90,diff:'Сложный',dCol:'#ff8800'},
+  {id:'cc4',nm:'Хардкор',desc:'Клик ×0.3, SPS ×4. Накопи 300М за 120с',mod:{clkM:.3,spsM:4},goal:3e8,rw:'pc4',rwD:'+20% ко всему',req:()=>G.sps>=7e5,reqVal:7e5,reqText:'Производство ≥ 700 тыс./с',dur:120,diff:'Экстрим',dCol:'#ff3300'},
+  {id:'cc5',nm:'Баланс',desc:'Клик ×6, SPS ×0.2. Накопи 200М за 120с',mod:{clkM:6,spsM:.2},goal:2e8,rw:'pc5',rwD:'+25% к клику',req:()=>G.sps>=1e7,reqVal:1e7,reqText:'Производство ≥ 10 млн./с',dur:120,diff:'Экстрим',dCol:'#ff3300'},
+  {id:'cc6',nm:'Марафон',desc:'Всё ×0.6. Накопи 2Б за 180с',mod:{prodM:.6,clkM:.6},goal:2e9,rw:'pc6',rwD:'+30% ко всему',req:()=>G.sps>=2e7,reqVal:2e7,reqText:'Производство ≥ 20 млн./с',dur:180,diff:'Легенд.',dCol:'#cc00ff'},
+  {id:'cc7',nm:'Буря',desc:'SPS ×0.1, Клик ×15. Накопи 10Б за 150с',mod:{spsM:.1,clkM:15},goal:1e10,rw:'pc7',rwD:'+50% к клику',req:()=>G.sps>=7e8,reqVal:7e8,reqText:'Производство ≥ 700 млн./с',dur:150,diff:'Безум.',dCol:'#ff0099'}
 ];
 
 const ACH=[
@@ -641,14 +641,14 @@ function rBld(){
   }
   document.getElementById('bList').innerHTML=h;
 }
-function buyB(id){
+function buyB(id, fromAutomation=false){
   const b=BLD.find(x=>x.id===id);if(!b)return;
   const cnt=bc(id),amt=G.buy===999?Math.min(999,bMaxBuy(b,cnt)):bMaxBuy(b,cnt);
   if(amt<=0)return;
   const dc=Math.ceil(bBulkCost(b,cnt,amt)*(cMod().costM||1));
   if(G.sig<dc)return;
   G.sig-=dc;G.bld[id]=(G.bld[id]||0)+amt;
-  recalc();rBld();rUpg();rRes();animateCard(id);
+  recalc();rBld();rUpg();rRes();animateCard(id);if(!fromAutomation)save();
 }
 
 function rUpg(){
@@ -663,9 +663,9 @@ function rUpg(){
   if(done.length){h+=`<div class="slbl" style="margin-top:14px">Куплено (${done.length}/${UPG.length})</div>`;h+=done.map(u=>`<div class="card done"><div class="cicon">${u.ic}</div><div class="ci"><div class="cn">${u.nm} ✓</div><div class="cd">${u.desc}</div></div></div>`).join('')}
   document.getElementById('uList').innerHTML=h;
 }
-function buyU(id){
+function buyU(id, fromAutomation=false){
   const u=UPG.find(x=>x.id===id);if(!u||G.upg[id]||G.sig<u.cost||!u.req())return;
-  G.sig-=u.cost;G.upg[id]=true;recalc();rUpg();rBld();rRes();notify('⚡ '+u.nm,u.desc);
+  G.sig-=u.cost;G.upg[id]=true;recalc();rUpg();rBld();rRes();notify('⚡ '+u.nm,u.desc);if(!fromAutomation)save();
 }
 
 function rRes(){
@@ -683,7 +683,7 @@ function rRes(){
 }
 function buyRes(id){
   const r=RES.find(x=>x.id===id);if(!r||G.res[id]||G.sig<r.cost||!r.req())return;
-  G.sig-=r.cost;G.res[id]=true;recalc();rRes();notify('🔬 '+r.nm,r.desc);
+  G.sig-=r.cost;G.res[id]=true;recalc();rRes();notify('🔬 '+r.nm,r.desc);save();
 }
 
 // ══════════════════════════════════════════════════════
@@ -712,7 +712,7 @@ function startCh(id){
   const ch=CH.find(x=>x.id===id);
   if(!ch||G.chStart[id]!==undefined||G.chDone[ch.rw]||!ch.req())return;
   showConfirm('🔥 '+ch.nm,`${ch.desc}\nЦель: накопить ${fmt(ch.goal)} за ${ch.dur}с\nНаграда: ${ch.rwD}`,()=>{
-    G.chStart[id]={ts:Date.now(),startSig:G.tot};recalc();rChal();notify('🔥 '+ch.nm,ch.desc);
+    G.chStart[id]={ts:Date.now(),startSig:G.tot};recalc();rChal();notify('🔥 '+ch.nm,ch.desc);save();
   });
 }
 
@@ -766,7 +766,7 @@ function checkDaily(){
 }
 function rDaily(){
   const now=Date.now(),day=Math.floor(now/864e5),streak=G.daily.streak;
-  const currentDayOfCycle=streak===0?1:((streak-1)%7+1);
+  const currentDayOfCycle=dailyRewardIndex(streak);
   let h=`<div class="slbl">Ежедневные награды</div><div style="text-align:center;margin-bottom:12px">🔥 Серия: ${streak} дней</div><div class="daily-grid" id="dailyGrid">`;
   for(let d=1;d<=7;d++){
     const c=G.daily.collected[d],isT=d===currentDayOfCycle&&!G.daily.collected[d]&&G.daily.last!==day;
@@ -780,17 +780,17 @@ function rDaily(){
   },{once:true});
 }
 function claimDaily(day){
-  const now=Date.now(),dayIdx=Math.floor(now/864e5),expected=(G.daily.streak%7)+1;
+  const now=Date.now(),dayIdx=Math.floor(now/864e5),expected=dailyRewardIndex(G.daily.streak);
   if(day!==expected)return;
   G.daily.collected[day]=true;G.daily.last=dayIdx;G.daily.streak++;
-  const rewards=[{sig:1e4},{sp:2},{clk:1},{bld:5},{sig:1e5},{sp:3},{harm:1}];
+  const rewards=[{sig:1e4},{sp:2},{clk:1},{bld:5},{sig:1e5},{sp:3},{sp:4}];
   const rw=rewards[day-1];
   if(rw.sig){G.sig+=rw.sig;G.tot+=rw.sig;G.totAll+=rw.sig}
   if(rw.sp)G.boosters.e1={ts:now,dur:rw.sp*3600};
   if(rw.clk)G.boosters.e4={ts:now,dur:1800};
   if(rw.harm)G.harm+=rw.harm;
   if(rw.bld){const b=BLD[Math.floor(Math.random()*3)];G.bld[b.id]=(G.bld[b.id]||0)+rw.bld}
-  recalc();rDaily();notify('📅 День '+day+' получен!','Бонус активирован');
+  recalc();rDaily();notify('📅 День '+day+' получен!','Бонус активирован');save();
 }
 
 // ══════════════════════════════════════════════════════
@@ -821,7 +821,7 @@ function rAuto(){
   }
   document.getElementById('mList').innerHTML=h;
 }
-function togA(t){if(t==='b')G.autoB=!G.autoB;else G.autoU=!G.autoU;rAuto()}
+function togA(t){if(t==='b')G.autoB=!G.autoB;else G.autoU=!G.autoU;rAuto();save()}
 
 // ══════════════════════════════════════════════════════
 // HUD + BUFFS
@@ -1017,7 +1017,7 @@ function tick(){
       const earned=G.tot-cs.startSig;
       if(earned>=ch.goal){G.chDone[ch.rw]=true;delete G.chStart[ch.id];notify('🎉 Пройдено!',ch.rwD)}
       else{G.chFailed[ch.id]=(G.chFailed[ch.id]||0)+1;delete G.chStart[ch.id];notify('❌ Провалено: '+ch.nm,'Заработано: '+fmt(earned)+' из '+fmt(ch.goal))}
-      recalc();
+      recalc();save();
     }
   }
   // Достижения
@@ -1043,9 +1043,9 @@ function autoTick(){
   if(G.autoB){
     const cm=cMod();let best=null,br=0;
     for(const b of BLD){const cnt=bc(b.id);const cost=bCost(b,cnt)*(cm.costM||1);if(G.sig<cost)continue;const ratio=(b.sps*(Cache.bMult[b.id]||1))/cost;if(ratio>br){br=ratio;best=b}}
-    if(best)buyB(best.id);
+    if(best)buyB(best.id,true);
   }
-  if(G.autoU)for(const u of UPG)if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost)buyU(u.id);
+  if(G.autoU)for(const u of UPG)if(!G.upg[u.id]&&u.req()&&G.sig>=u.cost)buyU(u.id,true);
 }
 
 // ══════════════════════════════════════════════════════
