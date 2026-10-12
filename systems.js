@@ -200,9 +200,11 @@ function renderGoldenSignal(now) {
   const active = !!G.goldenUnlocked && G.goldenUntil > now;
   btn.style.display = active ? 'flex' : 'none';
   btn.classList.toggle('wrath', !!G.goldenWrath);
-  btn.innerHTML = G.goldenWrath
-    ? '☠️<span>СИГНАЛ ПОМЕХ</span>'
-    : '✨<span>ЗОЛОТОЙ СИГНАЛ</span>';
+  const mode = G.goldenWrath ? 'wrath' : 'golden';
+  if (btn.dataset.mode !== mode) {
+    btn.innerHTML = G.goldenWrath ? '☠️<span>СИГНАЛ ПОМЕХ</span>' : '✨<span>ЗОЛОТОЙ СИГНАЛ</span>';
+    btn.dataset.mode = mode;
+  }
   btn.setAttribute('aria-hidden', active ? 'false' : 'true');
 }
 
@@ -370,7 +372,7 @@ function sellStock(id) {
   if (!s || (G.stockOwned[id] || 0) <= 0) return;
   const price = getStockPrice(s);
   G.stockOwned[id]--;
-  addSignalReward(price);
+  G.sig += price;
   renderSystems();
   save();
   systemNotify('📈 Акция продана', 'На баланс возвращено ' + fmt(price) + ' сигналов.');
@@ -504,12 +506,23 @@ function renderWrinklers() {
   const layer = document.getElementById('wrinklerLayer');
   if (!layer) return;
   ensureSystemsState();
+  const active = G.elderAwake ? G.wrinklers.slice(0,8) : [];
+  const signature = active.map(w => w.id).join('|');
+  if (layer.dataset.signature === signature) {
+    active.forEach(w => {
+      const btn = layer.querySelector('[data-wid="' + w.id + '"]');
+      if (btn) btn.title = 'Накоплено ' + fmt(w.stored || 0) + ' сигналов. Нажми, чтобы забрать с бонусом.';
+    });
+    return;
+  }
+  layer.dataset.signature = signature;
   layer.innerHTML = '';
-  if (!G.elderAwake || !G.wrinklers.length) return;
-  G.wrinklers.slice(0,8).forEach((w,i) => {
+  if (!active.length) return;
+  active.forEach((w,i) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'wrinkler';
+    b.dataset.wid = w.id;
     b.style.left = ([3,77,10,71,0,82,25,58][i]) + '%';
     b.style.top = ([18,22,58,59,42,43,72,73][i]) + '%';
     b.title = 'Накоплено ' + fmt(w.stored || 0) + ' сигналов. Нажми, чтобы забрать с бонусом.';
