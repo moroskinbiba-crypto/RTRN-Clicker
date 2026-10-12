@@ -77,6 +77,33 @@ function goldenIntervalMs() {
   return (45000 + Math.random() * 60000) * (G.legacyUpgrades && G.legacyUpgrades.golden ? 0.75 : 1);
 }
 
+// Pure helpers keep daily rotation, offline rewards and event cleanup testable.
+const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
+
+function calculateOfflineReward(sps, elapsedSeconds, enhanced = false) {
+  const rawSps = Number(sps);
+  const rawElapsed = Number(elapsedSeconds);
+  const production = Number.isFinite(rawSps) ? Math.max(0, rawSps) : 0;
+  const requested = Number.isFinite(rawElapsed) ? Math.max(0, rawElapsed) : 0;
+  const seconds = Math.min(requested, MAX_OFFLINE_SECONDS);
+  const rate = enhanced ? 0.75 : 0.5;
+  return {rawSeconds: requested, seconds, capped: requested > seconds, rate, gain: production * seconds * rate};
+}
+
+function dailyRewardIndex(streak) {
+  const value = Number(streak);
+  const safeStreak = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  return (safeStreak % 7) + 1;
+}
+
+function removeActiveEvent(eventIds, eventId) {
+  if (!Array.isArray(eventIds)) return false;
+  const index = eventIds.indexOf(eventId);
+  if (index < 0) return false;
+  eventIds.splice(index, 1);
+  return true;
+}
+
 function ensureSystemsState() {
   if (!Array.isArray(G.wrinklers)) G.wrinklers = [];
   if (!Array.isArray(G.gardenPlots)) G.gardenPlots = [null,null,null];
